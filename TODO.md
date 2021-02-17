@@ -1,0 +1,175 @@
+### TODO
+
+Resurrect volume projection.
+
+Write paper.
+
+
+
+
+
+
+### DONE
+Use OpenMP.
+Fix projected triangles when changin u,v fields
+Cache histogram and scatterplot.
+Make sure you have a consistent logic about deleting FSCP points and you don't do too much work.
+Toggles for FS/IS visibility and Union/Intersection.
+Add Carthesian grid and 0 lines.
+Update object selection.
+
+
+
+
+
+### Backlog
+
+Do the u and v scalar fields.
+Crop & downsize domain.
+Recompute min/max values for every field
+Change isovalueSpinBox on isofield change
+
+
+
+Deal with raw pointers in Data.h
+
+
+
+
+
+
+### Key New Features
+
+# Most Important for Now
+Once you click an object it is locked and shown
+
+Click objects show only them on the plot accross different timesteps
+
+Selecting one object (via clicking) 
+Single object evolution.
+
+Export dat
+
+
+# Tracking Over Time
+Get triangles as output.
+
+# Eventually
+Exporting Features
+
+# Bugs
+Opacity does not work well.
+
+Isotime
+
+
+
+### Crasy Ideas
+Abstract Fiber surface (distance functions over other things)
+
+
+
+
+
+
+### DONE
+
+# 1st Iteration 14.01.2019 - 18.01.2019
+    Compute Isosurfaces
+    Produce 2D Histogram
+    Compute Fiber Sufaces
+    Add interactivity
+
+# 2nd Iteration 28.01.2019 - 01.02.2019
+    Clockwise Convex FSCP
+    Arcball Camera
+    Colourful Scatterplot
+    Read NC data files
+    Get only big components
+    Colourful Scatterplot with mean and standard deviation
+    Put up axis and units
+    Scale Computation
+
+# 3rd Iteration 04.02.2019 - 08.02.2019
+    Added Downsampling for Isosurfaces and Fiber Surfaces.
+    Add volumes and exporting to fiber surfaces and isosurfaces.
+    Scale computing volumes on the large dataset.
+    Add an isovalue histogram
+    Filter components by size
+    Add slider for changing connected component minmum size
+    Add static clipping for dimensions via command line parameters. 
+    Make volumes work with downsampling.
+    Make it work for any Convex FSCP
+
+# 4rd Iteration 18.02.2019 - 26.02.2019
+    Worked on the continuous scatterplot
+
+
+# 5rd Iteration 04.03.2019 - 08.03.2019
+    Reset FS when no points are there
+    Add a checkbox to toggel FS/IS
+    Add IS flip and plot
+    Fix recompute on IS number box.
+    Add a usage string
+    Added interpolation to FS computation - none, nearest and bilinear
+    Add an option to change the scale of the scatterplot
+    Add projecting lines instead of points
+    Fix Range clipping on the histogram
+
+# 6th Iteration
+    Finally Finished Working on the Continuous Scatterplot
+
+### TODO
+
+# Vital
+
+    Figure out how to distribute application
+    Refactor scatterplot rendering
+
+    Contour Tree / Merge Tree and easy location of components
+
+    Interface
+        Add isovalue labels
+
+
+
+    Refactor Code
+    Add Documentation
+    Call from python scripts using pybind.
+
+# Optional
+    Improve interface
+    Any FSCP
+    Verify correctness using a plot of f and f'
+    Click on 3D plot to select objects (rays?)
+    Add clang tools to static analyse and format the code.
+    Save only the biggest objects.
+
+# Scrapped
+    Implement Central Differencing and add a function/gradient plot.
+    Add volume size to mask file
+    Axis on the 3D plot.
+    Add dynamic clipping for dimensions via the qt interface.
+    Simplify by removing points or flattening the distribution for the isosurface scalar field.
+
+
+### NOTES
+
+# Optimisation
+    Compute Scatterplot Faster -> to do with weird mem access
+    Volumes Take 10s to compute, figure out why. Is it memory access again?
+    I got over a second speedup for just not processing unused cubes;
+    There is a MAJOR problem with distance field computation. Over 12s on full data. I cannot get it down significatly more with this method.
+
+    Quite alot of time is spent on just reading from the 2D arrays in the PlotWidget for example in getting the FS distance values and computing the histogram
+
+# Things which are slow and I cannot easily solve:
+
+    Scatterplot                     - memory access is slow
+    Volumes                         - not sure, probably related to memory access
+    Distance Field                  - voronoi diagram GPU z-buffer algorithm
+    Isosurface                      - (flexible and octrees and paralle)
+
+# Notes on Optimisation
+    Skipping empty triangles gave a 0.9s speedup.
+    Went from 0.9s to 2.6s when we go from 0 triangles to 1,587,894 triangles.

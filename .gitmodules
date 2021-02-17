@@ -1,0 +1,3 @@
+[submodule "external/netcdf-c"]
+	path = external/netcdf-c
+	url = https://github.com/Unidata/netcdf-c

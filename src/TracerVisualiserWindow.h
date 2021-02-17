@@ -1,0 +1,95 @@
+#pragma once
+
+#include <QBoxLayout>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QGLWidget>
+#include <QKeyEvent>
+#include <QMenuBar>
+#include <QObject>
+#include <QProgressBar>
+#include <QSlider>
+#include <qcheckbox.h>
+#include <qlabel.h>
+
+#include "./Data.h"
+#include "./GlobalConfig.h"
+#include "./HistogramWidget.hpp"
+#include "./PlotWidget.h"
+#include "./ScatterPlot.h"
+#include "./TracerVisualiserWidget.h"
+
+class TracerVisualiserWindow : public QWidget
+{
+    Q_OBJECT
+  public:
+    TracerVisualiserWindow(QWidget*, Data*, tv9k::InputInformation, std::string);
+    ~TracerVisualiserWindow();
+
+    void keyPressEvent(QKeyEvent* event);
+
+    void setTimestep(int timestep);
+
+    Data* data;
+
+    PlotWidget* plotWidget;
+    TracerVisualiserWidget* tracerVisualiserWidget;
+    HistogramWidget* histogramWidget;
+
+    QGridLayout* windowLayout;
+
+    // Left hand side controlls
+    QGridLayout* comboBoxLayout;
+    QGridLayout* isovalueLayout;
+    QGridLayout* leftControlsLayout;
+    QGridLayout* histogramLayout;
+
+    // Right hand side controlls
+    QGridLayout* rightControlsLayout;
+    QGridLayout* timestepLayout;
+
+    QGridLayout* fibersurfaceOpacityLayout;
+    QGridLayout* isosurfaceOpacityLayout;
+    QGridLayout* combinedSurfaceOpacityLayout;
+
+    QComboBox* isoFieldComboBox;
+    QComboBox* uFieldComboBox;
+    QComboBox* vFieldComboBox;
+
+    QLabel* isovalueRangeLabel;
+    QLabel* timeLabel;
+    QLabel* loadingLabel;
+
+    QComboBox* scatterPlotTypeComboBox;
+    QComboBox* projectionTypeComboBox;
+    QComboBox* mergeTreeTypeComboBox;
+
+    QSlider* isosurfaceOpacitySlider;
+    QSlider* fibersurfaceOpacitySlider;
+    QSlider* combinedSurfaceOpacitySlider;
+
+    QSlider* isosurfaceSimplificationSlider;
+    QSlider* fiberSurfaceSimplificationSlider;
+    QSlider* timeStepSlider;
+
+    QDoubleSpinBox* isovalueSpinBox;
+
+    QPushButton* saveISObjBtn;
+    QPushButton* saveFSObjBtn;
+    QPushButton* timeStepPreviousButton;
+    QPushButton* timeStepNextButton;
+
+    QPushButton* fiberSurfaceClear;
+    QPushButton* isoSurfaceClear;
+    QPushButton* combinedSurfaceComputeButton;
+
+    QCheckBox* toggleIsosurface;
+    QCheckBox* toggleFibersurface;
+    QCheckBox* toggleIntersection;
+    QCheckBox* toggleCombinedSurface;
+
+    QSlider* scaleSlider;
+    QSlider* isovalueSlider;
+
+    QProgressBar* progressBar;
+};

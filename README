@@ -1,0 +1,33 @@
+# Compilation with a local netcdf-c build
+Run ./build.sh
+
+
+## Compilation instructions for cloud11.leeds.ac.uk
+
+$> module load cmake gnu/6.2.0 netcdf4
+
+Without `cmake` we get a `cmake` error:
+
+```
+CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
+  CMake 3.10 or higher is required.  You are running version 2.8.12.2
+```
+
+Without `netcdf4` we get a compile error:
+
+```
+[ 11%] Building CXX object CMakeFiles/tv9k.dir/src/Data.cpp.o
+In file included from /nfs/see-fs-02_users/earlcd/git-repos/tracer-visualiser/src/Data.cpp:1:0:
+/nfs/see-fs-02_users/earlcd/git-repos/tracer-visualiser/src/Data.h:11:18: fatal error: netcdf: No such file or directory
+ #include <netcdf>
+```
+
+Without `gnu/6.2.0` we get a linking error:
+
+```
+[ 11%] Linking CXX executable tv9k
+...
+/nfs/see-fs-02_users/earlcd/datastore/a289/anaconda2/lib/libQt5Widgets.so.5.9.5: undefined reference to `operator delete[](void*, unsigned long)@CXXABI_1.3.9'
+/nfs/see-fs-02_users/earlcd/datastore/a289/anaconda2/lib/libQt5Core.so.5.9.5: undefined reference to `__cxa_throw_bad_array_new_length@CXXABI_1.3.8'
+/nfs/see-fs-02_users/earlcd/datastore/a289/anaconda2/lib/libQt5OpenGL.so.5.9.5: undefined reference to `operator delete(void*, unsigned long)@CXXABI_1.3.9'`
+```
