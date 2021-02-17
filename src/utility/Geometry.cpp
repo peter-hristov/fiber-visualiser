@@ -5,9 +5,6 @@
 
 using namespace std;
 
-// GLfloat Geometry::cubeVertices[8][3] = {{0,  0,  0 }, { 0,  0,  1 }, { 0,  1,
-// 0 }, { 0,  1,  1 }, { 1,  0,  0 }, { 1,  0,  1 }, { 1,  1,  0 }, { 1,  1,  1 }
-// };
 
 float
 tv9k::geometry::dotProduct(QPointF a, QPointF b)
