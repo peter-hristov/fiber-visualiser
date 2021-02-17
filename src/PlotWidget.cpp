@@ -252,10 +252,6 @@ PlotWidget::paintEvent(QPaintEvent*)
     p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
     p.setPen(Qt::gray);
 
-    // Draw Scatterplot
-    p.drawImage(QRect(0, 0, resolution, resolution),
-                this->data->discreteScatterplots[this->data->currentTimestep].scatterPlotImage);
-
     // Draw projetions
     if (data->projectionType == 1) {
         drawInteriorPoints(p);
@@ -684,25 +680,6 @@ PlotWidget::redoFS()
     // Update & repaint to update the fscp (rescaled version of the mouse points)
     this->repaint();
     this->update();
-
-    // Put up the loading bar
-    dynamic_cast<TracerVisualiserWindow*>(this->parent())->loadingLabel->setText("LOADING....");
-    dynamic_cast<TracerVisualiserWindow*>(this->parent())->progressBar->setValue(50);
-    {
-        // Generate the fs meshes for all timesteps and the display list for the current timestep
-        const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
-
-        this->data->computeFiberMeshes(this->resolution, polyPoints);
-        //this->data->computeCombinedMeshes(this->data->currentSignedDistanceField[this->data->currentTimestep], this->data->isoField->currentIsovalue);
-
-        visualiserWidget->generateDisplayList(this->data->isosurfaceMeshes[this->data->currentTimestep], SurfaceType::isosurface);
-        visualiserWidget->generateDisplayList(this->data->fibersurfaceMeshes[this->data->currentTimestep], SurfaceType::fibersurface);
-        //visualiserWidget->generateDisplayList(this->data->combinedMeshes[this->data->currentTimestep], SurfaceType::combinedSurface);
-        visualiserWidget->update();
-    }
-
-    dynamic_cast<TracerVisualiserWindow*>(this->parent())->loadingLabel->setText("");
-    dynamic_cast<TracerVisualiserWindow*>(this->parent())->progressBar->setValue(0);
 }
 
 void

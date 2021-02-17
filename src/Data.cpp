@@ -202,9 +202,6 @@ Data::readNcData(tv9k::InputInformation input)
     }
 
     this->currentSignedDistanceField.resize(this->tdim);
-    this->discreteScatterplots.resize(this->tdim);
-    this->computeScatterplots(input.scatterplotResolution);
-    this->computeHistograms(input.histogramResolution);
 
     // Set default currentID and scene centre
     for (int i = 0; i < this->tdim; i++) {
@@ -540,39 +537,6 @@ Data::changeTimeStep(int timestep)
     this->currentTimestep = timestep;
 }
 
-// Parallel Stuff
-    void
-Data::computeHistograms(const size_t resolution)
-{
-    this->histograms.clear();
-    this->histograms.resize(this->tdim);
-
-#pragma omp parallel
-    {
-#pragma omp for
-        for (auto i = 0; i < this->tdim; i++) {
-            this->histograms[i] = tk9k::utility::histogram::computeHistogram(
-                    resolution, this->isoField->min, this->isoField->max, this->isoField->values[i]);
-        }
-    }
-}
-
-    void
-Data::computeScatterplots(const size_t resolution)
-{
-    this->discreteScatterplots.clear();
-    this->discreteScatterplots.resize(this->tdim);
-
-#pragma omp parallel
-    {
-#pragma omp for
-        for (auto i = 0; i < this->tdim; i++) {
-            this->discreteScatterplots[i].initialize(resolution);
-            this->discreteScatterplots[i].computeDensityDiscrete(*this->uField, *this->vField, i);
-            this->discreteScatterplots[i].populateImage(0);
-        }
-    }
-}
 
     void
 Data::computeCombinedMeshes(const std::vector<std::vector<std::vector<GLfloat>>> signedDistanceField, const GLfloat isovalue)
