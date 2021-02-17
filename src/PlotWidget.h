@@ -18,7 +18,6 @@
 #include <utility>
 
 #include "./GlobalConfig.h"
-#include "./utility/Utility.h"
 #include "Data.h"
 #include <cmath>
 

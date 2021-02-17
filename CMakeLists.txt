@@ -25,7 +25,6 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
-find_package(netCDF REQUIRED)
 find_package(OpenMP REQUIRED)
 FIND_PACKAGE(Boost  REQUIRED)
 
@@ -45,7 +44,6 @@ FIND_PACKAGE(Boost  REQUIRED)
 set(SOURCES
     ./src/Data.cpp
     ./src/PlotWidget.cpp
-    ./src/ScatterPlot.cpp
     ./src/TracerVisualiserMain.cpp
     ./src/TracerVisualiserWidget.cpp
     ./src/TracerVisualiserWindow.cpp
@@ -53,12 +51,6 @@ set(SOURCES
     ./src/ArcBall/BallAux.cpp
     ./src/ArcBall/BallMath.cpp
     ./src/utility/Geometry.cpp
-    ./src/utility/MarchingCubes.cpp
-    ./src/utility/MergeTree.cpp
-    ./src/utility/ScalarField.cpp
-    ./src/utility/SurfaceMesh.cpp
-    ./src/utility/TetrahedronDepth.cpp
-    ./src/utility/Utility.cpp
     )
 
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )

@@ -13,7 +13,6 @@
 #include <QGLWidget>
 
 #include "./Data.h"
-#include "./PlotWidget.h"
 #include "./ArcBall/Ball.h"
 
 class TracerVisualiserWidget : public QGLWidget

@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "./TracerVisualiserWindow.h"
-#include "./utility/Utility.h"
 #include "src/Data.h"
 
 using namespace std;

@@ -15,7 +15,6 @@
 #include "./Data.h"
 #include "./GlobalConfig.h"
 #include "./PlotWidget.h"
-#include "./ScatterPlot.h"
 #include "./TracerVisualiserWidget.h"
 
 class TracerVisualiserWindow : public QWidget

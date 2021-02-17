@@ -1,16 +1,9 @@
 #include "Data.h"
 #include "./utility/Geometry.h"
-#include "./utility/MarchingCubes.h"
-#include "./utility/NetCDFWRapper.h"
+
 #include <cassert>
 #include <cstdio>
-#include <netcdf.h>
 #include <omp.h>
-#include <qpoint.h>
-#include <sys/stat.h>
-
-#include "./utility/Histogram.h"
-#include "src/utility/MergeTree.h"
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/linestring.hpp>

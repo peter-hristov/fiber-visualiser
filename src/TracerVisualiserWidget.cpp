@@ -16,7 +16,6 @@
 #include "./TracerVisualiserWindow.h"
 
 using namespace std;
-using namespace tv9k::utility;
 
 void
 TracerVisualiserWidget::setMaterial(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha, GLfloat shininess)

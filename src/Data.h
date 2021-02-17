@@ -14,13 +14,8 @@
 #include <string>
 #include <vector>
 
-#include <QImage>
-
-#include "./ScatterPlot.h"
-#include "./utility/ScalarField.h"
-#include "./utility/SurfaceMesh.h"
-#include "./utility/Utility.h"
-
+#include <qpoint.h>
+#include <qvector.h>
 #include "GlobalConfig.h"
 
 class Data

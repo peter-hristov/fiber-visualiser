@@ -20,7 +20,6 @@
 
 #include "./TracerVisualiserWindow.h"
 #include "./utility/Geometry.h"
-#include "./utility/Utility.h"
 
 #include "GlobalConfig.h"
 #include "PlotWidget.h"
