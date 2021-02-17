@@ -294,10 +294,10 @@ QPointF
 tv9k::geometry::scaleProjectedPoint(const Data* data, const float resolution, GLfloat pointU, const GLfloat pointV)
 {
     // Rescale to squre
-    float rescaledU =
-      (static_cast<int>(resolution) / (data->uField->max - data->uField->min)) * (pointU - data->uField->min);
-    float rescaledV =
-      (static_cast<int>(resolution) / (data->vField->max - data->vField->min)) * (pointV - data->vField->min);
+    float rescaledU = 10.0;
+      //(static_cast<int>(resolution) / (data->uField->max - data->uField->min)) * (pointU - data->uField->min);
+    float rescaledV = 10.0;
+      //(static_cast<int>(resolution) / (data->vField->max - data->vField->min)) * (pointV - data->vField->min);
 
     return QPointF(rescaledU, rescaledV);
 }
@@ -312,46 +312,5 @@ tv9k::geometry::compute3DDistanceField(Data* data,
     QVector<QVector<float>> distanceField;
     std::vector<std::vector<std::vector<GLfloat>>> signedDistanceField(
       data->xdim, std::vector<std::vector<GLfloat>>(data->ydim, std::vector<GLfloat>(data->zdim)));
-
-    // if ("none" != interpolationType) {
-    //// The distance field will cache some of the point which I'll then
-    //// interpolate.
-    // distanceField = QVector<QVector<float>>(resolution + 2, QVector<float>(resolution + 2, 0));
-    // for (int i = 0; i < resolution + 1; i++) {
-    // for (int j = 0; j < resolution + 1; j++) {
-    // distanceField[i][j] = mult * tv9k::geometry::getDistancePointPolygon(polyPoints, QPointF(i, j));
-    //}
-    //}
-    //}
-
-    for (int i = 0; i < data->xdim; i++) {
-        for (int j = 0; j < data->ydim; j++) {
-            for (int k = 0; k < data->zdim; k++) {
-                // Project point to the plane
-                float x = (*data->valsU())[i][j][k];
-                float y = (*data->valsV())[i][j][k];
-
-                // Rescale to squre
-                float rescaledX =
-                  (static_cast<int>(resolution) / (data->uField->max - data->uField->min)) * (x - data->uField->min);
-                float rescaledY =
-                  (static_cast<int>(resolution) / (data->vField->max - data->vField->min)) * (y - data->vField->min);
-
-                // Get signed distance from the point to the FSCP
-                // signedDistanceField[i][j][k] = mult * tv9k::geometry::getDistancePointPolygon(polyPoints,
-                // QPointF(rescaledX, rescaledY));
-
-                // Inteprolate
-                // if ("nearest" == interpolationType) {
-                // data->valsF[i][j][k] = distanceField[static_cast<int>(rescaledX)][static_cast<int>(rescaledY)];
-                //}
-                // if ("bilinear" == interpolationType) {
-                // data->valsF[i][j][k] = bilinearInterpolation(rescaledX, rescaledY, distanceField);
-                //} else if ("none" == interpolationType) {
-                //}
-            }
-        }
-    }
-
     return signedDistanceField;
 }

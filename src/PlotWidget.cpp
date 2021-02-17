@@ -59,46 +59,16 @@ PlotWidget::resetTriangles(int mode)
 void
 PlotWidget::addPoint(float x, float y, const int c, int mode)
 {
-    assert(mode == 0 || mode == 1);
-
-    // Rescale [min, max] to [0, 100]
-    float xx = (resolution / (data->uField->max - data->uField->min)) * (x - data->uField->min);
-    float yy = (resolution / (data->vField->max - data->vField->min)) * (y - data->vField->min);
-
-    // this->points.push_back(QPointF(10, 10));
-    auto p = std::make_pair(QPointF((int)xx, (int)yy), c);
-
-    this->points[mode].push_back(p);
-    // this->update();
 }
 
 void
 PlotWidget::addTriangle(float x1, float y1, float x2, float y2, float x3, float y3, int id, int mode)
 {
-    assert(mode == 0 || mode == 1);
-
-    float xx1 = (resolution / (data->uField->max - data->uField->min)) * (x1 - data->uField->min);
-    float yy1 = (resolution / (data->vField->max - data->vField->min)) * (y1 - data->vField->min);
-
-    float xx2 = (resolution / (data->uField->max - data->uField->min)) * (x2 - data->uField->min);
-    float yy2 = (resolution / (data->vField->max - data->vField->min)) * (y2 - data->vField->min);
-
-    float xx3 = (resolution / (data->uField->max - data->uField->min)) * (x3 - data->uField->min);
-    float yy3 = (resolution / (data->vField->max - data->vField->min)) * (y3 - data->vField->min);
-
-    QVector<QPointF> triangle = { QPointF(xx1, yy1), QPointF(xx2, yy2), QPointF(xx3, yy3) };
-
-    triangles[mode].push_back(make_pair(triangle, id));
-    // this->update();
 }
 
 void
 PlotWidget::keyPressEvent(QKeyEvent* event)
 {
-    // if (event->key() == Qt::Key_W)
-    //{
-    // cout << "I'M PRESSING!!!!!!";
-    //}
 }
 
 void
@@ -115,7 +85,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
 #endif
     int m = 0;
 
-    auto &mousePoints = this->data->mousePoints[this->data->uField->name][this->data->vField->name];
+    auto &mousePoints = this->data->mousePoints;
 
     // Find out whether we're hovering on a vertex of the polygon and highlight it
     if (event->button() == Qt::NoButton) {
@@ -179,7 +149,7 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
     const QPointF clickPoint = event->localPos();
 #endif
 
-    auto &mousePoints = this->data->mousePoints[this->data->uField->name][this->data->vField->name];
+    auto &mousePoints = this->data->mousePoints;
 
     // 0 is outside the fscp, 1 in on a vertex of the fscp, 2 is inside the fscp
     enum ClickLocation
@@ -272,102 +242,6 @@ PlotWidget::paintEvent(QPaintEvent*)
 void
 PlotWidget::drawInteriorPoints(QPainter& p)
 {
-    // Nothing to do if there's no isosurface
-    if(this->data->isosurfaceMeshes[data->currentTimestep].triangles.size() == 0)
-    {
-        return;
-    }
-
-    // If we have a feature selected only display it
-    if (SurfaceType::isosurface == this->data->selectedSurfaceType[this->data->currentTimestep])
-    {
-        for (int i = 0 ; i < data->xdim ; i++)
-        {
-            for (int j = 0 ; j < data->ydim ; j++)
-            {
-                for (int k = 0 ; k < data->zdim ; k++)
-                {
-                    // Get pont ID
-                    const auto pointFeatureId = this->data->isosurfaceMeshes[data->currentTimestep].visited[i][j][k];
-
-                    // Project point
-                    if (
-                            this->data->isoField->values[this->data->currentTimestep][i][j][k] > this->data->isoField->currentIsovalue && 
-                            pointFeatureId == this->data->selectedID[this->data->currentTimestep])
-                    {
-                        float u = this->data->uField->values[this->data->currentTimestep][i][j][k];
-                        float v = this->data->vField->values[this->data->currentTimestep][i][j][k];
-
-                        float xx = (resolution / (data->uField->max - data->uField->min)) * (u - data->uField->min);
-                        float yy = (resolution / (data->vField->max - data->vField->min)) * (v - data->vField->min);
-
-                        // ID is the came as the color
-                        p.setPen(QPen(Utility::getColorQt(pointFeatureId)));
-
-                        int colorIndex = pointFeatureId;
-
-                        //if (colorIndex == this->data->selectedID[this->data->currentTimestep]) {
-                        //}
-
-                        //const QPointF point(
-                                //rescaleScalar(this->data->uField->min, this->data->uField->max, u),
-                                //rescaleScalar(this->data->vField->min, this->data->vField->max, v));
-
-                        p.setPen(QPen(Utility::getColorQt(colorIndex)));
-                        p.drawPoint(QPointF{xx, yy});
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        for (int i = 0 ; i < data->xdim ; i++)
-        {
-            for (int j = 0 ; j < data->ydim ; j++)
-            {
-                for (int k = 0 ; k < data->zdim ; k++)
-                {
-                    // Get pont ID
-                    const auto pointFeatureId = this->data->isosurfaceMeshes[data->currentTimestep].visited[i][j][k];
-
-                    // Project point
-                    if (
-                            this->data->isoField->values[this->data->currentTimestep][i][j][k] > this->data->isoField->currentIsovalue
-                       )
-                    {
-                        float u = this->data->uField->values[this->data->currentTimestep][i][j][k];
-                        float v = this->data->vField->values[this->data->currentTimestep][i][j][k];
-
-                        // ID is the came as the color
-                        p.setPen(QPen(Utility::getColorQt(pointFeatureId)));
-
-                        int colorIndex = pointFeatureId;
-
-                        //if (colorIndex == this->data->selectedID[this->data->currentTimestep]) {
-                        //}
-
-                        const QPointF point(
-                                rescaleScalar(this->data->uField->min, this->data->uField->max, u),
-                                rescaleScalar(this->data->vField->min, this->data->vField->max, v));
-
-                        p.setPen(QPen(Utility::getColorQt(colorIndex)));
-                        p.drawPoint(point);
-                    }
-                }
-            }
-        }
-
-    }
-
-    //for (int i = 0; i < this->points[0].size(); i++) {
-        //int colorIndex = triangles[0][i].second;
-
-        //if (colorIndex == this->data->selectedID[this->data->currentTimestep]) {
-            //p.setPen(QPen(Utility::getColorQt(colorIndex)));
-            //p.drawPoint(this->points[0][i].first);
-        //}
-    //}
 }
 
 GLfloat
@@ -379,62 +253,6 @@ PlotWidget::rescaleScalar(const GLfloat min, const GLfloat max, const GLfloat va
 void
 PlotWidget::drawIsosurfaceTriangles(QPainter& p)
 {
-    // Draw transparent triangles
-    for (const auto& triangle : this->data->isosurfaceMeshes[this->data->currentTimestep].triangles) {
-        int colorIndex = triangle.triangleId;
-        auto color = Utility::getColorQt(colorIndex);
-
-        // If the haven't selected an isosurface object at all or we're an triangle from an object which is not selected
-        if (SurfaceType::isosurface != this->data->selectedSurfaceType[this->data->currentTimestep] ||
-            colorIndex != this->data->selectedID[this->data->currentTimestep]) {
-
-            QVector<QPointF> projectedTriangle = {
-                QPointF(
-                  rescaleScalar(this->data->uField->min, this->data->uField->max, triangle.projectedVertices[0][0]),
-                  rescaleScalar(this->data->vField->min, this->data->vField->max, triangle.projectedVertices[0][1])),
-                QPointF(
-                  rescaleScalar(this->data->uField->min, this->data->uField->max, triangle.projectedVertices[1][0]),
-                  rescaleScalar(this->data->vField->min, this->data->vField->max, triangle.projectedVertices[1][1])),
-                QPointF(
-                  rescaleScalar(this->data->uField->min, this->data->uField->max, triangle.projectedVertices[2][0]),
-                  rescaleScalar(this->data->vField->min, this->data->vField->max, triangle.projectedVertices[2][1]))
-            };
-
-            QPainterPath path;
-            path.addPolygon(projectedTriangle);
-
-            color.setAlpha(100);
-            p.fillPath(path, QBrush(color));
-        }
-    }
-
-    // Draw solid triangles
-    for (const auto& triangle : this->data->isosurfaceMeshes[this->data->currentTimestep].triangles) {
-        int colorIndex = triangle.triangleId;
-        auto color = Utility::getColorQt(colorIndex);
-
-        if (SurfaceType::isosurface == this->data->selectedSurfaceType[this->data->currentTimestep] &&
-            colorIndex == this->data->selectedID[this->data->currentTimestep]) {
-
-            QVector<QPointF> projectedTriangle = {
-                QPointF(
-                  rescaleScalar(this->data->uField->min, this->data->uField->max, triangle.projectedVertices[0][0]),
-                  rescaleScalar(this->data->vField->min, this->data->vField->max, triangle.projectedVertices[0][1])),
-                QPointF(
-                  rescaleScalar(this->data->uField->min, this->data->uField->max, triangle.projectedVertices[1][0]),
-                  rescaleScalar(this->data->vField->min, this->data->vField->max, triangle.projectedVertices[1][1])),
-                QPointF(
-                  rescaleScalar(this->data->uField->min, this->data->uField->max, triangle.projectedVertices[2][0]),
-                  rescaleScalar(this->data->vField->min, this->data->vField->max, triangle.projectedVertices[2][1]))
-            };
-
-            QPainterPath path;
-            path.addPolygon(projectedTriangle);
-
-            color.setAlpha(200);
-            p.fillPath(path, QBrush(color));
-        }
-    }
 }
 
 void
@@ -465,10 +283,10 @@ PlotWidget::drawAxisLabels(QPainter& p)
     //
     float step = resolution / 15;
 
-    float xMin = data->uField->min;
-    float yMin = data->vField->min;
-    float xMax = data->uField->max;
-    float yMax = data->vField->max;
+    float xMin = data->min;
+    float yMin = data->min;
+    float xMax = data->max;
+    float yMax = data->max;
     float xRange = xMax - xMin;
     float yRange = yMax - yMin;
     float a = 10.0;
@@ -533,32 +351,6 @@ PlotWidget::drawAxisLabels(QPainter& p)
         yCurrent = round(yCurrent / yStepSize) * yStepSize;
     } while (yCurrent < yMaxPlot);
 
-    // pen2 = QPen(QColor(0, 100, 0, 50));
-    // pen2.setWidth(0.5);
-    // p.setPen(pen2);
-
-    // float yCurrent = -1.0;
-    // float yScaling = float(resolution)/(data->vField->max - data->vField->min);
-    // do {
-    // int i = int(yCurrent*(yScaling);
-    // if (i > resolution) {
-    // break;
-    //}
-    // yCurrent += yStepSize;
-    //}
-    // while (xCurrent < data->uField->max);
-
-    // Y labels and gridlines
-    // for (float i = resolution - boxOffset - step; i >= 0; i -= step) {
-    //// label
-    //// We're inverting the y-axis, hence the "1.0 -"
-    // float ratio = 1.0 - (float)(i) / (float(resolution));
-    // float a = ratio * (data->vField->max) + (1 - ratio) * (data->vField->min);
-    // p.drawText(boxOffset + 5, i + 2, QString::number(a).mid(0, 6));
-    //// grid line
-    // p.drawLine(boxOffset, i, boxOffset + 2000, i);
-    //}
-
     //
     // Draw custom lines
     //
@@ -568,8 +360,8 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Vertical (constant X)
     for (const auto number : this->verticalLineNumbers) {
-        if (data->uField->min < number && number < data->uField->max) {
-            float ratio = (number - data->uField->min) / ((data->uField->max - data->uField->min));
+        if (data->min < number && number < data->max) {
+            float ratio = (number - data->min) / ((data->max - data->min));
             float plotPosition = ratio * (resolution);
             p.drawLine(plotPosition, resolution - boxOffset - 20000, plotPosition, resolution - boxOffset);
         }
@@ -577,9 +369,9 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Horizontal (constant Y)
     for (const auto number : this->horizontalLineNumbers) {
-        if (data->vField->min < number && number < data->vField->max) {
+        if (data->min < number && number < data->max) {
             // Invert the y axis
-            float ratio = 1.0 - (number - data->vField->min) / ((data->vField->max - data->vField->min));
+            float ratio = 1.0 - (number - data->min) / ((data->max - data->min));
             float plotPosition = ratio * (resolution);
             p.drawLine(boxOffset, plotPosition, boxOffset + 2000, plotPosition);
         }
@@ -594,7 +386,7 @@ PlotWidget::drawAxisLabels(QPainter& p)
     // x label
     p.drawText(resolution / 2 - 30,
                resolution - boxOffset + 10,
-               QString::fromStdString(data->uField->longName) + " (" + QString::fromStdString(data->uField->units) +
+               QString::fromStdString(data->longName) + " (" + QString::fromStdString(data->units) +
                  ")");
 
     p.translate(boxOffset - 5, resolution / 2 + 20);
@@ -602,13 +394,13 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // y label
     p.drawText(
-      0, 0, QString::fromStdString(data->vField->longName) + " (" + QString::fromStdString(data->vField->units) + ")");
+      0, 0, QString::fromStdString(data->longName) + " (" + QString::fromStdString(data->units) + ")");
 }
 
 void
 PlotWidget::drawAndRecomputeFS(QPainter& p)
 {
-    auto &mousePoints = this->data->mousePoints[this->data->uField->name][this->data->vField->name];
+    auto &mousePoints = this->data->mousePoints;
 
     // Only recompute the polygon if we have a new point
     polyPoints.erase(polyPoints.begin(), polyPoints.end());

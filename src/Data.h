@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/gl.h>
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
 #else
@@ -29,6 +30,8 @@ class Data
 {
   public:
     Data() {}
+    GLfloat min, max;
+    std::string longName, units;
 
     void saveTreeData(const std::string, const std::map<std::string, tv9k::utility::ScalarField>);
     int readTreeData(const std::string filename, std::map<std::string, tv9k::utility::ScalarField>& fields);
@@ -36,7 +39,7 @@ class Data
     // The mouse points for every pair of u,v scatterplot
     //std::map<std::pair<std::string, std::string>, QVector<QPointF>> mousePoints;
 
-    std::map<std::string, std::map<std::string, QVector<QPointF>>> mousePoints;
+    QVector<QPointF> mousePoints;
 
     // Per timestep
     std::vector<tv9k::utility::SurfaceMesh> isosurfaceMeshes, fibersurfaceMeshes, combinedMeshes;
@@ -53,11 +56,6 @@ class Data
 
     void computeCombinedMeshes(const std::vector<std::vector<std::vector<GLfloat>>>, const GLfloat);
 
-    // Pointers for the currenly chosen scalar fields in scalarFields
-    tv9k::utility::ScalarField *isoField, *uField, *vField;
-
-    // The data from all scalar fields
-    std::map<std::string, tv9k::utility::ScalarField> scalarFields;
 
     // Original dimensions of the data before cropping and downsampling - used for
     // reference
@@ -70,27 +68,6 @@ class Data
     QImage scatterPlotImage;
     QImage grayScatterPlotImage;
 
-    // Data values for fiber surface distance field
-    std::vector<std::vector<std::vector<GLfloat>>> valsF;
-
-    // Pointer Shortcuts (Careful how you use them, they grab grab raw pointers)
-    std::vector<std::vector<std::vector<GLfloat>>>* vals() { return &(this->isoField->values[currentTimestep]); }
-
-    std::vector<std::vector<std::vector<GLfloat>>>* valsU() { return &(this->uField->values[currentTimestep]); }
-
-    std::vector<std::vector<std::vector<GLfloat>>>* valsV() { return &(this->vField->values[currentTimestep]); }
-
-    // The merge trees of the Current timestep
-    MergeTree* tree()
-    {
-        // If we're missing join trees, compute them
-        if (this->isoField->joinTrees.size() != this->isoField->values.size()) {
-            this->isoField->joinTrees.clear();
-            this->isoField->computeJoinTrees();
-        }
-
-        return &this->isoField->joinTrees[this->currentTimestep];
-    }
 
     int currentTimestep = { 0 };
 
@@ -101,11 +78,6 @@ class Data
     std::vector<double> tVals;
 
     void readNcData(tv9k::InputInformation);
-
-    void changeTimeStep(int);
-    void changeIsoField(const std::string, const int);
-    void changeUField(std::string);
-    void changeVField(std::string);
 
     // These should be somewhere else
 
