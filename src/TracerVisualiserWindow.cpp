@@ -27,8 +27,8 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 
 TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
                                                Data* _data,
-                                               tv9k::InputInformation input,
-                                               string interpolationType)
+                                               tv9k::InputInformation input
+                                               )
   : QWidget(parent)
 {
     this->data = _data;
@@ -37,7 +37,7 @@ TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
     // Initialise Widgets
     //
     histogramWidget = new HistogramWidget(data, input.histogramResolution);
-    plotWidget = new PlotWidget(this, data, interpolationType, input);
+    plotWidget = new PlotWidget(this, data, "none", input);
     tracerVisualiserWidget = new TracerVisualiserWidget(this, plotWidget, histogramWidget, data);
 
 

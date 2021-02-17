@@ -23,7 +23,7 @@ class TracerVisualiserWindow : public QWidget
 {
     Q_OBJECT
   public:
-    TracerVisualiserWindow(QWidget*, Data*, tv9k::InputInformation, std::string);
+    TracerVisualiserWindow(QWidget*, Data*, tv9k::InputInformation);
     ~TracerVisualiserWindow();
 
     void keyPressEvent(QKeyEvent* event);

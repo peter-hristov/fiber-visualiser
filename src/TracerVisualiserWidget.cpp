@@ -97,7 +97,7 @@ TracerVisualiserWidget::resizeGL(int w, int h)
 }
 
 void
-TracerVisualiserWidget::generateDisplayList(const SurfaceMesh& mesh, const SurfaceType surfaceType)
+TracerVisualiserWidget::generateDisplayList()
 {
     glDeleteLists(displayListIndex, 1);
     displayListIndex = glGenLists(1);

@@ -23,16 +23,12 @@
 
 #include "GlobalConfig.h"
 
-// @TODO This shouldn't be defined here.
-enum SurfaceType {none, isosurface, fibersurface, combinedSurface};
-
 class Data
 {
   public:
     Data() {}
     GLfloat min, max;
     std::string longName, units;
-
 
     QVector<QPointF> mousePoints;
 
@@ -44,20 +40,5 @@ class Data
     // New dimensions after cropping and downsampling - used in the application
     int xdim, ydim, zdim, tdim;
 
-
-
     void readNcData(tv9k::InputInformation);
-
-    // These should be somewhere else
-
-    // @TODO Move these to a separate namespace for input data
-    bool render3DLabels = false;
-    bool drawLines = false;
-    bool continuousScatterPlot = false;
-    bool flatNormals = false;
-    bool precomputeMergeTrees = false;
-    bool cacheJoinTree = false;
-    int projectionType = 2;
-    bool dynamicPolygon = 2;
-
 };

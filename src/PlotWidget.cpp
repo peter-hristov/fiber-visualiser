@@ -222,15 +222,6 @@ PlotWidget::paintEvent(QPaintEvent*)
     p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
     p.setPen(Qt::gray);
 
-    // Draw projetions
-    if (data->projectionType == 1) {
-        drawInteriorPoints(p);
-    }
-
-    else if (data->projectionType == 2) {
-        drawIsosurfaceTriangles(p);
-    }
-
     // Draw Fiber Surface Control Polygon
     drawAndRecomputeFS(p);
 

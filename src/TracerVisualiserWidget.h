@@ -53,7 +53,7 @@ class TracerVisualiserWidget : public QGLWidget
     double fibersurfaceOpacity = 1.0;
     double cartesianSurfaceOpacity = 1.0;
 
-    void generateDisplayList(const tv9k::utility::SurfaceMesh&, const SurfaceType);
+    void generateDisplayList();
 
   protected:
     void initializeGL();
