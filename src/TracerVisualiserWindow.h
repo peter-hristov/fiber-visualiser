@@ -14,7 +14,6 @@
 
 #include "./Data.h"
 #include "./GlobalConfig.h"
-#include "./HistogramWidget.hpp"
 #include "./PlotWidget.h"
 #include "./ScatterPlot.h"
 #include "./TracerVisualiserWidget.h"
@@ -26,15 +25,11 @@ class TracerVisualiserWindow : public QWidget
     TracerVisualiserWindow(QWidget*, Data*, tv9k::InputInformation);
     ~TracerVisualiserWindow();
 
-    void keyPressEvent(QKeyEvent* event);
-
-    void setTimestep(int timestep);
 
     Data* data;
 
     PlotWidget* plotWidget;
     TracerVisualiserWidget* tracerVisualiserWidget;
-    HistogramWidget* histogramWidget;
 
     QGridLayout* windowLayout;
 };

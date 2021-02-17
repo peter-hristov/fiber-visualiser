@@ -16,14 +16,8 @@
 #include "./TracerVisualiserWindow.h"
 #include "./utility/Utility.h"
 #include "src/Data.h"
-#include "src/HistogramWidget.hpp"
 
 using namespace std;
-
-void
-TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
-{
-}
 
 TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
                                                Data* _data,
@@ -33,23 +27,14 @@ TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
 {
     this->data = _data;
 
-    //
     // Initialise Widgets
-    //
-    histogramWidget = new HistogramWidget(data, input.histogramResolution);
     plotWidget = new PlotWidget(this, data, "none", input);
-    tracerVisualiserWidget = new TracerVisualiserWidget(this, plotWidget, histogramWidget, data);
+    tracerVisualiserWidget = new TracerVisualiserWidget(this, plotWidget, data);
 
-
+    // Set up layout
     windowLayout = new QGridLayout(this);
     windowLayout->addWidget(tracerVisualiserWidget, 1, 0);
     windowLayout->addWidget(plotWidget, 1, 1);
-
-}
-
-void
-TracerVisualiserWindow::setTimestep(int timestep)
-{
 }
 
 TracerVisualiserWindow::~TracerVisualiserWindow()

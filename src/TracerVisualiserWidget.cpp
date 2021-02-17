@@ -9,31 +9,11 @@
 #include <GL/glut.h>
 #endif
 
-#include <QGLWidget>
-#include <QKeyEvent>
-#include <QtMath>
-#include <algorithm>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <map>
-#include <math.h>
-#include <qnamespace.h>
-#include <queue>
-#include <stdlib.h> /* srand, rand */
-#include <string>
-#include <time.h> /* time */
-#include <typeinfo>
 #include <vector>
 
+#include "./utility/Geometry.h"
 #include "./TracerVisualiserWidget.h"
 #include "./TracerVisualiserWindow.h"
-#include "./utility/Geometry.h"
-#include "./utility/TetrahedronDepth.h"
-#include "./utility/Utility.h"
-#include "src/utility/MarchingCubes.h"
-#include "src/utility/MeshTriangle.h"
-#include "src/utility/SurfaceMesh.h"
 
 using namespace std;
 using namespace tv9k::utility;
@@ -49,14 +29,12 @@ TracerVisualiserWidget::setMaterial(GLfloat red, GLfloat green, GLfloat blue, GL
 
 TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
                                                QWidget* _sibling,
-                                               QWidget* _histogramSibling,
                                                Data* _data)
   : QGLWidget(parent)
 {
     // Set points to other singletons
     this->data = _data;
     this->sibling = _sibling;
-    this->histogramSibling = dynamic_cast<HistogramWidget*>(_histogramSibling);
 
     // Default values for paraters
     this->scale = data->zdim * 8;
@@ -66,9 +44,6 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
     Ball_Place(&theBall, qOne, 1);
 }
 
-void
-TracerVisualiserWidget::computeFiberSurface()
-{}
 
 void
 TracerVisualiserWidget::initializeGL()

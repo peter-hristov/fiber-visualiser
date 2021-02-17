@@ -11,48 +11,20 @@
 #endif
 
 #include <QGLWidget>
-#include <map>
 
-#include "./ArcBall/Ball.h"
 #include "./Data.h"
-#include "./HistogramWidget.hpp"
 #include "./PlotWidget.h"
-#include "./utility/DisjointSet.hpp"
-#include "./utility/MeshTriangle.h"
-#include "./utility/SurfaceMesh.h"
+#include "./ArcBall/Ball.h"
 
 class TracerVisualiserWidget : public QGLWidget
 {
   public:
-    TracerVisualiserWidget(QWidget*, QWidget*, QWidget*, Data*);
+    TracerVisualiserWidget(QWidget*, QWidget*, Data*);
     GLfloat scale = 0;
-    // GLfloat isovalue = -1;
 
     GLfloat isovalueMult = -1.0;
 
     int displayListIndex = 0;
-    int displayListIndexF = 0;
-    int displayListIndexC = 0;
-    // bool drawLines = false;
-
-    // int maxVisited = 0;
-    int maxVisitedF = 0;
-
-    bool shouldIntersect = true;
-    bool shouldHideIsosurface = false;
-    bool shouldHideFiberSurface = false;
-    bool shouldHideCombinedSurface = false;
-    bool shouldFocusSelectedObject = false;
-
-    // std::vector<std::vector<std::vector<int>>> volumes;
-    // std::vector<std::vector<std::vector<int>>> volumesF;
-
-    void computeFiberSurface();
-
-    double isosurfaceOpacity = 1.0;
-    double fibersurfaceOpacity = 1.0;
-    double cartesianSurfaceOpacity = 1.0;
-
     void generateDisplayList();
 
   protected:
@@ -71,7 +43,6 @@ class TracerVisualiserWidget : public QGLWidget
   private:
     Data* data;
     QWidget* sibling;
-    HistogramWidget* histogramSibling;
 
     // Arcball stuff
     QPointF position;
