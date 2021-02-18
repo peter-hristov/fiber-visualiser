@@ -31,6 +31,15 @@ class Data
     std::vector<std::vector<GLfloat>> vertexDomainCoordinates;
     std::vector<std::vector<GLfloat>> vertexRangeCoordinates;
 
+    struct FaceFiber{
+        float alpha;
+        float betta;
+        std::vector<size_t> vertices;
+    };
+
+
+    std::vector<FaceFiber> faceFibers;
+
 
     // Original dimensions of the data before cropping and downsampling - used for
     // reference

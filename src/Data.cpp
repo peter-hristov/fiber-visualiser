@@ -12,6 +12,13 @@
 #include <boost/geometry/geometries/multi_point.hpp>
 #include <boost/geometry/geometries/multi_polygon.hpp>
 
+#include <random>
+#include <iomanip>
+
+using std::cout;
+using std::endl;
+using std::setprecision;
+
 using namespace std;
 
 
@@ -32,6 +39,16 @@ Data::readNcData(tv9k::InputInformation input)
     this->min = 0;
     this->max = 10;
     this->longName = "Variable";
+
+    for (int i = 0 ; i < 6 ; i++)
+    {
+        std::random_device rd;
+        std::default_random_engine eng(rd());
+        std::uniform_real_distribution<float> distr(0, 10);
+        
+        //this->vertexDomainCoordinates.push_back({distr(eng), distr(eng), distr(eng)});
+        //this->vertexRangeCoordinates.push_back({distr(eng), distr(eng)});
+    }
 
     // 1
     this->vertexDomainCoordinates.push_back({5,0,5});
