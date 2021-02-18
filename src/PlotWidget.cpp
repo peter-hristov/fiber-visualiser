@@ -224,6 +224,7 @@ PlotWidget::paintEvent(QPaintEvent*)
     // Draw Fiber Surface Control Polygon
     drawAndRecomputeFS(p);
 
+
     p.restore();
 
     drawAxisLabels(p);
@@ -432,6 +433,84 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         QPointF a = polyPoints[i];
         p.drawEllipse(QPointF(a.x(), a.y()), sphereRadius, sphereRadius);
     }
+
+    p.setPen(QPen(Qt::black));
+
+    // Draw all triangles from the tets
+    //for(const auto &tet : this->data->tetrahedra)
+    for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
+    {
+        const auto tet = this->data->tetrahedra[tetId];
+
+        for(int i = 0 ; i < 4 ; i++)
+        {
+            for(int j = i + 1 ; j < 4 ; j++)
+            {
+                float x1 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[i]][0] - data->min);
+                float y1 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[i]][1] - data->min);
+
+                float x2 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[j]][0] - data->min);
+                float y2 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[j]][1] - data->min);
+
+                p.drawLine(x1, y1, x2, y2);
+            }
+        }
+
+        if (mousePoints.size() == 0)
+            continue;
+
+        // for every triangle
+        for(int i = 0 ; i < 4 ; i++)
+        {
+            for(int j = i + 1 ; j < 4 ; j++)
+            {
+                for(int k = j + 1 ; k < 4 ; k++)
+                {
+                    float xa = this->data->vertexRangeCoordinates[tet[i]][0];
+                    float ya = this->data->vertexRangeCoordinates[tet[i]][1];
+
+                    float xb = this->data->vertexRangeCoordinates[tet[j]][0];
+                    float yb = this->data->vertexRangeCoordinates[tet[j]][1];
+
+                    float xc = this->data->vertexRangeCoordinates[tet[k]][0];
+                    float yc = this->data->vertexRangeCoordinates[tet[k]][1];
+
+                    float x1 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[i]][0] - data->min);
+
+                    float xw = (polyPoints[0].x() / resolution) * (this->data->max - this->data->min);
+                    float yw = (polyPoints[0].y() / resolution) * (this->data->max - this->data->min);
+
+
+                    float a = xb - xa;
+                    float b = xc - xa;
+                    float c = yb - ya;
+                    float d = yc - ya;
+
+                    float v = xw - xa;
+                    float z = yw - ya;
+
+                    float det = a * d - b * c;
+
+                    float alpha = (d * v - b*z) / det;
+                    float betta = (-1 * c * v + a * z) / det;
+                    float gamma = 1 - alpha - betta;
+
+                    if (alpha >= 0 && betta >= 0 & gamma >= 0 && alpha <= 1 && betta <= 1 && gamma <= 1)
+                    {
+                        printf("In triangle %d, %d, %d in tet %d.\n", tet[i], tet[j], tet[k], tetId);
+                        printf("In triangle (%f, %f) | (%f, %f) | (%f, %f) comparing with point (%f, %f) and alpha = %f, betta = %f, gamma = %f.\n", xa, ya, xb, yb, xc, yc, xw, yw, alpha, betta, gamma);
+
+                    }
+
+                }
+            }
+        }
+    }
+
+
+
+
+
 }
 
 bool

@@ -223,6 +223,52 @@ TracerVisualiserWidget::drawScene()
     glPopMatrix();
 
 
+    glBegin(GL_LINES);
+    {
+        for(const auto &tet : this->data->tetrahedra)
+        {
+            for(int i = 0 ; i < 4 ; i++)
+            {
+                for(int j = i + 1 ; j < 4 ; j++)
+                {
+                    cout << i << " - " << j << endl;
+                    GLfloat pointA[3], pointB[3];
+
+                    pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
+                    pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
+                    pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
+
+                    pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
+                    pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
+                    pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
+
+                    glVertex3fv(pointA);
+                    glVertex3fv(pointB);
+                }
+            }
+            cout << endl;
+        }
+    }
+    glEnd();
+
+    // Draw Vertices
+    {
+        for (const auto &vertex : this->data->vertexDomainCoordinates) 
+        {
+            glPushMatrix();
+            {
+                glTranslatef(vertex[0], vertex[1], vertex[2]);
+                GLUquadric* sphere = gluNewQuadric();
+                gluSphere(sphere, 0.3, 10, 10);
+                delete sphere;
+            }
+            glPopMatrix();
+        }
+
+    }
+
+
+
     glFlush();
 }
 

@@ -27,6 +27,10 @@ class Data
 
     QVector<QPointF> mousePoints;
 
+    std::vector<std::vector<size_t>> tetrahedra;
+    std::vector<std::vector<GLfloat>> vertexDomainCoordinates;
+    std::vector<std::vector<GLfloat>> vertexRangeCoordinates;
+
 
     // Original dimensions of the data before cropping and downsampling - used for
     // reference
