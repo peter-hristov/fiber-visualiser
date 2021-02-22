@@ -77,6 +77,76 @@ TracerVisualiserWidget::generateDisplayList()
     displayListIndex = glGenLists(1);
     glNewList(displayListIndex, GL_COMPILE);
 
+    //setMaterial(1, 0, 0, 1.0, 0.0);
+    glColor3f(1, 0, 0);
+
+    // Draw Fiber
+    glBegin(GL_LINES);
+    {
+        for(const auto &faceFiber : this->data->faceFibers)
+        {
+            GLfloat point[3];
+
+            point[0] = 
+                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][0] +
+                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][0] +
+                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][0];
+
+            point[1] = 
+                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][1] +
+                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][1] +
+                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][1];
+
+            point[2] = 
+                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][2] +
+                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][2] +
+                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][2];
+
+            //glPushMatrix();
+            //{
+                //glTranslatef(point[0], point[1], point[2]);
+                //GLUquadric* sphere = gluNewQuadric();
+                //gluSphere(sphere, 0.2, 10, 10);
+                //delete sphere;
+            //}
+            //glPopMatrix();
+
+            glVertex3fv(point);
+        }
+    }
+    glEnd();
+
+    // Draw fiber endpoints (in every tet)
+    for(const auto &faceFiber : this->data->faceFibers)
+    {
+        GLfloat point[3];
+
+        point[0] = 
+            faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][0] +
+            faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][0] +
+            (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][0];
+
+        point[1] = 
+            faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][1] +
+            faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][1] +
+            (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][1];
+
+        point[2] = 
+            faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][2] +
+            faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][2] +
+            (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][2];
+
+        glPushMatrix();
+        {
+            glTranslatef(point[0], point[1], point[2]);
+            GLUquadric* sphere = gluNewQuadric();
+            gluSphere(sphere, 0.02, 10, 10);
+            delete sphere;
+        }
+        glPopMatrix();
+
+    }
+
     glBegin(GL_TRIANGLES);
     glEnd();
     glEndList();
@@ -208,9 +278,9 @@ TracerVisualiserWidget::drawScene()
     // GLUquadric* sphere = gluNewQuadric();
     // gluSphere(sphere, 2, 3, 3);
 
-    glTranslatef((-1.0 * this->data->xdim) / 2.0, 0, 0);
-    glTranslatef(0, 0, (1.0 * this->data->ydim) / 2.0);
-    glTranslatef(0, (-1.0 * this->data->zdim) / 2.0, 0);
+    glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
+    glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
+    glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
 
     glRotatef(-90., 1., 0., 0.);
 
@@ -227,8 +297,9 @@ TracerVisualiserWidget::drawScene()
     }
     glPopMatrix();
 
+    glColor4f(1, 1, 1, 0.02);
 
-    // Tets
+    // Tet Edges
     glBegin(GL_LINES);
     {
         for(const auto &tet : this->data->tetrahedra)
@@ -237,7 +308,7 @@ TracerVisualiserWidget::drawScene()
             {
                 for(int j = i + 1 ; j < 4 ; j++)
                 {
-                    cout << i << " - " << j << endl;
+                    //cout << i << " - " << j << endl;
                     GLfloat pointA[3], pointB[3];
 
                     pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
@@ -252,10 +323,11 @@ TracerVisualiserWidget::drawScene()
                     glVertex3fv(pointB);
                 }
             }
-            cout << endl;
+            //cout << endl;
         }
     }
     glEnd();
+
 
     // Draw Vertices
     {
@@ -265,7 +337,7 @@ TracerVisualiserWidget::drawScene()
             {
                 glTranslatef(vertex[0], vertex[1], vertex[2]);
                 GLUquadric* sphere = gluNewQuadric();
-                gluSphere(sphere, 0.3, 10, 10);
+                gluSphere(sphere, 0.03, 10, 10);
                 delete sphere;
             }
             glPopMatrix();
@@ -273,75 +345,49 @@ TracerVisualiserWidget::drawScene()
 
     }
 
-    //setMaterial(1, 0, 0, 1.0, 0.0);
-    glColor3f(1, 0, 0);
-
-    // Draw Fiber
-    glBegin(GL_LINES);
+    glPushMatrix();
     {
-        for(const auto &faceFiber : this->data->faceFibers)
+        glCallList(displayListIndex);
+    }
+    glPopMatrix();
+
+    glColor4f(1, 1, 1, 0.01);
+
+    // Tet Faces
+    glBegin(GL_TRIANGLES);
+    {
+        for(const auto &tet : this->data->tetrahedra)
         {
-            GLfloat point[3];
+            for(int i = 0 ; i < 4 ; i++)
+            {
+                for(int j = i + 1 ; j < 4 ; j++)
+                {
+                    for(int k = j + 1 ; k < 4 ; k++)
+                    {
+                        GLfloat pointA[3], pointB[3], pointC[3];
 
-            point[0] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][0] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][0] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][0];
+                        pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
+                        pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
+                        pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
 
-            point[1] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][1] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][1] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][1];
+                        pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
+                        pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
+                        pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
 
-            point[2] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][2] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][2] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][2];
+                        pointC[0] = this->data->vertexDomainCoordinates[tet[k]][0];
+                        pointC[1] = this->data->vertexDomainCoordinates[tet[k]][1];
+                        pointC[2] = this->data->vertexDomainCoordinates[tet[k]][2];
 
-            //glPushMatrix();
-            //{
-                //glTranslatef(point[0], point[1], point[2]);
-                //GLUquadric* sphere = gluNewQuadric();
-                //gluSphere(sphere, 0.2, 10, 10);
-                //delete sphere;
-            //}
-            //glPopMatrix();
-
-            glVertex3fv(point);
+                        glVertex3fv(pointA);
+                        glVertex3fv(pointB);
+                        glVertex3fv(pointC);
+                    }
+                }
+            }
+            //cout << endl;
         }
     }
     glEnd();
-
-        for(const auto &faceFiber : this->data->faceFibers)
-        {
-            GLfloat point[3];
-
-            point[0] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][0] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][0] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][0];
-
-            point[1] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][1] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][1] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][1];
-
-            point[2] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][2] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][2] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][2];
-
-            glPushMatrix();
-            {
-                glTranslatef(point[0], point[1], point[2]);
-                GLUquadric* sphere = gluNewQuadric();
-                gluSphere(sphere, 0.1, 10, 10);
-                delete sphere;
-            }
-            glPopMatrix();
-
-        }
-
 
     glFlush();
 }
@@ -355,7 +401,7 @@ TracerVisualiserWidget::paintGL()
 void
 TracerVisualiserWidget::wheelEvent(QWheelEvent* event)
 {
-    this->scale -= event->angleDelta().y() / 10;
+    this->scale -= event->angleDelta().y() / 100;
 
     if (scale <= 0) {
         scale = 0;
@@ -443,5 +489,6 @@ void
 TracerVisualiserWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
     this->data->faceFibers.clear();
+    this->generateDisplayList();
     this->update();
 }

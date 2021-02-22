@@ -22,7 +22,10 @@ class Data
 {
   public:
     Data() {}
-    GLfloat min, max;
+
+    GLfloat minF, maxF;
+    GLfloat minG, maxG;
+
     std::string longName, units;
 
     QVector<QPointF> mousePoints;
@@ -49,4 +52,7 @@ class Data
     int xdim, ydim, zdim, tdim;
 
     void readNcData(tv9k::InputInformation);
+
+    size_t trippleToIndex(const size_t i, const size_t j, const size_t k);
+    void addTetsForCube(const size_t i, const size_t j, const size_t k);
 };

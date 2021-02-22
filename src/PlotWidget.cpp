@@ -88,6 +88,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
 
     // Find out whether we're hovering on a vertex of the polygon and highlight it
     if (event->button() == Qt::NoButton) {
+
         // Have you clicked on a mouse point? Drag it.
         if (mousePoints.size() > 0) {
             for (int i = 0; i < mousePoints.size(); i++) {
@@ -275,10 +276,10 @@ PlotWidget::drawAxisLabels(QPainter& p)
     //
     float step = resolution / 15;
 
-    float xMin = data->min;
-    float yMin = data->min;
-    float xMax = data->max;
-    float yMax = data->max;
+    float xMin = data->minF - 40;
+    float yMin = data->minG + 40;
+    float xMax = data->maxF - 40;
+    float yMax = data->maxG + 40;
     float xRange = xMax - xMin;
     float yRange = yMax - yMin;
     float a = 10.0;
@@ -352,8 +353,8 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Vertical (constant X)
     for (const auto number : this->verticalLineNumbers) {
-        if (data->min < number && number < data->max) {
-            float ratio = (number - data->min) / ((data->max - data->min));
+        if (data->minF < number && number < data->maxF) {
+            float ratio = (number - data->minF) / ((data->maxF - data->minF));
             float plotPosition = ratio * (resolution);
             p.drawLine(plotPosition, resolution - boxOffset - 20000, plotPosition, resolution - boxOffset);
         }
@@ -361,9 +362,9 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Horizontal (constant Y)
     for (const auto number : this->horizontalLineNumbers) {
-        if (data->min < number && number < data->max) {
+        if (data->minG < number && number < data->maxG) {
             // Invert the y axis
-            float ratio = 1.0 - (number - data->min) / ((data->max - data->min));
+            float ratio = 1.0 - (number - data->minG) / ((data->maxG - data->minG));
             float plotPosition = ratio * (resolution);
             p.drawLine(boxOffset, plotPosition, boxOffset + 2000, plotPosition);
         }
@@ -439,14 +440,14 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
     for(const auto &vertex : this->data->vertexRangeCoordinates)
     {
-        float x1 = (resolution / (data->max - data->min)) * (vertex[0] - data->min);
-        float y1 = (resolution / (data->max - data->min)) * (vertex[1] - data->min);
+        float x1 = (resolution / (data->maxF - data->minF)) * (vertex[0] - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (vertex[1] - data->minG);
 
         p.drawEllipse(QPointF(x1, y1), 3, 3);
 
     }
 
-    //this->data->faceFibers.clear();
+    this->data->faceFibers.clear();
 
     // Draw all triangles from the tets
     //for(const auto &tet : this->data->tetrahedra)
@@ -458,11 +459,11 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         {
             for(int j = i + 1 ; j < 4 ; j++)
             {
-                float x1 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[i]][0] - data->min);
-                float y1 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[i]][1] - data->min);
+                float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexRangeCoordinates[tet[i]][0] - data->minF);
+                float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexRangeCoordinates[tet[i]][1] - data->minG);
 
-                float x2 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[j]][0] - data->min);
-                float y2 = (resolution / (data->max - data->min)) * (this->data->vertexRangeCoordinates[tet[j]][1] - data->min);
+                float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexRangeCoordinates[tet[j]][0] - data->minF);
+                float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexRangeCoordinates[tet[j]][1] - data->minG);
 
                 p.drawLine(x1, y1, x2, y2);
             }
@@ -470,6 +471,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         if (mousePoints.size() == 0)
             continue;
+
 
         // for every triangle
         for(int i = 0 ; i < 4 ; i++)
@@ -487,8 +489,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
                     float x3 = this->data->vertexRangeCoordinates[tet[k]][0];
                     float y3 = this->data->vertexRangeCoordinates[tet[k]][1];
 
-                    float x = (polyPoints[0].x() / resolution) * (this->data->max - this->data->min);
-                    float y = (polyPoints[0].y() / resolution) * (this->data->max - this->data->min);
+                    float x = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
+                    float y = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
 
                     float det = (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3);
 
@@ -498,8 +500,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
                     if (alpha >= 0 && betta >= 0 & gamma >= 0 && alpha <= 1 && betta <= 1 && gamma <= 1)
                     {
-                        printf("In triangle %d, %d, %d in tet %d.\n", tet[i], tet[j], tet[k], tetId);
-                        printf("In triangle (%f, %f) | (%f, %f) | (%f, %f) comparing with point (%f, %f) and alpha = %f, betta = %f, gamma = %f.\n", x1, y1, x2, y2, x3, y3, x, y, alpha, betta, gamma);
+                        //printf("In triangle %d, %d, %d in tet %d.\n", tet[i], tet[j], tet[k], tetId);
+                        //printf("In triangle (%f, %f) | (%f, %f) | (%f, %f) comparing with point (%f, %f) and alpha = %f, betta = %f, gamma = %f.\n", x1, y1, x2, y2, x3, y3, x, y, alpha, betta, gamma);
                         Data::FaceFiber fb;
                         fb.alpha = alpha;
                         fb.betta = betta;
@@ -508,7 +510,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
                         float pointBackX = alpha * x1 + betta * x2 + gamma * x3;
                         float pointBackY = alpha * y1 + betta * y2 + gamma * y3;
 
-                        printf ("Projecting back we get (%f, %f).\n", pointBackX, pointBackY);
+                        //printf ("Projecting back we get (%f, %f).\n", pointBackX, pointBackY);
 
                         this->data->faceFibers.push_back(fb);
 
@@ -527,6 +529,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
     // Generate the fs meshes for all timesteps and the display list for the current timestep
     const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
+    visualiserWidget->generateDisplayList();
     visualiserWidget->update();
 
 }
