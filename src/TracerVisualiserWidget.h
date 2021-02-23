@@ -26,6 +26,9 @@ class TracerVisualiserWidget : public QGLWidget
     int displayListIndex = 0;
     void generateDisplayList();
 
+    int displayListIndexTriangles = 0;
+    void generateDisplayListTriangles(const float);
+
   protected:
     void initializeGL();
     void resizeGL(int w, int h);

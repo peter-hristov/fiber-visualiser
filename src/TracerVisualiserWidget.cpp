@@ -71,6 +71,209 @@ TracerVisualiserWidget::resizeGL(int w, int h)
 }
 
 void
+TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue)
+{
+    this->data->meshTriangles.clear();
+
+    // For every tet do marching tets
+    for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
+    {
+        const auto tet = this->data->tetrahedra[tetId];
+
+        vector<size_t> smallerVertices;
+        vector<size_t> biggerOrEqualVertices;
+
+        // For every vertex in the tet
+        for(int i = 0 ; i < 4 ; i++)
+        {
+            const float vertexValue = this->data->vertexRangeCoordinates[tet[i]][0];
+
+            if (vertexValue < isovalue)
+            {
+                smallerVertices.push_back(tet[i]);
+            }
+            else
+            {
+                biggerOrEqualVertices.push_back(tet[i]);
+            }
+        }
+
+        if (smallerVertices.size() == 0)
+        {
+        }
+        else if (smallerVertices.size() == 1)
+        {
+
+            Data::MeshTriangle triangle;
+            // s[0] -> b[0]
+            float t0 = 
+                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+
+            float t1 = 
+                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[1]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+
+            float t2 = 
+                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[2]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+
+            triangle.vertixA = {
+                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
+                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
+                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
+            };
+
+            triangle.vertixB = {
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
+            };
+
+            triangle.vertixC = {
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[2]][0],
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[2]][1],
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[2]][2],
+            };
+
+            this->data->meshTriangles.push_back(triangle);
+        }
+        else if (smallerVertices.size() == 2)
+        {
+            float t0 = 
+                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+
+            float t1 = 
+                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[1]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+
+            float t2 = 
+                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[1]][0]) / 
+                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0] - this->data->vertexRangeCoordinates[smallerVertices[1]][0]);
+
+            float t3 = 
+                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[1]][0]) / 
+                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[1]][0] - this->data->vertexRangeCoordinates[smallerVertices[1]][0]);
+
+
+
+            Data::MeshTriangle triangle1;
+
+            triangle1.vertixA = {
+                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
+                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
+                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
+            };
+
+            triangle1.vertixB = {
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
+            };
+
+            triangle1.vertixC = {
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][0] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][1] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][2] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
+            };
+
+            Data::MeshTriangle triangle2;
+
+            triangle2.vertixA = {
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][0] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][1] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
+                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][2] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
+            };
+
+            triangle2.vertixB = {
+                (1 - t3) * this->data->vertexDomainCoordinates[smallerVertices[1]][0] + t3 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
+                (1 - t3) * this->data->vertexDomainCoordinates[smallerVertices[1]][1] + t3 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
+                (1 - t3) * this->data->vertexDomainCoordinates[smallerVertices[1]][2] + t3 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
+            };
+
+            triangle2.vertixC = {
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
+                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
+            };
+
+            this->data->meshTriangles.push_back(triangle1);
+            this->data->meshTriangles.push_back(triangle2);
+        }
+        else if (smallerVertices.size() == 3)
+        {
+            Data::MeshTriangle triangle;
+            // Interpolate along all edges
+            // s[0] -> b[0]
+            float t0 = 
+                (isovalue - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[smallerVertices[0]][0] - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]);
+
+            float t1 = 
+                (isovalue - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[smallerVertices[1]][0] - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]);
+
+            float t2 = 
+                (isovalue - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]) / 
+                (this->data->vertexRangeCoordinates[smallerVertices[2]][0] - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]);
+
+            triangle.vertixA = {
+                (1 - t0) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[smallerVertices[0]][0],
+                (1 - t0) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1] + t0 * this->data->vertexDomainCoordinates[smallerVertices[0]][1],
+                (1 - t0) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2] + t0 * this->data->vertexDomainCoordinates[smallerVertices[0]][2],
+            };
+
+            triangle.vertixB = {
+                (1 - t1) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[smallerVertices[1]][0],
+                (1 - t1) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[smallerVertices[1]][1],
+                (1 - t1) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[smallerVertices[1]][2],
+            };
+
+            triangle.vertixC = {
+                (1 - t2) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0] + t2 * this->data->vertexDomainCoordinates[smallerVertices[2]][0],
+                (1 - t2) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1] + t2 * this->data->vertexDomainCoordinates[smallerVertices[2]][1],
+                (1 - t2) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2] + t2 * this->data->vertexDomainCoordinates[smallerVertices[2]][2],
+            };
+
+            this->data->meshTriangles.push_back(triangle);
+        }
+    }
+
+    glDeleteLists(displayListIndexTriangles, 1);
+    displayListIndexTriangles = glGenLists(1);
+    glNewList(displayListIndexTriangles, GL_COMPILE);
+
+    //setMaterial(1, 0, 0, 1.0, 0.0);
+    glColor4f(0, 1, 0, 0.3);
+
+    // Draw Fiber
+    glBegin(GL_TRIANGLES);
+    {
+        for (const auto &point : this->data->meshTriangles)
+        {
+            GLfloat pointA[3] = { point.vertixA[0], point.vertixA[1], point.vertixA[2] };
+            GLfloat pointB[3] = { point.vertixB[0], point.vertixB[1], point.vertixB[2] };
+            GLfloat pointC[3] = { point.vertixC[0], point.vertixC[1], point.vertixC[2] };
+
+            //GLfloat pointA[3] = { 0, 0, 0 };
+            //GLfloat pointB[3] = { 0, 10, 0 };
+            //GLfloat pointC[3] = { 0, 0, 10 };
+
+            //printf("Triangle : (%f, %f, %f) | (%f, %f, %f) | (%f, %f, %f).\n", pointA[0], pointA[1], pointA[2], pointB[0], pointB[1], pointB[2], pointC[0], pointC[1], pointC[2]);
+
+            glVertex3fv(pointA);
+            glVertex3fv(pointB);
+            glVertex3fv(pointC);
+        }
+    }
+    glEnd();
+
+    glEndList();
+}
+
+
+void
 TracerVisualiserWidget::generateDisplayList()
 {
     glDeleteLists(displayListIndex, 1);
@@ -147,8 +350,6 @@ TracerVisualiserWidget::generateDisplayList()
 
     }
 
-    glBegin(GL_TRIANGLES);
-    glEnd();
     glEndList();
 }
 
@@ -291,59 +492,60 @@ TracerVisualiserWidget::drawScene()
     // Bounding Cube
     glPushMatrix();
     {
-        //glScalef(this->data->xdim - 1, this->data->ydim - 1, this->data->zdim - 1);
-        //setMaterial(255, 255, 255, 100, 30.0);
-        //this->drawWiredCube(tv9k::geometry::cubeVertices);
+        glScalef(this->data->xdim - 1, this->data->ydim - 1, this->data->zdim - 1);
+        setMaterial(255, 255, 255, 100, 30.0);
+        this->drawWiredCube(tv9k::geometry::cubeVertices);
     }
     glPopMatrix();
 
-    glColor4f(1, 1, 1, 0.02);
+    //glColor4f(1, 1, 1, 0.2);
 
-    // Tet Edges
-    glBegin(GL_LINES);
-    {
-        for(const auto &tet : this->data->tetrahedra)
-        {
-            for(int i = 0 ; i < 4 ; i++)
-            {
-                for(int j = i + 1 ; j < 4 ; j++)
-                {
-                    //cout << i << " - " << j << endl;
-                    GLfloat pointA[3], pointB[3];
+    //// Tet Edges
+    //glBegin(GL_LINES);
+    //{
+        //for(const auto &tet : this->data->tetrahedra)
+        //{
+            //for(int i = 0 ; i < 4 ; i++)
+            //{
+                //for(int j = i + 1 ; j < 4 ; j++)
+                //{
+                    ////cout << i << " - " << j << endl;
+                    //GLfloat pointA[3], pointB[3];
 
-                    pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
-                    pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
-                    pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
+                    //pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
+                    //pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
+                    //pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
 
-                    pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
-                    pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
-                    pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
+                    //pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
+                    //pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
+                    //pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
 
-                    glVertex3fv(pointA);
-                    glVertex3fv(pointB);
-                }
-            }
-            //cout << endl;
-        }
-    }
-    glEnd();
+                    //glVertex3fv(pointA);
+                    //glVertex3fv(pointB);
+                //}
+            //}
+            ////cout << endl;
+        //}
+    //}
+    //glEnd();
 
 
-    // Draw Vertices
-    {
-        for (const auto &vertex : this->data->vertexDomainCoordinates) 
-        {
-            glPushMatrix();
-            {
-                glTranslatef(vertex[0], vertex[1], vertex[2]);
-                GLUquadric* sphere = gluNewQuadric();
-                gluSphere(sphere, 0.03, 10, 10);
-                delete sphere;
-            }
-            glPopMatrix();
-        }
+    //glColor4f(1, 1, 1, 0.2);
+    //// Draw Vertices
+    //{
+        //for (const auto &vertex : this->data->vertexDomainCoordinates) 
+        //{
+            //glPushMatrix();
+            //{
+                //glTranslatef(vertex[0], vertex[1], vertex[2]);
+                //GLUquadric* sphere = gluNewQuadric();
+                //gluSphere(sphere, 0.03, 10, 10);
+                //delete sphere;
+            //}
+            //glPopMatrix();
+        //}
 
-    }
+    //}
 
     glPushMatrix();
     {
@@ -351,43 +553,49 @@ TracerVisualiserWidget::drawScene()
     }
     glPopMatrix();
 
-    glColor4f(1, 1, 1, 0.01);
-
-    // Tet Faces
-    glBegin(GL_TRIANGLES);
+    glPushMatrix();
     {
-        for(const auto &tet : this->data->tetrahedra)
-        {
-            for(int i = 0 ; i < 4 ; i++)
-            {
-                for(int j = i + 1 ; j < 4 ; j++)
-                {
-                    for(int k = j + 1 ; k < 4 ; k++)
-                    {
-                        GLfloat pointA[3], pointB[3], pointC[3];
-
-                        pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
-                        pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
-                        pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
-
-                        pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
-                        pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
-                        pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
-
-                        pointC[0] = this->data->vertexDomainCoordinates[tet[k]][0];
-                        pointC[1] = this->data->vertexDomainCoordinates[tet[k]][1];
-                        pointC[2] = this->data->vertexDomainCoordinates[tet[k]][2];
-
-                        glVertex3fv(pointA);
-                        glVertex3fv(pointB);
-                        glVertex3fv(pointC);
-                    }
-                }
-            }
-            //cout << endl;
-        }
+        glCallList(displayListIndexTriangles);
     }
-    glEnd();
+    glPopMatrix();
+
+    //glColor4f(1, 1, 1, 0.01);
+
+    //// Tet Faces
+    //glBegin(GL_TRIANGLES);
+    //{
+        //for(const auto &tet : this->data->tetrahedra)
+        //{
+            //for(int i = 0 ; i < 4 ; i++)
+            //{
+                //for(int j = i + 1 ; j < 4 ; j++)
+                //{
+                    //for(int k = j + 1 ; k < 4 ; k++)
+                    //{
+                        //GLfloat pointA[3], pointB[3], pointC[3];
+
+                        //pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
+                        //pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
+                        //pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
+
+                        //pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
+                        //pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
+                        //pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
+
+                        //pointC[0] = this->data->vertexDomainCoordinates[tet[k]][0];
+                        //pointC[1] = this->data->vertexDomainCoordinates[tet[k]][1];
+                        //pointC[2] = this->data->vertexDomainCoordinates[tet[k]][2];
+
+                        //glVertex3fv(pointA);
+                        //glVertex3fv(pointB);
+                        //glVertex3fv(pointC);
+                    //}
+                //}
+            //}
+            ////cout << endl;
+        //}
+    //}
+    //glEnd();
 
     glFlush();
 }
@@ -488,7 +696,7 @@ TracerVisualiserWidget::keyPressEvent(QKeyEvent* event)
 void
 TracerVisualiserWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    this->data->faceFibers.clear();
+    //this->data->faceFibers.clear();
     this->generateDisplayList();
     this->update();
 }

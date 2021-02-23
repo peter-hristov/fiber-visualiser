@@ -26,7 +26,7 @@ class Data
     GLfloat minF, maxF;
     GLfloat minG, maxG;
 
-    std::string longName, units;
+    std::string longnameF, longnameG, units;
 
     QVector<QPointF> mousePoints;
 
@@ -34,14 +34,23 @@ class Data
     std::vector<std::vector<GLfloat>> vertexDomainCoordinates;
     std::vector<std::vector<GLfloat>> vertexRangeCoordinates;
 
+    // The location of a fiber on a single tet
     struct FaceFiber{
         float alpha;
         float betta;
         std::vector<size_t> vertices;
     };
 
+    // The location 
+    struct MeshTriangle{
+        std::vector<float> vertixA;
+        std::vector<float> vertixB;
+        std::vector<float> vertixC;
+    };
+
 
     std::vector<FaceFiber> faceFibers;
+    std::vector<MeshTriangle> meshTriangles;
 
 
     // Original dimensions of the data before cropping and downsampling - used for

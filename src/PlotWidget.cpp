@@ -276,10 +276,10 @@ PlotWidget::drawAxisLabels(QPainter& p)
     //
     float step = resolution / 15;
 
-    float xMin = data->minF - 40;
-    float yMin = data->minG + 40;
-    float xMax = data->maxF - 40;
-    float yMax = data->maxG + 40;
+    float xMin = data->minF;
+    float yMin = data->minG;
+    float xMax = data->maxF;
+    float yMax = data->maxG;
     float xRange = xMax - xMin;
     float yRange = yMax - yMin;
     float a = 10.0;
@@ -379,7 +379,7 @@ PlotWidget::drawAxisLabels(QPainter& p)
     // x label
     p.drawText(resolution / 2 - 30,
                resolution - boxOffset + 10,
-               QString::fromStdString(data->longName) + " (" + QString::fromStdString(data->units) +
+               QString::fromStdString(data->longnameF) + " (" + QString::fromStdString(data->units) +
                  ")");
 
     p.translate(boxOffset - 5, resolution / 2 + 20);
@@ -387,7 +387,7 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // y label
     p.drawText(
-      0, 0, QString::fromStdString(data->longName) + " (" + QString::fromStdString(data->units) + ")");
+      0, 0, QString::fromStdString(data->longnameG) + " (" + QString::fromStdString(data->units) + ")");
 }
 
 void
@@ -450,11 +450,11 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     this->data->faceFibers.clear();
 
     // Draw all triangles from the tets
-    //for(const auto &tet : this->data->tetrahedra)
     for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
     {
         const auto tet = this->data->tetrahedra[tetId];
 
+        // For every edge in the tet
         for(int i = 0 ; i < 4 ; i++)
         {
             for(int j = i + 1 ; j < 4 ; j++)
@@ -473,7 +473,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
             continue;
 
 
-        // for every triangle
+        // For every triangle in every tet, get the fiber in it
         for(int i = 0 ; i < 4 ; i++)
         {
             for(int j = i + 1 ; j < 4 ; j++)
@@ -527,9 +527,15 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         }
     }
 
+    const float isovalue = 0.0;
+
+
     // Generate the fs meshes for all timesteps and the display list for the current timestep
     const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
     visualiserWidget->generateDisplayList();
+
+    float iso = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
+    visualiserWidget->generateDisplayListTriangles(iso);
     visualiserWidget->update();
 
 }

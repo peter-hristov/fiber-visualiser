@@ -47,12 +47,13 @@ Data::readNcData(tv9k::InputInformation input)
     this->originalZdim = 10;
     this->originalTdim = 10;
 
-    this->xdim = 5;
-    this->ydim = 5;
-    this->zdim = 5;
+    this->xdim = 10;
+    this->ydim = 10;
+    this->zdim = 10;
     this->tdim = 5;
 
-    this->longName = "Variable";
+    this->longnameF = "f = tube size";
+    this->longnameG = "g = height";
 
     // Add vertex range coordinates
     //for (int i = 0 ; i < this->xdim * this->ydim * this->zdim ; i++)
@@ -75,15 +76,22 @@ Data::readNcData(tv9k::InputInformation input)
                 std::uniform_real_distribution<float> distr(0, 0.9);
 
 
-                const float x = static_cast<float>(i);
-                const float y = static_cast<float>(j);
-                const float z = static_cast<float>(k);
+                float x = static_cast<float>(i);
+                float y = static_cast<float>(j);
+                float z = static_cast<float>(k);
+
+                x -= 5;
+                y -= 5;
+                z -= 5;
+
+                float torusBigRadius = 2.5;
+                float torusTubeRadius = 0;
 
 
                 //this->vertexRangeCoordinates.push_back({static_cast<float>(i) + 2 + distr(eng), static_cast<float>(j) + 2 + distr(eng)});
                 //this->vertexRangeCoordinates.push_back({static_cast<float>(i) + 2 , static_cast<float>(j) + 2});
                 //this->vertexRangeCoordinates.push_back({x * x  + y*y + z * z, z});
-                this->vertexRangeCoordinates.push_back({(sqrt(x * x  + y*y) - 3) * (sqrt(x * x  + y*y) - 3) + z * z - 2, z});
+                this->vertexRangeCoordinates.push_back({(sqrt(x*x  + y*y) - torusBigRadius) * (sqrt(x * x  + y*y) - torusBigRadius) + z*z - torusTubeRadius * torusTubeRadius, x});
             }
         }
     }
@@ -102,6 +110,14 @@ Data::readNcData(tv9k::InputInformation input)
         this->minG = std::min(this->minG, val[1]);
         this->maxG = std::max(this->maxG, val[1]);
     }
+
+    cout << "The min height is and the max height is " << minG << " " << maxG << endl;
+
+    this->minF -= 2;
+    this->maxF += 2;
+
+    this->minG -= 2;
+    this->maxG += 2;
 
 
     // Add vertex domain coordinates
