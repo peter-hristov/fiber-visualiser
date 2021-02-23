@@ -32,7 +32,9 @@ class Data
 
     std::vector<std::vector<size_t>> tetrahedra;
     std::vector<std::vector<GLfloat>> vertexDomainCoordinates;
-    std::vector<std::vector<GLfloat>> vertexRangeCoordinates;
+
+    std::vector<GLfloat> vertexCoordinatesF;
+    std::vector<GLfloat> vertexCoordinatesG;
 
     // The location of a fiber on a single tet
     struct FaceFiber{

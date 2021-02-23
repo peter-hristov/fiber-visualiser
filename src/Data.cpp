@@ -55,6 +55,8 @@ Data::readNcData(tv9k::InputInformation input)
     this->longnameF = "f = tube size";
     this->longnameG = "g = height";
 
+    cout << "Yoho";
+
     // Add vertex range coordinates
     //for (int i = 0 ; i < this->xdim * this->ydim * this->zdim ; i++)
     //{
@@ -91,24 +93,25 @@ Data::readNcData(tv9k::InputInformation input)
                 //this->vertexRangeCoordinates.push_back({static_cast<float>(i) + 2 + distr(eng), static_cast<float>(j) + 2 + distr(eng)});
                 //this->vertexRangeCoordinates.push_back({static_cast<float>(i) + 2 , static_cast<float>(j) + 2});
                 //this->vertexRangeCoordinates.push_back({x * x  + y*y + z * z, z});
-                this->vertexRangeCoordinates.push_back({(sqrt(x*x  + y*y) - torusBigRadius) * (sqrt(x * x  + y*y) - torusBigRadius) + z*z - torusTubeRadius * torusTubeRadius, x + 5});
+                this->vertexCoordinatesF.push_back(x + 5);
+                this->vertexCoordinatesG.push_back((sqrt(x*x  + y*y) - torusBigRadius) * (sqrt(x * x  + y*y) - torusBigRadius) + z*z - torusTubeRadius * torusTubeRadius);
             }
         }
     }
 
-    this->minF = this->vertexRangeCoordinates[0][0];
-    this->maxF = this->vertexRangeCoordinates[0][0];
+    this->minF = this->vertexCoordinatesF[0];
+    this->maxF = this->vertexCoordinatesF[0];
 
-    this->minG = this->vertexRangeCoordinates[0][1];
-    this->maxG = this->vertexRangeCoordinates[0][1];
+    this->minG = this->vertexCoordinatesG[0];
+    this->maxG = this->vertexCoordinatesG[0];
 
-    for (const auto &val : this->vertexRangeCoordinates)
+    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
     {
-        this->minF = std::min(this->minF, val[0]);
-        this->maxF = std::max(this->maxF, val[0]);
+        this->minF = std::min(this->minF, this->vertexCoordinatesF[i]);
+        this->maxF = std::max(this->maxF, this->vertexCoordinatesF[i]);
 
-        this->minG = std::min(this->minG, val[1]);
-        this->maxG = std::max(this->maxG, val[1]);
+        this->minG = std::min(this->minG, this->vertexCoordinatesG[i]);
+        this->maxG = std::max(this->maxG, this->vertexCoordinatesG[i]);
     }
 
     cout << "The min height is and the max height is " << minG << " " << maxG << endl;

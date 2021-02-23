@@ -461,10 +461,10 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     penBlack.setColor(QColor(1,1,1,1));
     p.setPen(penBlack);
 
-    for(const auto &vertex : this->data->vertexRangeCoordinates)
+    for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
     {
-        float x1 = (resolution / (data->maxF - data->minF)) * (vertex[0] - data->minF);
-        float y1 = (resolution / (data->maxG - data->minG)) * (vertex[1] - data->minG);
+        float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG);
 
         p.drawEllipse(QPointF(x1, y1), 3, 3);
 
@@ -482,11 +482,11 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         {
             for(int j = i + 1 ; j < 4 ; j++)
             {
-                float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexRangeCoordinates[tet[i]][0] - data->minF);
-                float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexRangeCoordinates[tet[i]][1] - data->minG);
+                float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[tet[i]] - data->minF);
+                float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[tet[i]] - data->minG);
 
-                float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexRangeCoordinates[tet[j]][0] - data->minF);
-                float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexRangeCoordinates[tet[j]][1] - data->minG);
+                float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[tet[j]] - data->minF);
+                float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[tet[j]] - data->minG);
 
                 p.drawLine(x1, y1, x2, y2);
             }
@@ -503,14 +503,14 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
             {
                 for(int k = j + 1 ; k < 4 ; k++)
                 {
-                    float x1 = this->data->vertexRangeCoordinates[tet[i]][0];
-                    float y1 = this->data->vertexRangeCoordinates[tet[i]][1];
+                    float x1 = this->data->vertexCoordinatesF[tet[i]];
+                    float y1 = this->data->vertexCoordinatesG[tet[i]];
 
-                    float x2 = this->data->vertexRangeCoordinates[tet[j]][0];
-                    float y2 = this->data->vertexRangeCoordinates[tet[j]][1];
+                    float x2 = this->data->vertexCoordinatesF[tet[j]];
+                    float y2 = this->data->vertexCoordinatesG[tet[j]];
 
-                    float x3 = this->data->vertexRangeCoordinates[tet[k]][0];
-                    float y3 = this->data->vertexRangeCoordinates[tet[k]][1];
+                    float x3 = this->data->vertexCoordinatesF[tet[k]];
+                    float y3 = this->data->vertexCoordinatesG[tet[k]];
 
                     float x = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
                     float y = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
@@ -558,7 +558,10 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     visualiserWidget->generateDisplayList();
 
     float iso = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
-    visualiserWidget->generateDisplayListTriangles(iso);
+    visualiserWidget->generateDisplayListTriangles(iso, this->data->vertexCoordinatesF, 1);
+
+    float iso2 = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
+    visualiserWidget->generateDisplayListTriangles(iso2, this->data->vertexCoordinatesG, 2);
     visualiserWidget->update();
 
 }

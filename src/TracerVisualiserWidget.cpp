@@ -71,7 +71,7 @@ TracerVisualiserWidget::resizeGL(int w, int h)
 }
 
 void
-TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue)
+TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue, const vector<float> &values, const int type)
 {
     this->data->meshTriangles.clear();
 
@@ -86,7 +86,7 @@ TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue)
         // For every vertex in the tet
         for(int i = 0 ; i < 4 ; i++)
         {
-            const float vertexValue = this->data->vertexRangeCoordinates[tet[i]][0];
+            const float vertexValue = values[tet[i]];
 
             if (vertexValue < isovalue)
             {
@@ -107,16 +107,16 @@ TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue)
             Data::MeshTriangle triangle;
             // s[0] -> b[0]
             float t0 = 
-                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+                (isovalue - values[smallerVertices[0]]) / 
+                (values[biggerOrEqualVertices[0]] - values[smallerVertices[0]]);
 
             float t1 = 
-                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[1]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+                (isovalue - values[smallerVertices[0]]) / 
+                (values[biggerOrEqualVertices[1]] - values[smallerVertices[0]]);
 
             float t2 = 
-                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[2]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+                (isovalue - values[smallerVertices[0]]) / 
+                (values[biggerOrEqualVertices[2]] - values[smallerVertices[0]]);
 
             triangle.vertixA = {
                 (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
@@ -141,20 +141,20 @@ TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue)
         else if (smallerVertices.size() == 2)
         {
             float t0 = 
-                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+                (isovalue - values[smallerVertices[0]]) / 
+                (values[biggerOrEqualVertices[0]] - values[smallerVertices[0]]);
 
             float t1 = 
-                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[1]][0] - this->data->vertexRangeCoordinates[smallerVertices[0]][0]);
+                (isovalue - values[smallerVertices[0]]) / 
+                (values[biggerOrEqualVertices[1]] - values[smallerVertices[0]]);
 
             float t2 = 
-                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[1]][0]) / 
-                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0] - this->data->vertexRangeCoordinates[smallerVertices[1]][0]);
+                (isovalue - values[smallerVertices[1]]) / 
+                (values[biggerOrEqualVertices[0]] - values[smallerVertices[1]]);
 
             float t3 = 
-                (isovalue - this->data->vertexRangeCoordinates[smallerVertices[1]][0]) / 
-                (this->data->vertexRangeCoordinates[biggerOrEqualVertices[1]][0] - this->data->vertexRangeCoordinates[smallerVertices[1]][0]);
+                (isovalue - values[smallerVertices[1]]) / 
+                (values[biggerOrEqualVertices[1]] - values[smallerVertices[1]]);
 
 
 
@@ -207,16 +207,16 @@ TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue)
             // Interpolate along all edges
             // s[0] -> b[0]
             float t0 = 
-                (isovalue - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[smallerVertices[0]][0] - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]);
+                (isovalue - values[biggerOrEqualVertices[0]]) / 
+                (values[smallerVertices[0]] - values[biggerOrEqualVertices[0]]);
 
             float t1 = 
-                (isovalue - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[smallerVertices[1]][0] - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]);
+                (isovalue - values[biggerOrEqualVertices[0]]) / 
+                (values[smallerVertices[1]] - values[biggerOrEqualVertices[0]]);
 
             float t2 = 
-                (isovalue - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]) / 
-                (this->data->vertexRangeCoordinates[smallerVertices[2]][0] - this->data->vertexRangeCoordinates[biggerOrEqualVertices[0]][0]);
+                (isovalue - values[biggerOrEqualVertices[0]]) / 
+                (values[smallerVertices[2]] - values[biggerOrEqualVertices[0]]);
 
             triangle.vertixA = {
                 (1 - t0) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[smallerVertices[0]][0],
@@ -240,12 +240,27 @@ TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue)
         }
     }
 
-    glDeleteLists(displayListIndexTriangles, 1);
-    displayListIndexTriangles = glGenLists(1);
-    glNewList(displayListIndexTriangles, GL_COMPILE);
+    if (type == 1)
+    {
+        glDeleteLists(displayListIndexTriangles, 1);
+        displayListIndexTriangles = glGenLists(1);
+        glNewList(displayListIndexTriangles, GL_COMPILE);
+    }
+    else{
+        glDeleteLists(displayListIndexTrianglesG, 1);
+        displayListIndexTrianglesG = glGenLists(1);
+        glNewList(displayListIndexTrianglesG, GL_COMPILE);
+    }
 
     //setMaterial(1, 0, 0, 1.0, 0.0);
-    glColor4f(0, 1, 0, 0.3);
+    if (type == 1)
+    {
+        glColor4f(0, 1, 0, 0.3);
+    }
+    else
+    {
+        glColor4f(0, 0, 1, 0.3);
+    }
 
     // Draw Fiber
     glBegin(GL_TRIANGLES);
@@ -550,6 +565,13 @@ TracerVisualiserWidget::drawScene()
     glPushMatrix();
     {
         glCallList(displayListIndex);
+    }
+    glPopMatrix();
+
+
+    glPushMatrix();
+    {
+        glCallList(displayListIndexTrianglesG);
     }
     glPopMatrix();
 
