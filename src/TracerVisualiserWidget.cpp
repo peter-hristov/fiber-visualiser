@@ -36,7 +36,7 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
     this->sibling = _sibling;
 
     // Default values for paraters
-    this->scale = data->zdim * 8;
+    this->scale = data->zdim * 2;
 
     // Initialise Arcball
     Ball_Init(&theBall);

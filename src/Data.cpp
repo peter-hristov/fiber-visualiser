@@ -91,7 +91,7 @@ Data::readNcData(tv9k::InputInformation input)
                 //this->vertexRangeCoordinates.push_back({static_cast<float>(i) + 2 + distr(eng), static_cast<float>(j) + 2 + distr(eng)});
                 //this->vertexRangeCoordinates.push_back({static_cast<float>(i) + 2 , static_cast<float>(j) + 2});
                 //this->vertexRangeCoordinates.push_back({x * x  + y*y + z * z, z});
-                this->vertexRangeCoordinates.push_back({(sqrt(x*x  + y*y) - torusBigRadius) * (sqrt(x * x  + y*y) - torusBigRadius) + z*z - torusTubeRadius * torusTubeRadius, x});
+                this->vertexRangeCoordinates.push_back({(sqrt(x*x  + y*y) - torusBigRadius) * (sqrt(x * x  + y*y) - torusBigRadius) + z*z - torusTubeRadius * torusTubeRadius, x + 5});
             }
         }
     }

@@ -15,6 +15,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <qcolor.h>
 #include <qnamespace.h>
 #include <utility>
 
@@ -29,6 +30,7 @@ using namespace std;
 
 const bool DRAW_GRIDLINES = true;
 
+
 PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType, tv9k::InputInformation input)
   : QWidget(parent)
   , data(_data)
@@ -36,6 +38,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType, 
   , interpolationType(_interpolationType)
 {
     setMouseTracking(true);
+    this->setEnabled(true);
     this->verticalLineNumbers = input.verticalLineNumbers;
     this->horizontalLineNumbers = input.horizontalLineNumbers;
 }
@@ -68,6 +71,23 @@ PlotWidget::addTriangle(float x1, float y1, float x2, float y2, float x3, float 
 void
 PlotWidget::keyPressEvent(QKeyEvent* event)
 {
+    //cout << "FAFADFS";
+    //if (event->key() == Qt::Key_I) {
+        //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + 1);
+        //this->update();
+    //}
+    //if (event->key() == Qt::Key_J) {
+        //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() - 1);
+        //this->update();
+    //}
+    //if (event->key() == Qt::Key_K) {
+        //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() - 1);
+        //this->update();
+    //}
+    //if (event->key() == Qt::Key_L) {
+        //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + 1);
+        //this->update();
+    //}
 }
 
 void
@@ -436,7 +456,10 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         p.drawEllipse(QPointF(a.x(), a.y()), sphereRadius, sphereRadius);
     }
 
-    p.setPen(QPen(Qt::black));
+
+    auto penBlack = QPen(Qt::black);
+    penBlack.setColor(QColor(1,1,1,1));
+    p.setPen(penBlack);
 
     for(const auto &vertex : this->data->vertexRangeCoordinates)
     {

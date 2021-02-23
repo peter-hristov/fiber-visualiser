@@ -24,6 +24,7 @@ class TracerVisualiserWindow : public QWidget
     TracerVisualiserWindow(QWidget*, Data*, tv9k::InputInformation);
     ~TracerVisualiserWindow();
 
+    void keyPressEvent(QKeyEvent* event);
 
     Data* data;
 
