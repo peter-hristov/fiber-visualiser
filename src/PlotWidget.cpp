@@ -17,6 +17,8 @@
 #include <map>
 #include <qcolor.h>
 #include <qnamespace.h>
+#include <qpoint.h>
+#include <qtransform.h>
 #include <utility>
 
 #include "./TracerVisualiserWindow.h"
@@ -102,15 +104,53 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
 #else
     const QPointF clickPoint = event->localPos();
 #endif
+
+    // Transform the [res, res] grid
+    auto mouseTransformedPoint = painterCombinedTransform.inverted().map(clickPoint);
+
     int m = 0;
+    int closestVertexPoint = 0;
 
     auto &mousePoints = this->data->mousePoints;
 
     // Find out whether we're hovering on a vertex of the polygon and highlight it
     if (event->button() == Qt::NoButton) {
 
+        if (this->data->vertexCoordinatesF.size() > 0) {
+
+            for (int i = 0; i < this->data->vertexCoordinatesF.size(); i++) {
+                QPointF point;
+                point.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF));
+                point.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG));
+
+                QPointF bestPoint;
+                bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
+                bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
+
+                if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, point) <
+                    tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
+                {
+                    closestVertexPoint = i;
+                }
+            }
+
+            QPointF bestPoint;
+            bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
+            bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
+
+            if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint) < sphereRadius * 4) {
+                this->closePointData = closestVertexPoint;
+            } else {
+                this->closePointData = -1;
+            }
+        }
+        else
+        {
+            this->closePointData = -1;
+        }
+
         // Have you clicked on a mouse point? Drag it.
-        if (mousePoints.size() > 0) {
+        if (mousePoints.size() > 0 && this->closePointData == -1) {
             for (int i = 0; i < mousePoints.size(); i++) {
                 if (tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[i]) <
                     tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m])) {
@@ -129,6 +169,29 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
     }
 
     if (event->buttons() == Qt::LeftButton) {
+
+        // Dragging a data point
+        if (MouseDragMode::DataPoint == dragMode) {
+            assert(movePoint >= 0 && movePoint < this->data->vertexCoordinatesF.size());
+
+            float fValue = this->data->minF + (mouseTransformedPoint.x() / resolution) * (this->data->maxF - this->data->minF);
+            float gValue = this->data->minG + (mouseTransformedPoint.y() / resolution) * (this->data->maxG - this->data->minG);
+
+            this->data->vertexCoordinatesF[movePoint] = fValue;
+            this->data->vertexCoordinatesG[movePoint] = gValue;
+
+
+            //QPointF bestPoint;
+            //bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
+            //bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
+
+
+
+
+
+            //mousePoints[movePoint] = clickPoint;
+        }
+
         // Draggin a vertex
         if (MouseDragMode::Vertex == dragMode) {
             assert(movePoint >= 0 && movePoint < mousePoints.size());
@@ -176,15 +239,21 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
     {
         outside,
         vertex,
-        inside
+        inside,
+        dataPoint
     } clickLocation = ClickLocation::outside;
 
     size_t closestEdge = -1;
     GLfloat distanceFromPolygon = -1;
 
-    if (-1 != closePoint) {
+    if (-1 != this->closePointData) {
+        clickLocation = ClickLocation::dataPoint;
+    }
+    else if (-1 != this->closePoint)
+    {
         clickLocation = ClickLocation::vertex;
-    } else {
+    }
+    else {
         // If we at least have a triangle
         if (mousePoints.size() >= 3) {
             std::tie(distanceFromPolygon, closestEdge) =
@@ -206,7 +275,14 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
             this->redoFS();
         }
     } else if (event->button() == Qt::LeftButton) {
-        if (clickLocation == ClickLocation::vertex) {
+        if (clickLocation == ClickLocation::dataPoint)
+        {
+            this->dragMode = MouseDragMode::DataPoint;
+
+            // Set the initial location
+            this->movePoint = this->closePointData;
+        }
+        else if (clickLocation == ClickLocation::vertex) {
             // Say we're dragging a vertex
             this->dragMode = MouseDragMode::Vertex;
 
@@ -242,6 +318,8 @@ PlotWidget::paintEvent(QPaintEvent*)
     p.save();
     p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
     p.setPen(Qt::gray);
+
+    this->painterCombinedTransform = p.combinedTransform();
 
     // Draw Fiber Surface Control Polygon
     drawAndRecomputeFS(p);
@@ -452,24 +530,33 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
             p.setPen(Qt::green);
         }
 
+
         QPointF a = polyPoints[i];
+
         p.drawEllipse(QPointF(a.x(), a.y()), sphereRadius, sphereRadius);
     }
 
 
-    auto penBlack = QPen(Qt::black);
-    penBlack.setColor(QColor(1,1,1,1));
-    p.setPen(penBlack);
-
     for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
     {
+
         float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF);
         float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG);
+
+        if (this->closePointData == i)
+        {
+            p.setPen(Qt::blue);
+        }
+        else
+        {
+            p.setPen(Qt::black);
+        }
 
         p.drawEllipse(QPointF(x1, y1), 3, 3);
 
     }
 
+    p.setPen(Qt::black);
     this->data->faceFibers.clear();
 
     // Draw all triangles from the tets

@@ -25,19 +25,19 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 
     int speed = 2;
 
-    if (event->key() == Qt::Key_I) {
+    if (event->key() == Qt::Key_Up) {
         this->data->mousePoints[0].setY(this->data->mousePoints[0].y() - speed);
         this->update();
     }
-    if (event->key() == Qt::Key_J) {
+    if (event->key() == Qt::Key_Left) {
         this->data->mousePoints[0].setX(this->data->mousePoints[0].x() - speed);
         this->update();
     }
-    if (event->key() == Qt::Key_K) {
+    if (event->key() == Qt::Key_Down) {
         this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + speed);
         this->update();
     }
-    if (event->key() == Qt::Key_L) {
+    if (event->key() == Qt::Key_Right) {
         this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + speed);
         this->update();
     }

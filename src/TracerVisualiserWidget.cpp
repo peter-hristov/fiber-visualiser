@@ -513,54 +513,68 @@ TracerVisualiserWidget::drawScene()
     }
     glPopMatrix();
 
-    //glColor4f(1, 1, 1, 0.2);
+    if (true == this->drawEdges)
+    {
+        glColor4f(1, 1, 1, 0.2);
 
-    //// Tet Edges
-    //glBegin(GL_LINES);
-    //{
-        //for(const auto &tet : this->data->tetrahedra)
-        //{
-            //for(int i = 0 ; i < 4 ; i++)
-            //{
-                //for(int j = i + 1 ; j < 4 ; j++)
-                //{
-                    ////cout << i << " - " << j << endl;
-                    //GLfloat pointA[3], pointB[3];
+        // Tet Edges
+        glBegin(GL_LINES);
+        {
+            for(const auto &tet : this->data->tetrahedra)
+            {
+                for(int i = 0 ; i < 4 ; i++)
+                {
+                    for(int j = i + 1 ; j < 4 ; j++)
+                    {
+                        //cout << i << " - " << j << endl;
+                        GLfloat pointA[3], pointB[3];
 
-                    //pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
-                    //pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
-                    //pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
+                        pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
+                        pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
+                        pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
 
-                    //pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
-                    //pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
-                    //pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
+                        pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
+                        pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
+                        pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
 
-                    //glVertex3fv(pointA);
-                    //glVertex3fv(pointB);
-                //}
-            //}
-            ////cout << endl;
-        //}
-    //}
-    //glEnd();
+                        glVertex3fv(pointA);
+                        glVertex3fv(pointB);
+                    }
+                }
+                //cout << endl;
+            }
+        }
+        glEnd();
+    }
 
 
-    //glColor4f(1, 1, 1, 0.2);
-    //// Draw Vertices
-    //{
-        //for (const auto &vertex : this->data->vertexDomainCoordinates) 
-        //{
-            //glPushMatrix();
-            //{
-                //glTranslatef(vertex[0], vertex[1], vertex[2]);
-                //GLUquadric* sphere = gluNewQuadric();
-                //gluSphere(sphere, 0.03, 10, 10);
-                //delete sphere;
-            //}
-            //glPopMatrix();
-        //}
+    if (true == this->drawVertices)
+    {
+        glColor4f(1, 1, 1, 0.2);
+        // Draw Vertices
+        {
+            //for (const auto &vertex : this->data->vertexDomainCoordinates) 
+            for (int i = 0 ; i < this->data->vertexDomainCoordinates.size() ; i++) 
+            {
+                const auto &vertex = this->data->vertexDomainCoordinates[i];
 
-    //}
+                glColor4f(1, 1, 1, 0.2);
+                if (dynamic_cast<PlotWidget*>(sibling)->dragMode ==  PlotWidget::MouseDragMode::DataPoint && i == dynamic_cast<PlotWidget*>(sibling)->movePoint)
+                {
+                    glColor4f(1, 0, 0, 0.2);
+                }
+                glPushMatrix();
+                {
+                    glTranslatef(vertex[0], vertex[1], vertex[2]);
+                    GLUquadric* sphere = gluNewQuadric();
+                    gluSphere(sphere, 0.03, 10, 10);
+                    delete sphere;
+                }
+                glPopMatrix();
+            }
+
+        }
+    }
 
     glPushMatrix();
     {
@@ -581,43 +595,47 @@ TracerVisualiserWidget::drawScene()
     }
     glPopMatrix();
 
-    //glColor4f(1, 1, 1, 0.01);
 
-    //// Tet Faces
-    //glBegin(GL_TRIANGLES);
-    //{
-        //for(const auto &tet : this->data->tetrahedra)
-        //{
-            //for(int i = 0 ; i < 4 ; i++)
-            //{
-                //for(int j = i + 1 ; j < 4 ; j++)
-                //{
-                    //for(int k = j + 1 ; k < 4 ; k++)
-                    //{
-                        //GLfloat pointA[3], pointB[3], pointC[3];
+    // Tet Faces
+    if (true == drawFaces)
+    {
+        glColor4f(1, 1, 1, 0.1);
 
-                        //pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
-                        //pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
-                        //pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
+        glBegin(GL_TRIANGLES);
+        {
+            for(const auto &tet : this->data->tetrahedra)
+            {
+                for(int i = 0 ; i < 4 ; i++)
+                {
+                    for(int j = i + 1 ; j < 4 ; j++)
+                    {
+                        for(int k = j + 1 ; k < 4 ; k++)
+                        {
+                            GLfloat pointA[3], pointB[3], pointC[3];
 
-                        //pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
-                        //pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
-                        //pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
+                            pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
+                            pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
+                            pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
 
-                        //pointC[0] = this->data->vertexDomainCoordinates[tet[k]][0];
-                        //pointC[1] = this->data->vertexDomainCoordinates[tet[k]][1];
-                        //pointC[2] = this->data->vertexDomainCoordinates[tet[k]][2];
+                            pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
+                            pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
+                            pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
 
-                        //glVertex3fv(pointA);
-                        //glVertex3fv(pointB);
-                        //glVertex3fv(pointC);
-                    //}
-                //}
-            //}
-            ////cout << endl;
-        //}
-    //}
-    //glEnd();
+                            pointC[0] = this->data->vertexDomainCoordinates[tet[k]][0];
+                            pointC[1] = this->data->vertexDomainCoordinates[tet[k]][1];
+                            pointC[2] = this->data->vertexDomainCoordinates[tet[k]][2];
+
+                            glVertex3fv(pointA);
+                            glVertex3fv(pointB);
+                            glVertex3fv(pointC);
+                        }
+                    }
+                }
+                //cout << endl;
+            }
+        }
+    }
+    glEnd();
 
     glFlush();
 }

@@ -15,6 +15,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <qvector.h>
 #include <utility>
 
 #include "./GlobalConfig.h"
@@ -31,12 +32,16 @@ class PlotWidget : public QWidget
   public:
     // Index in the mousePoints array
     int closePoint = -1;
+    int closePointData = -1;
     // Index in the mousePoints array
     int movePoint = -1;
     // Whether the fiber surface for the polygon has been rendered
     bool polygonLocked = false;
     // This is the initial point when tranclating the polygon
     QPointF initialMovePoint;
+
+    QTransform painterCombinedTransform;
+
 
     Data* data;
     float varianceScale = 0;
@@ -58,7 +63,8 @@ class PlotWidget : public QWidget
     {
         Nothing,
         Vertex,
-        Polygon
+        Polygon,
+        DataPoint
     } dragMode = MouseDragMode::Nothing;
 
     QVector<std::pair<QPointF, int>> points[2];
