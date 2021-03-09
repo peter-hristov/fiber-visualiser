@@ -47,9 +47,9 @@ Data::readNcData(tv9k::InputInformation input)
     this->originalZdim = 10;
     this->originalTdim = 10;
 
-    this->xdim = 2;
-    this->ydim = 2;
-    this->zdim = 2;
+    this->xdim = 10;
+    this->ydim = 10;
+    this->zdim = 10;
     this->tdim = 5;
 
     this->longnameF = "f = tube size";
@@ -89,8 +89,8 @@ Data::readNcData(tv9k::InputInformation input)
                 float torusBigRadius = 2.5;
                 float torusTubeRadius = 0;
 
-                this->vertexCoordinatesF.push_back(distr(eng));
-                this->vertexCoordinatesG.push_back(distr(eng));
+                //this->vertexCoordinatesF.push_back(distr(eng));
+                //this->vertexCoordinatesG.push_back(distr(eng));
 
                 //this->vertexCoordinatesF.push_back(static_cast<float>(i) + 2 + distr(eng));
                 //this->vertexCoordinatesG.push_back(static_cast<float>(j) + 2 + distr(eng));
@@ -101,6 +101,12 @@ Data::readNcData(tv9k::InputInformation input)
                 //this->vertexCoordinatesF.push_back(x + 5);
                 //this->vertexCoordinatesF.push_back(x *x + y * y * z * x + z * z );
                 //this->vertexCoordinatesG.push_back(x * x - y * y + pow(z, 4));
+
+                this->vertexCoordinatesF.push_back( x * y * z);
+                this->vertexCoordinatesG.push_back(y * y * x + z * y * z);
+                
+                //this->vertexCoordinatesF.push_back(x + 5);
+                // Torus
                 //this->vertexCoordinatesG.push_back((sqrt(x*x  + y*y) - torusBigRadius) * (sqrt(x * x  + y*y) - torusBigRadius) + z*z - torusTubeRadius * torusTubeRadius);
             }
         }

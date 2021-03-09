@@ -21,9 +21,9 @@ class TracerVisualiserWidget : public QGLWidget
     TracerVisualiserWidget(QWidget*, QWidget*, Data*);
     GLfloat scale = 0;
 
-    bool drawEdges = true;
-    bool drawFaces = true;
-    bool drawVertices = true;
+    bool drawEdges = false;
+    bool drawFaces = false;
+    bool drawVertices = false;
 
     GLfloat isovalueMult = -1.0;
 

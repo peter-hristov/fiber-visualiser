@@ -523,7 +523,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
     // Draw vertices of the FSCP
     for (int i = 0; i < polyPoints.size(); i++) {
-        p.setPen(Qt::black);
+        auto penGrey = QPen(QColor(0, 0, 0, 50));
+        p.setPen(penGrey);
 
         // The current point is the one being dragged.
         if (closePoint == i || dragMode == 2) {
@@ -534,7 +535,17 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         QPointF a = polyPoints[i];
 
         p.drawEllipse(QPointF(a.x(), a.y()), sphereRadius, sphereRadius);
+
+        
+        penGrey.setWidthF(0.8);
+        p.setPen(penGrey);
+
+        
+
+        p.drawLine(a.x(), a.y() - resolution, a.x(), a.y() + resolution);
+        p.drawLine(a.x() - resolution, a.y(), a.x() + resolution, a.y());
     }
+
 
 
     for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
@@ -552,11 +563,13 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
             p.setPen(Qt::black);
         }
 
-        p.drawEllipse(QPointF(x1, y1), 3, 3);
-
+        //p.drawEllipse(QPointF(x1, y1), 3, 3);
+        //p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
+        //p.drawText(x1, y1, QString::number(i));
     }
 
-    p.setPen(Qt::black);
+    auto penGrey = QPen(QColor(0, 0, 0, 5));
+    p.setPen(penGrey);
     this->data->faceFibers.clear();
 
     // Draw all triangles from the tets
