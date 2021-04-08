@@ -494,20 +494,26 @@ TracerVisualiserWidget::drawScene()
     // GLUquadric* sphere = gluNewQuadric();
     // gluSphere(sphere, 2, 3, 3);
 
-    glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
-    glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
-    glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
+    //glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
+    //glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
+    //glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
 
     glRotatef(-90., 1., 0., 0.);
 
-    this->drawAxis(1000., 1.0 * this->data->xdim / 800.0);
+    //this->drawAxis(1000., 1.0 * this->data->xdim / 800.0);
 
     glColor3f(1, 1, 1);
 
     // Bounding Cube
     glPushMatrix();
     {
-        glScalef(this->data->xdim - 1, this->data->ydim - 1, this->data->zdim - 1);
+        float xSize = this->data->maxX - this->data->minX;
+        float ySize = this->data->maxY - this->data->minY;
+        float zSize = this->data->maxZ - this->data->minZ;
+
+        glTranslatef(-xSize/2, -ySize/2 , -zSize/2 );
+        glScalef(xSize - 1, ySize - 1, zSize - 1);
+
         setMaterial(255, 255, 255, 100, 30.0);
         this->drawWiredCube(tv9k::geometry::cubeVertices);
     }
@@ -583,17 +589,17 @@ TracerVisualiserWidget::drawScene()
     glPopMatrix();
 
 
-    glPushMatrix();
-    {
-        glCallList(displayListIndexTrianglesG);
-    }
-    glPopMatrix();
+    //glPushMatrix();
+    //{
+        //glCallList(displayListIndexTrianglesG);
+    //}
+    //glPopMatrix();
 
-    glPushMatrix();
-    {
-        glCallList(displayListIndexTriangles);
-    }
-    glPopMatrix();
+    //glPushMatrix();
+    //{
+        //glCallList(displayListIndexTriangles);
+    //}
+    //glPopMatrix();
 
 
     // Tet Faces

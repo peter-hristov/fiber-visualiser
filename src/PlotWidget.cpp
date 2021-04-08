@@ -523,7 +523,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
     // Draw vertices of the FSCP
     for (int i = 0; i < polyPoints.size(); i++) {
-        auto penGrey = QPen(QColor(0, 0, 0, 50));
+        auto penGrey = QPen(QColor(0, 0, 0, 250));
         p.setPen(penGrey);
 
         // The current point is the one being dragged.
@@ -537,7 +537,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         p.drawEllipse(QPointF(a.x(), a.y()), sphereRadius, sphereRadius);
 
         
-        penGrey.setWidthF(0.8);
+        penGrey.setWidthF(1.0);
         p.setPen(penGrey);
 
         
@@ -568,7 +568,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         //p.drawText(x1, y1, QString::number(i));
     }
 
-    auto penGrey = QPen(QColor(0, 0, 0, 5));
+    auto penGrey = QPen(QColor(0, 0, 0, 2));
     p.setPen(penGrey);
     this->data->faceFibers.clear();
 

@@ -26,6 +26,10 @@ class Data
     GLfloat minF, maxF;
     GLfloat minG, maxG;
 
+    GLfloat minX, maxX;
+    GLfloat minY, maxY;
+    GLfloat minZ, maxZ;
+
     std::string longnameF, longnameG, units;
 
     QVector<QPointF> mousePoints;

@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     CLI::App cliApp("K3Pi goofit fitter");
 
     tv9k::InputInformation input;
-    cliApp.add_option("-f,--file,file", input.filename, "File name")->required();
+    //cliApp.add_option("-f,--file,file", input.filename, "File name")->required();
 
     CLI11_PARSE(cliApp, argc, argv);
 
