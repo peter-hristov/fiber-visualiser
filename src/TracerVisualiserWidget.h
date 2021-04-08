@@ -21,9 +21,16 @@ class TracerVisualiserWidget : public QGLWidget
     TracerVisualiserWidget(QWidget*, QWidget*, Data*);
     GLfloat scale = 0;
 
-    bool drawEdges = false;
-    bool drawFaces = false;
-    bool drawVertices = false;
+    //bool drawEdges = false;
+    //bool drawFaces = false;
+    //bool drawVertices = false;
+
+    bool drawEdges = 1;
+    bool drawFaces = 1;
+    bool drawVertices = 1;
+
+    int fiberColour = 1;
+    bool clearFibers = 1;
 
     GLfloat isovalueMult = -1.0;
 

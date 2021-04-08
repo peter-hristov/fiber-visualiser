@@ -44,6 +44,7 @@ class Data
     struct FaceFiber{
         float alpha;
         float betta;
+        int colour;
         std::vector<size_t> vertices;
     };
 

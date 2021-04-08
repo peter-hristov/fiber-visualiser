@@ -80,24 +80,20 @@ Data::readNcData(tv9k::InputInformation input)
     this->originalZdim = 10;
     this->originalTdim = 10;
 
-    this->xdim = 10;
-    this->ydim = 10;
-    this->zdim = 10;
+    this->xdim = 2;
+    this->ydim = 2;
+    this->zdim = 2;
     this->tdim = 5;
 
-    this->minX = -3;
-    this->maxX = 3;
-    this->minY = -3;
-    this->maxY = 3;
-    this->minZ = -2;
+    this->minX = 0;
+    this->maxX = 2;
+    this->minY = 0;
+    this->maxY = 2;
+    this->minZ = 0;
     this->maxZ = 2;
 
     this->longnameF = "f = tube size";
     this->longnameG = "g = height";
-
-    cout << "Yoho";
-
-
 
     // Add vertex domain coordinates
     //for (int k = 0 ; k < this->zdim ; k++)
@@ -135,13 +131,13 @@ Data::readNcData(tv9k::InputInformation input)
 
 
     // Add vertex range coordinates
-    //for (int i = 0 ; i < this->xdim * this->ydim * this->zdim ; i++)
-    //{
-        ////std::random_device rd;
-        ////std::default_random_engine eng(rd());
-        ////std::uniform_real_distribution<float> distr(0, 10);
-        ////this->vertexRangeCoordinates.push_back({distr(eng), distr(eng)});
-    //}
+    for (int i = 0 ; i < this->xdim * this->ydim * this->zdim ; i++)
+    {
+        //std::random_device rd;
+        //std::default_random_engine eng(rd());
+        //std::uniform_real_distribution<float> distr(0, 10);
+        //this->vertexRangeCoordinates.push_back({distr(eng), distr(eng)});
+    }
 
     // Add vertex range coordinates
     for (int k = 0 ; k < this->zdim ; k++)
@@ -160,10 +156,18 @@ Data::readNcData(tv9k::InputInformation input)
                 float y = coordinates[1];
                 float z = coordinates[2];
 
-                const auto result = hopfMap(inverseStereographicProjection(coordinates));
+                float fValue = distr(eng); 
+                float gValue = distr(eng); 
 
-                this->vertexCoordinatesF.push_back(result[1]);
-                this->vertexCoordinatesG.push_back(result[2]);
+                this->vertexCoordinatesF.push_back(fValue);
+                this->vertexCoordinatesG.push_back(gValue);
+
+                cout << i << " " << j << " " << k << " | f = " << fValue << " g = " << gValue << endl;
+
+                //const auto result = hopfMap(inverseStereographicProjection(coordinates));
+
+                //this->vertexCoordinatesF.push_back(result[1]);
+                //this->vertexCoordinatesG.push_back(result[2]);
 
                 //if (x == 0 && y == 0 && z == 0)
                 //{
@@ -188,8 +192,6 @@ Data::readNcData(tv9k::InputInformation input)
                 //z -= 5;
 
 
-                //this->vertexCoordinatesF.push_back(distr(eng));
-                //this->vertexCoordinatesG.push_back(distr(eng));
 
                 //this->vertexCoordinatesF.push_back(static_cast<float>(i) + 2 + distr(eng));
                 //this->vertexCoordinatesG.push_back(static_cast<float>(j) + 2 + distr(eng));

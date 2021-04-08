@@ -288,6 +288,7 @@ TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue, const
 }
 
 
+// Draw fibers
 void
 TracerVisualiserWidget::generateDisplayList()
 {
@@ -296,13 +297,28 @@ TracerVisualiserWidget::generateDisplayList()
     glNewList(displayListIndex, GL_COMPILE);
 
     //setMaterial(1, 0, 0, 1.0, 0.0);
-    glColor3f(1, 0, 0);
 
     // Draw Fiber
     glBegin(GL_LINES);
     {
         for(const auto &faceFiber : this->data->faceFibers)
         {
+
+            int colour = faceFiber.colour;
+
+            if (colour == 1)
+            {
+                glColor3f(1, 0, 0);
+            }
+            else if (colour == 2)
+            {
+                glColor3f(0, 1, 0);
+            }
+            else if (colour == 3)
+            {
+                glColor3f(0, 0, 1);
+            }
+
             GLfloat point[3];
 
             point[0] = 
@@ -337,6 +353,21 @@ TracerVisualiserWidget::generateDisplayList()
     // Draw fiber endpoints (in every tet)
     for(const auto &faceFiber : this->data->faceFibers)
     {
+        int colour = faceFiber.colour;
+
+        if (colour == 1)
+        {
+            glColor3f(1, 0, 0);
+        }
+        else if (colour == 2)
+        {
+            glColor3f(0, 1, 0);
+        }
+        else if (colour == 3)
+        {
+            glColor3f(0, 0, 1);
+        }
+
         GLfloat point[3];
 
         point[0] = 
@@ -494,13 +525,13 @@ TracerVisualiserWidget::drawScene()
     // GLUquadric* sphere = gluNewQuadric();
     // gluSphere(sphere, 2, 3, 3);
 
-    //glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
-    //glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
-    //glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
+    glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
+    glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
+    glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
 
     glRotatef(-90., 1., 0., 0.);
 
-    //this->drawAxis(1000., 1.0 * this->data->xdim / 800.0);
+    this->drawAxis(1000., 1.0 * this->data->xdim / 800.0);
 
     glColor3f(1, 1, 1);
 
@@ -511,7 +542,7 @@ TracerVisualiserWidget::drawScene()
         float ySize = this->data->maxY - this->data->minY;
         float zSize = this->data->maxZ - this->data->minZ;
 
-        glTranslatef(-xSize/2, -ySize/2 , -zSize/2 );
+        //glTranslatef(-xSize/2, -ySize/2 , -zSize/2 );
         glScalef(xSize - 1, ySize - 1, zSize - 1);
 
         setMaterial(255, 255, 255, 100, 30.0);

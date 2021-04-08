@@ -73,7 +73,6 @@ PlotWidget::addTriangle(float x1, float y1, float x2, float y2, float x3, float 
 void
 PlotWidget::keyPressEvent(QKeyEvent* event)
 {
-    //cout << "FAFADFS";
     //if (event->key() == Qt::Key_I) {
         //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + 1);
         //this->update();
@@ -563,14 +562,19 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
             p.setPen(Qt::black);
         }
 
-        //p.drawEllipse(QPointF(x1, y1), 3, 3);
-        //p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
+        p.drawEllipse(QPointF(x1, y1), 3, 3);
+        p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
         //p.drawText(x1, y1, QString::number(i));
     }
 
-    auto penGrey = QPen(QColor(0, 0, 0, 2));
+    auto penGrey = QPen(QColor(0, 0, 0, 255));
     p.setPen(penGrey);
-    this->data->faceFibers.clear();
+
+
+    if (dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers == true)
+    {
+        this->data->faceFibers.clear();
+    }
 
     // Draw all triangles from the tets
     for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
@@ -635,6 +639,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
                         //printf ("Projecting back we get (%f, %f).\n", pointBackX, pointBackY);
 
+                        const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
+                        fb.colour = visualiserWidget->fiberColour;
                         this->data->faceFibers.push_back(fb);
 
     //struct FaceFiber{

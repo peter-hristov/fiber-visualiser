@@ -41,6 +41,25 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
         this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + speed);
         this->update();
     }
+
+
+    if (event->key() == Qt::Key_1) {
+        this->tracerVisualiserWidget->fiberColour = 1;
+        this->tracerVisualiserWidget->update();
+    }
+    if (event->key() == Qt::Key_2) {
+        this->tracerVisualiserWidget->fiberColour = 2;
+        this->tracerVisualiserWidget->update();
+    }
+    if (event->key() == Qt::Key_3) {
+        this->tracerVisualiserWidget->fiberColour = 3;
+        this->tracerVisualiserWidget->update();
+    }
+
+    if (event->key() == Qt::Key_R) {
+        this->tracerVisualiserWidget->clearFibers = !this->tracerVisualiserWidget->clearFibers;
+        this->tracerVisualiserWidget->update();
+    }
 }
 
 TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
