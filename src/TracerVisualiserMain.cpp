@@ -15,12 +15,12 @@ using namespace std;
 int main(int argc, char* argv[])
 {
     // Read in command line arguments
-    CLI::App cliApp("K3Pi goofit fitter");
+    // CLI::App cliApp("K3Pi goofit fitter");
 
     tv9k::InputInformation input;
-    //cliApp.add_option("-f,--file,file", input.filename, "File name")->required();
+    // cliApp.add_option("-f,--file,file", input.filename, "File name")->required();
 
-    CLI11_PARSE(cliApp, argc, argv);
+    // CLI11_PARSE(cliApp, argc, argv);
 
     // Read in data file
     Data* data = new Data();

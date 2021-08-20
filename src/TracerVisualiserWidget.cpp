@@ -1,4 +1,4 @@
-#include <qpoint.h>
+//#include <qpoint.h>
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
@@ -29,7 +29,7 @@ TracerVisualiserWidget::setMaterial(GLfloat red, GLfloat green, GLfloat blue, GL
 TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
                                                QWidget* _sibling,
                                                Data* _data)
-  : QGLWidget(parent)
+  : QOpenGLWidget(parent)
 {
     // Set points to other singletons
     this->data = _data;
@@ -552,7 +552,7 @@ TracerVisualiserWidget::drawScene()
 
     if (true == this->drawEdges)
     {
-        glColor4f(1, 1, 1, 0.2);
+        glColor4f(1, 1, 1, this->edgeOpacity);
 
         // Tet Edges
         glBegin(GL_LINES);
@@ -585,9 +585,34 @@ TracerVisualiserWidget::drawScene()
     }
 
 
+
+    glPushMatrix();
+    {
+        glCallList(displayListIndex);
+    }
+    glPopMatrix();
+
+
+    if (this->showVIsosurface == true)
+    {
+        glPushMatrix();
+        {
+            glCallList(displayListIndexTrianglesG);
+        }
+        glPopMatrix();
+    }
+
+    if (this->showUIsosurface == true)
+    {
+        glPushMatrix();
+        {
+            glCallList(displayListIndexTriangles);
+        }
+        glPopMatrix();
+    }
+
     if (true == this->drawVertices)
     {
-        glColor4f(1, 1, 1, 0.2);
         // Draw Vertices
         {
             //for (const auto &vertex : this->data->vertexDomainCoordinates) 
@@ -595,7 +620,7 @@ TracerVisualiserWidget::drawScene()
             {
                 const auto &vertex = this->data->vertexDomainCoordinates[i];
 
-                glColor4f(1, 1, 1, 0.2);
+                glColor4f(1, 1, 1, this->vertexOpacity);
                 if (dynamic_cast<PlotWidget*>(sibling)->dragMode ==  PlotWidget::MouseDragMode::DataPoint && i == dynamic_cast<PlotWidget*>(sibling)->movePoint)
                 {
                     glColor4f(1, 0, 0, 0.2);
@@ -613,30 +638,10 @@ TracerVisualiserWidget::drawScene()
         }
     }
 
-    glPushMatrix();
-    {
-        glCallList(displayListIndex);
-    }
-    glPopMatrix();
-
-
-    //glPushMatrix();
-    //{
-        //glCallList(displayListIndexTrianglesG);
-    //}
-    //glPopMatrix();
-
-    //glPushMatrix();
-    //{
-        //glCallList(displayListIndexTriangles);
-    //}
-    //glPopMatrix();
-
-
     // Tet Faces
     if (true == drawFaces)
     {
-        glColor4f(1, 1, 1, 0.1);
+        glColor4f(1, 1, 1, this->faceOpacity);
 
         glBegin(GL_TRIANGLES);
         {

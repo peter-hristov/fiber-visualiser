@@ -5,19 +5,18 @@
 #include <cstdio>
 #include <omp.h>
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/linestring.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/geometries/multi_point.hpp>
-#include <boost/geometry/geometries/multi_polygon.hpp>
+//#include <boost/geometry.hpp>
+//#include <boost/geometry/geometries/linestring.hpp>
+//#include <boost/geometry/geometries/point_xy.hpp>
+//#include <boost/geometry/geometries/polygon.hpp>
+//#include <boost/geometry/geometries/multi_point.hpp>
+//#include <boost/geometry/geometries/multi_polygon.hpp>
 
 #include <random>
 #include <iomanip>
 
 using std::cout;
 using std::endl;
-using std::setprecision;
 
 using namespace std;
 
@@ -86,11 +85,11 @@ Data::readNcData(tv9k::InputInformation input)
     this->tdim = 5;
 
     this->minX = 0;
-    this->maxX = 2;
+    this->maxX = this->xdim;
     this->minY = 0;
-    this->maxY = 2;
+    this->maxY = this->ydim;
     this->minZ = 0;
-    this->maxZ = 2;
+    this->maxZ = this->zdim;
 
     this->longnameF = "f = tube size";
     this->longnameG = "g = height";
@@ -129,7 +128,6 @@ Data::readNcData(tv9k::InputInformation input)
     }
 
 
-
     // Add vertex range coordinates
     for (int i = 0 ; i < this->xdim * this->ydim * this->zdim ; i++)
     {
@@ -162,7 +160,7 @@ Data::readNcData(tv9k::InputInformation input)
                 this->vertexCoordinatesF.push_back(fValue);
                 this->vertexCoordinatesG.push_back(gValue);
 
-                cout << i << " " << j << " " << k << " | f = " << fValue << " g = " << gValue << endl;
+                //cout << i << " " << j << " " << k << " | f = " << fValue << " g = " << gValue << endl;
 
                 //const auto result = hopfMap(inverseStereographicProjection(coordinates));
 
@@ -214,6 +212,146 @@ Data::readNcData(tv9k::InputInformation input)
             }
         }
     }
+
+    //this->vertexCoordinatesF[0] = 9;
+    //this->vertexCoordinatesG[0] = 8;
+    //this->vertexCoordinatesF[1] = 1;
+    //this->vertexCoordinatesG[1] = 4;
+    //this->vertexCoordinatesF[2] = 5;
+    //this->vertexCoordinatesG[2] = 3;
+    //this->vertexCoordinatesF[3] = 3;
+    //this->vertexCoordinatesG[3] = 3;
+    //this->vertexCoordinatesF[4] = 9;
+    //this->vertexCoordinatesG[4] = 3;
+    //this->vertexCoordinatesF[5] = 0;
+    //this->vertexCoordinatesG[5] = 2;
+    //this->vertexCoordinatesF[6] = 6.5;
+    //this->vertexCoordinatesG[6] = 3.5;
+    //this->vertexCoordinatesF[7] = 0;
+    //this->vertexCoordinatesG[7] = 8;
+
+    this->vertexCoordinatesF[0] = 9;
+    this->vertexCoordinatesG[0] = 8;
+    this->vertexCoordinatesF[1] = 1;
+    this->vertexCoordinatesG[1] = 4;
+    this->vertexCoordinatesF[2] = 4;
+    this->vertexCoordinatesG[2] = 9;
+    this->vertexCoordinatesF[3] = 3;
+    this->vertexCoordinatesG[3] = 3;
+
+    this->vertexCoordinatesF[4] = 7;
+    this->vertexCoordinatesG[4] = 9;
+
+    this->vertexCoordinatesF[5] = 0;
+    this->vertexCoordinatesG[5] = 2;
+    this->vertexCoordinatesF[6] = 6.5;
+    this->vertexCoordinatesG[6] = 3.5;
+    this->vertexCoordinatesF[7] = 0;
+    this->vertexCoordinatesG[7] = 8;
+
+
+    // 8 1st exit
+    this->vertexDomainCoordinates.push_back({0,2,1});
+    this->vertexCoordinatesF.push_back(0);
+    this->vertexCoordinatesG.push_back(10);
+
+    this->tetrahedra.push_back({2,6,7,8});
+    //this->tetrahedra.push_back({2,3,7,8});
+
+
+    //this->vertexDomainCoordinates.push_back({0.5,1,2});
+    //this->vertexCoordinatesF.push_back(7);
+    //this->vertexCoordinatesG.push_back(10);
+
+    //this->tetrahedra.push_back({6,7,8,9});
+
+    //this->vertexDomainCoordinates.push_back({2,1,2});
+    //this->vertexCoordinatesF.push_back(7);
+    //this->vertexCoordinatesG.push_back(10);
+
+    //this->tetrahedra.push_back({7,8,9,10});
+
+
+    // 9 2nd exit
+    this->vertexDomainCoordinates.push_back({1,0,2});
+    this->vertexCoordinatesF.push_back(-1);
+    this->vertexCoordinatesG.push_back(11);
+
+    this->tetrahedra.push_back({4,5,7,9});
+
+
+    // 10 2nd of 1st exit
+    this->vertexDomainCoordinates.push_back({-1,1,1});
+    this->vertexCoordinatesF.push_back(-2);
+    this->vertexCoordinatesG.push_back(9);
+
+    this->tetrahedra.push_back({8,2,6,10});
+    this->tetrahedra.push_back({0,2,6,10});
+    this->tetrahedra.push_back({0,4,6,10});
+
+
+    // 11 2nd on 2nd exit
+    this->vertexDomainCoordinates.push_back({0,-1,1});
+    this->vertexCoordinatesF.push_back(6);
+    this->vertexCoordinatesG.push_back(2);
+
+    this->tetrahedra.push_back({9,4,5,11});
+    //this->tetrahedra.push_back({0,1,5,11});
+
+    // 12 3rd on 2nd exit
+    this->vertexDomainCoordinates.push_back({0,0,2});
+    this->vertexCoordinatesF.push_back(-1);
+    this->vertexCoordinatesG.push_back(10);
+
+    this->tetrahedra.push_back({9,4,12,11});
+    //this->tetrahedra.push_back({0,1,5,11});
+
+
+    // 13 4th on 2nd exit
+    this->vertexDomainCoordinates.push_back({-1,0,2});
+    this->vertexCoordinatesF.push_back(-2);
+    this->vertexCoordinatesG.push_back(5);
+
+    this->tetrahedra.push_back({13,4,12,11});
+
+
+    this->tetrahedra.push_back({0,4,11,13});
+    this->tetrahedra.push_back({0,4,10,13});
+
+    this->tetrahedra.push_back({6,4,10,13});
+
+    //this->tetrahedra.push_back({13,4,12,});
+
+
+    //this->tetrahedra.push_back({4,5,7,10});
+
+    //this->tetrahedra.push_back({5,6,7,9});
+    //this->tetrahedra.push_back({4,5,7,9});
+
+    //this->tetrahedra.push_back({4,7,5,9});
+    //this->tetrahedra.push_back({4,7,6,9});
+
+
+    //this->vertexDomainCoordinates.push_back({0,2,2});
+    //this->vertexCoordinatesF.push_back(4);
+    //this->vertexCoordinatesG.push_back(4);
+
+    //this->tetrahedra.push_back({4,7,5,9});
+    //this->tetrahedra.push_back({4,7,6,9});
+
+
+
+    //this->vertexDomainCoordinates.push_back({2,2,1});
+    //this->vertexCoordinatesF.push_back(0);
+    //this->vertexCoordinatesG.push_back(0);
+
+    //this->tetrahedra.push_back({5,7,9,10});
+
+
+    //this->tetrahedra.push_back({2,7,3,10});
+
+
+
 
     this->minF = this->vertexCoordinatesF[0];
     this->maxF = this->vertexCoordinatesF[0];

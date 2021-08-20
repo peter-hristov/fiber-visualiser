@@ -39,6 +39,8 @@ class PlotWidget : public QWidget
     bool polygonLocked = false;
     // This is the initial point when tranclating the polygon
     QPointF initialMovePoint;
+    
+    //int 
 
     QTransform painterCombinedTransform;
 

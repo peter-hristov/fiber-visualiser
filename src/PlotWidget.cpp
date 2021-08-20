@@ -564,10 +564,10 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         p.drawEllipse(QPointF(x1, y1), 3, 3);
         p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
-        //p.drawText(x1, y1, QString::number(i));
+        p.drawText(x1, y1, QString::number(i));
     }
 
-    auto penGrey = QPen(QColor(0, 0, 0, 255));
+    auto penGrey = QPen(QColor(0, 0, 0, 225));
     p.setPen(penGrey);
 
 

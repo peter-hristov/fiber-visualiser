@@ -10,13 +10,15 @@
 #include <GL/glut.h>
 #endif
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 
 #include "./Data.h"
 #include "./ArcBall/Ball.h"
 
-class TracerVisualiserWidget : public QGLWidget
+class TracerVisualiserWidget : public QOpenGLWidget
 {
+  Q_OBJECT 
+
   public:
     TracerVisualiserWidget(QWidget*, QWidget*, Data*);
     GLfloat scale = 0;
@@ -28,6 +30,13 @@ class TracerVisualiserWidget : public QGLWidget
     bool drawEdges = 1;
     bool drawFaces = 1;
     bool drawVertices = 1;
+
+    bool showUIsosurface = false;
+    bool showVIsosurface = false;
+
+    float edgeOpacity = 0.2;
+    float faceOpacity = 0.1;
+    float vertexOpacity = 0.2;
 
     int fiberColour = 1;
     bool clearFibers = 1;

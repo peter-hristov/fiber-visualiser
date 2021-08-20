@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -25,8 +25,8 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
-find_package(OpenMP REQUIRED)
-FIND_PACKAGE(Boost  REQUIRED)
+#find_package(OpenMP REQUIRED)
+#FIND_PACKAGE(Boost  REQUIRED)
 
 
 
@@ -53,7 +53,7 @@ set(SOURCES
     ./src/utility/Geometry.cpp
     )
 
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+#INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
 #if(VTK_DIR)
     #include(${VTK_USE_FILE})
@@ -62,15 +62,15 @@ INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC
+    PRIVATE
     ${Qt5Core_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}
     ${Qt5OpenGL_LIBRARIES}
     ${OPENGL_LIBRARIES}  # required so that include is "-framework OpenGL" on macos instad of "-lOpenGL"
     ${GLUT_LIBRARIES}
-    ${netCDF_LIBRARIES}
-    ${Boost_LIBRARIES}
-    OpenMP::OpenMP_CXX
+    #${netCDF_LIBRARIES}
+    #${Boost_LIBRARIES}
+    #OpenMP::OpenMP_CXX
     )
 
 #if(APPLE)
@@ -81,12 +81,12 @@ target_link_libraries(${PROJECT_NAME}
 #endif(APPLE)
 
 # Is this only needed for apple?
-target_include_directories(${PROJECT_NAME}
-  PUBLIC
-  ${netCDF_INCLUDE_DIR}
-  ${OPENGL_INCLUDE_DIR}
-  ${Qt5Core_INCLUDE_DIRS}
-)
+#target_include_directories(${PROJECT_NAME}
+  #PUBLIC
+  #${netCDF_INCLUDE_DIR}
+  #${OPENGL_INCLUDE_DIR}
+  #${Qt5Core_INCLUDE_DIRS}
+#)
 
 #if(VTK_DIR)
     #target_link_libraries(${PROJECT_NAME} ${VTK_LIBRARIES})
@@ -97,23 +97,23 @@ target_include_directories(${PROJECT_NAME}
 #endif(TTKBase_DIR)
 
 # Is this only needed for apple?
-set_target_properties(${PROJECT_NAME}
-    PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-)
+#set_target_properties(${PROJECT_NAME}
+    #PROPERTIES
+    #AUTOMOC ON
+    #AUTOUIC ON
+#)
 
-add_custom_target(
-        clangformat
-        COMMAND /usr/bin/clang-format-10
-        -i
-        ../src/*.cpp
-        ../src/*.h
-        ../src/*.hpp
-        ../src/utility/*.cpp
-        ../src/utility/*.h
-        ../src/utility/*.hpp
-)
+#add_custom_target(
+        #clangformat
+        #COMMAND /usr/bin/clang-format-10
+        #-i
+        #../src/*.cpp
+        #../src/*.h
+        #../src/*.hpp
+        #../src/utility/*.cpp
+        #../src/utility/*.h
+        #../src/utility/*.hpp
+#)
 
 
 # for debugging cmake variables:

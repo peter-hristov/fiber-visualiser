@@ -1,16 +1,10 @@
 #pragma once
 
-#include <QBoxLayout>
-#include <QComboBox>
-#include <QDoubleSpinBox>
-#include <QGLWidget>
 #include <QKeyEvent>
-#include <QMenuBar>
-#include <QObject>
-#include <QProgressBar>
+#include <QWidget>
+#include <QGridLayout>
 #include <QSlider>
-#include <qcheckbox.h>
-#include <qlabel.h>
+
 
 #include "./Data.h"
 #include "./GlobalConfig.h"
@@ -32,4 +26,20 @@ class TracerVisualiserWindow : public QWidget
     TracerVisualiserWidget* tracerVisualiserWidget;
 
     QGridLayout* windowLayout;
+
+    QGridLayout *optionsLayout;
+    QGridLayout * optionsLayout2;
+
+    QCheckBox *checkboxShowVertices;
+    QCheckBox *checkboxShowEdges;
+    QCheckBox *checkboxShowFaces;
+
+    QSlider *faceOpacitySlider;
+    QSlider *edgeOpacitySlider;
+    QSlider *vertexOpacitySlider;
+
+    QSlider *fakeSlider;
+
+
+    QCheckBox *checkbox2;
 };
