@@ -1,5 +1,6 @@
 #include <QtMath>
 #include <assert.h>
+#include <limits>
 
 #include "Geometry.h"
 

@@ -1,4 +1,5 @@
 .clangd
+.cache
 compile_commands.json
 
 # C++ objects and libs

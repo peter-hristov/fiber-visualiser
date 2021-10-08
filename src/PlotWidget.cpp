@@ -559,15 +559,24 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         }
         else
         {
-            p.setPen(Qt::black);
+            if (i == 13)
+            {
+                //p.setPen(Qt::red);
+                p.setPen(Qt::black);
+            }
+            else
+            {
+                p.setPen(Qt::black);
+            }
         }
 
         p.drawEllipse(QPointF(x1, y1), 3, 3);
-        p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
-        p.drawText(x1, y1, QString::number(i));
+        //p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
+        //p.drawText(x1, y1, QString::number(i));
     }
 
     auto penGrey = QPen(QColor(0, 0, 0, 225));
+    penGrey.setWidthF(0.8);
     p.setPen(penGrey);
 
 

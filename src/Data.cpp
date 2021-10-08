@@ -251,74 +251,74 @@ Data::readNcData(tv9k::InputInformation input)
 
 
     // 8 1st exit
-    this->vertexDomainCoordinates.push_back({0,2,1});
-    this->vertexCoordinatesF.push_back(0);
-    this->vertexCoordinatesG.push_back(10);
-
-    this->tetrahedra.push_back({2,6,7,8});
-    //this->tetrahedra.push_back({2,3,7,8});
-
-
-    //this->vertexDomainCoordinates.push_back({0.5,1,2});
-    //this->vertexCoordinatesF.push_back(7);
+    //this->vertexDomainCoordinates.push_back({0,2,1});
+    //this->vertexCoordinatesF.push_back(0);
     //this->vertexCoordinatesG.push_back(10);
 
-    //this->tetrahedra.push_back({6,7,8,9});
+    //this->tetrahedra.push_back({2,6,7,8});
+    ////this->tetrahedra.push_back({2,3,7,8});
 
-    //this->vertexDomainCoordinates.push_back({2,1,2});
-    //this->vertexCoordinatesF.push_back(7);
+
+    ////this->vertexDomainCoordinates.push_back({0.5,1,2});
+    ////this->vertexCoordinatesF.push_back(7);
+    ////this->vertexCoordinatesG.push_back(10);
+
+    ////this->tetrahedra.push_back({6,7,8,9});
+
+    ////this->vertexDomainCoordinates.push_back({2,1,2});
+    ////this->vertexCoordinatesF.push_back(7);
+    ////this->vertexCoordinatesG.push_back(10);
+
+    ////this->tetrahedra.push_back({7,8,9,10});
+
+
+    //// 9 2nd exit
+    //this->vertexDomainCoordinates.push_back({1,0,2});
+    //this->vertexCoordinatesF.push_back(-1);
+    //this->vertexCoordinatesG.push_back(11);
+
+    //this->tetrahedra.push_back({4,5,7,9});
+
+
+    //// 10 2nd of 1st exit
+    //this->vertexDomainCoordinates.push_back({-1,1,1});
+    //this->vertexCoordinatesF.push_back(-2);
+    //this->vertexCoordinatesG.push_back(9);
+
+    //this->tetrahedra.push_back({8,2,6,10});
+    //this->tetrahedra.push_back({0,2,6,10});
+    //this->tetrahedra.push_back({0,4,6,10});
+
+
+    //// 11 2nd on 2nd exit
+    //this->vertexDomainCoordinates.push_back({0,-1,1});
+    //this->vertexCoordinatesF.push_back(6);
+    //this->vertexCoordinatesG.push_back(2);
+
+    //this->tetrahedra.push_back({9,4,5,11});
+    ////this->tetrahedra.push_back({0,1,5,11});
+
+    //// 12 3rd on 2nd exit
+    //this->vertexDomainCoordinates.push_back({0,0,2});
+    //this->vertexCoordinatesF.push_back(-1);
     //this->vertexCoordinatesG.push_back(10);
 
-    //this->tetrahedra.push_back({7,8,9,10});
+    //this->tetrahedra.push_back({9,4,12,11});
+    ////this->tetrahedra.push_back({0,1,5,11});
 
 
-    // 9 2nd exit
-    this->vertexDomainCoordinates.push_back({1,0,2});
-    this->vertexCoordinatesF.push_back(-1);
-    this->vertexCoordinatesG.push_back(11);
+    //// 13 4th on 2nd exit
+    //this->vertexDomainCoordinates.push_back({-1,0,2});
+    //this->vertexCoordinatesF.push_back(-2);
+    //this->vertexCoordinatesG.push_back(5);
 
-    this->tetrahedra.push_back({4,5,7,9});
-
-
-    // 10 2nd of 1st exit
-    this->vertexDomainCoordinates.push_back({-1,1,1});
-    this->vertexCoordinatesF.push_back(-2);
-    this->vertexCoordinatesG.push_back(9);
-
-    this->tetrahedra.push_back({8,2,6,10});
-    this->tetrahedra.push_back({0,2,6,10});
-    this->tetrahedra.push_back({0,4,6,10});
+    //this->tetrahedra.push_back({13,4,12,11});
 
 
-    // 11 2nd on 2nd exit
-    this->vertexDomainCoordinates.push_back({0,-1,1});
-    this->vertexCoordinatesF.push_back(6);
-    this->vertexCoordinatesG.push_back(2);
+    //this->tetrahedra.push_back({0,4,11,13});
+    //this->tetrahedra.push_back({0,4,10,13});
 
-    this->tetrahedra.push_back({9,4,5,11});
-    //this->tetrahedra.push_back({0,1,5,11});
-
-    // 12 3rd on 2nd exit
-    this->vertexDomainCoordinates.push_back({0,0,2});
-    this->vertexCoordinatesF.push_back(-1);
-    this->vertexCoordinatesG.push_back(10);
-
-    this->tetrahedra.push_back({9,4,12,11});
-    //this->tetrahedra.push_back({0,1,5,11});
-
-
-    // 13 4th on 2nd exit
-    this->vertexDomainCoordinates.push_back({-1,0,2});
-    this->vertexCoordinatesF.push_back(-2);
-    this->vertexCoordinatesG.push_back(5);
-
-    this->tetrahedra.push_back({13,4,12,11});
-
-
-    this->tetrahedra.push_back({0,4,11,13});
-    this->tetrahedra.push_back({0,4,10,13});
-
-    this->tetrahedra.push_back({6,4,10,13});
+    //this->tetrahedra.push_back({6,4,10,13});
 
     //this->tetrahedra.push_back({13,4,12,});
 
