@@ -643,16 +643,38 @@ TracerVisualiserWidget::drawScene()
     {
         glColor4f(1, 1, 1, this->faceOpacity);
 
+        int centerVertexId = 30;
+
         glBegin(GL_TRIANGLES);
         {
             for(const auto &tet : this->data->tetrahedra)
             {
+                bool isCorrectTet = false;
+
+                for(int i = 0 ; i < 4 ; i++)
+                {
+                    if (tet[i] == centerVertexId)
+                    {
+                        isCorrectTet = true;
+                    }
+                }
+
+                if (false == isCorrectTet)
+                {
+                    continue;
+                }
+
                 for(int i = 0 ; i < 4 ; i++)
                 {
                     for(int j = i + 1 ; j < 4 ; j++)
                     {
                         for(int k = j + 1 ; k < 4 ; k++)
                         {
+                            if (tet[i] == centerVertexId || tet[j] == centerVertexId || tet[k] == centerVertexId)
+                            {
+                                continue;
+                            }
+
                             GLfloat pointA[3], pointB[3], pointC[3];
 
                             pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];

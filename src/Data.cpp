@@ -79,9 +79,9 @@ Data::readNcData(tv9k::InputInformation input)
     this->originalZdim = 10;
     this->originalTdim = 10;
 
-    this->xdim = 2;
-    this->ydim = 2;
-    this->zdim = 2;
+    this->xdim = 4;
+    this->ydim = 4;
+    this->zdim = 4;
     this->tdim = 5;
 
     this->minX = 0;
