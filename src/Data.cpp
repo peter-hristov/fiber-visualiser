@@ -69,9 +69,7 @@ vector<float> hopfMap(const vector<float> v)
     };
 }
 
-
-void
-Data::readNcData(tv9k::InputInformation input)
+void Data::generateStandardGrid()
 {
     // Read Dimensions
     this->originalXdim = 10;
@@ -351,30 +349,8 @@ Data::readNcData(tv9k::InputInformation input)
     //this->tetrahedra.push_back({2,7,3,10});
 
 
+    this->computeMinMaxFG();
 
-
-    this->minF = this->vertexCoordinatesF[0];
-    this->maxF = this->vertexCoordinatesF[0];
-
-    this->minG = this->vertexCoordinatesG[0];
-    this->maxG = this->vertexCoordinatesG[0];
-
-    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
-    {
-        this->minF = std::min(this->minF, this->vertexCoordinatesF[i]);
-        this->maxF = std::max(this->maxF, this->vertexCoordinatesF[i]);
-
-        this->minG = std::min(this->minG, this->vertexCoordinatesG[i]);
-        this->maxG = std::max(this->maxG, this->vertexCoordinatesG[i]);
-    }
-
-    cout << "The min height is and the max height is " << minG << " " << maxG << endl;
-
-    this->minF -= 2;
-    this->maxF += 2;
-
-    this->minG -= 2;
-    this->maxG += 2;
 
     // Add tets
     for (int i = 0 ; i < this->xdim - 1 ; i++)
@@ -427,3 +403,170 @@ Data::readNcData(tv9k::InputInformation input)
     //this->tetrahedra.push_back({1,2,3,5});
 }
 
+void
+Data::computeMinMaxFG()
+{
+    this->minF = this->vertexCoordinatesF[0];
+    this->maxF = this->vertexCoordinatesF[0];
+
+    this->minG = this->vertexCoordinatesG[0];
+    this->maxG = this->vertexCoordinatesG[0];
+
+    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
+    {
+        this->minF = std::min(this->minF, this->vertexCoordinatesF[i]);
+        this->maxF = std::max(this->maxF, this->vertexCoordinatesF[i]);
+
+        this->minG = std::min(this->minG, this->vertexCoordinatesG[i]);
+        this->maxG = std::max(this->maxG, this->vertexCoordinatesG[i]);
+    }
+
+    // cout << "The min height is and the max height is " << minG << " " << maxG << endl;
+
+    //
+    // Add some padding
+    //
+    this->minF -= .2;
+    this->maxF += .2;
+    this->minG -= .2;
+    this->maxG += .2;
+}
+
+std::vector<GLfloat> getBarycenter(const std::vector<GLfloat> &a, const std::vector<GLfloat> &b, const std::vector<GLfloat> &c)
+{
+    return {
+        {.3 * a[0] + .3 * b[0] + .3 * c[0]},
+        {.3 * a[1] + .3 * b[1] + .3 * c[1]},
+        {.3 * a[2] + .3 * b[2] + .3 * c[2]}
+    };
+}
+
+std::string pointToString(const std::vector<GLfloat> point)
+{
+    string pointString = "[";
+
+    for (int i = 0 ; i < point.size() ; i++)
+    {
+        pointString += std::to_string(point[i]) + ", ";
+    }
+
+    pointString.pop_back();
+    pointString.pop_back();
+    pointString += "]";
+
+    return pointString;
+}
+
+std::vector<GLfloat> getBarycenter(const std::vector<std::vector<GLfloat>> vertices)
+{
+    const float ratio = 1.0 / static_cast<float>(vertices.size());
+
+    std::vector<float> barycenter = {0,0,0};
+
+    for (int i = 0 ; i < vertices.size() ; i++)
+    {
+        barycenter[0] += ratio * vertices[i][0];
+        barycenter[1] += ratio * vertices[i][1];
+        barycenter[2] += ratio * vertices[i][2];
+    }
+
+    return barycenter;
+}
+
+
+void 
+Data::generateSphereMesh()
+{
+    // Read Dimensions
+    this->originalXdim = 10;
+    this->originalYdim = 10;
+    this->originalZdim = 10;
+    this->originalTdim = 10;
+
+    this->xdim = 2;
+    this->ydim = 2;
+    this->zdim = 2;
+    this->tdim = 2;
+
+    this->minX = 0;
+    this->maxX = this->xdim;
+    this->minY = 0;
+    this->maxY = this->ydim;
+    this->minZ = 0;
+    this->maxZ = this->zdim;
+
+    this->longnameF = "f";
+    this->longnameG = "g";
+
+    this->vertexDomainCoordinates.push_back({0, 0, 0});
+    this->vertexDomainCoordinates.push_back({1, 0, 0});
+    //this->vertexDomainCoordinates.push_back({0, 1, 0});
+    this->vertexDomainCoordinates.push_back({.5, 0.8660, 0});
+    //this->vertexDomainCoordinates.push_back({.25, .25, 1});
+
+    auto fourth = getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[2]});
+    fourth[2] += 1;
+
+    this->vertexDomainCoordinates.push_back(fourth);
+
+    this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[2]}));
+    this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[3]}));
+
+    // Center
+    this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[2], this->vertexDomainCoordinates[3]}));
+
+    //this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[5]}));
+
+    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
+    {
+        std::random_device rd;
+        std::default_random_engine eng(rd());
+        std::uniform_real_distribution<float> distr(0, 2 * M_PI);
+
+        float t = distr(eng);
+
+        this->vertexCoordinatesF.push_back(cos(t));
+        this->vertexCoordinatesG.push_back(sin(t));
+    }
+
+    this->vertexCoordinatesF[this->vertexDomainCoordinates.size() - 1] = 0;
+    this->vertexCoordinatesG[this->vertexDomainCoordinates.size() - 1] = 0;
+
+    this->computeMinMaxFG();
+
+    //this->tetrahedra.push_back({4, 0, 1, 2});
+
+    //this->tetrahedra.push_back({4, 0, 5, 7});
+    //this->tetrahedra.push_back({4, 0, 1, 7});
+    //this->tetrahedra.push_back({4, 1, 5, 7});
+
+
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 4});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 4});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 4});
+
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 5});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 3, 5});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 3, 5});
+
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 3});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 3});
+
+    this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
+
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 3, 5});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 3, 5});
+
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 6});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 3, 6});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 2, 3, 6});
+
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 3});
+}
+
+void
+Data::readNcData(tv9k::InputInformation input)
+{
+    //this->generateStandardGrid();
+    this->generateSphereMesh();
+}

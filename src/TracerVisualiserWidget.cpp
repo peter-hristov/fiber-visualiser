@@ -389,7 +389,7 @@ TracerVisualiserWidget::generateDisplayList()
         {
             glTranslatef(point[0], point[1], point[2]);
             GLUquadric* sphere = gluNewQuadric();
-            gluSphere(sphere, 0.02, 10, 10);
+            gluSphere(sphere, 0.01, 10, 10);
             delete sphere;
         }
         glPopMatrix();
@@ -512,7 +512,7 @@ TracerVisualiserWidget::drawScene()
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180.);
 
     // Scrolling
-    glTranslatef(0.0, 0.0, -1 * scale / 2);
+    glTranslatef(0.0, 0.0, -1 * scale / 6);
 
     // Offset along x, y (with the right mouse button)
     glTranslatef(translateX, translateY, 0.0);
@@ -525,9 +525,13 @@ TracerVisualiserWidget::drawScene()
     // GLUquadric* sphere = gluNewQuadric();
     // gluSphere(sphere, 2, 3, 3);
 
-    glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
-    glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
-    glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
+    // Data Center
+    //glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
+    //glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
+    //glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
+    glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0], 0, 0);
+    glTranslatef(0, 0, this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][1]);
+    glTranslatef(0, -1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][2], 0);
 
     glRotatef(-90., 1., 0., 0.);
 
@@ -557,8 +561,11 @@ TracerVisualiserWidget::drawScene()
         // Tet Edges
         glBegin(GL_LINES);
         {
-            for(const auto &tet : this->data->tetrahedra)
+            for(int t = 0 ; t < this->data->tetrahedra.size() ; t++)
             {
+                //if (this->data->tetsWithFibers[t] == false) {continue;}
+                const auto tet = this->data->tetrahedra[t];
+
                 for(int i = 0 ; i < 4 ; i++)
                 {
                     for(int j = i + 1 ; j < 4 ; j++)
@@ -629,7 +636,7 @@ TracerVisualiserWidget::drawScene()
                 {
                     glTranslatef(vertex[0], vertex[1], vertex[2]);
                     GLUquadric* sphere = gluNewQuadric();
-                    gluSphere(sphere, 0.03, 10, 10);
+                    gluSphere(sphere, 0.01, 10, 10);
                     delete sphere;
                 }
                 glPopMatrix();
@@ -643,13 +650,20 @@ TracerVisualiserWidget::drawScene()
     {
         glColor4f(1, 1, 1, this->faceOpacity);
 
-        int centerVertexId = 30;
+        int centerVertexId = this->data->vertexDomainCoordinates.size() - 1;
+
+        int triangles = 0;
 
         glBegin(GL_TRIANGLES);
         {
-            for(const auto &tet : this->data->tetrahedra)
+            //for(const auto &tet : this->data->tetrahedra)
+            for(int t = 0 ; t < this->data->tetrahedra.size() ; t++)
             {
-                bool isCorrectTet = false;
+                //if (this->data->tetsWithFibers[t] == false) {continue;}
+                const auto tet = this->data->tetrahedra[t];
+
+                bool isCorrectTet = true;
+                //bool isCorrectTet = false;
 
                 for(int i = 0 ; i < 4 ; i++)
                 {
@@ -671,6 +685,7 @@ TracerVisualiserWidget::drawScene()
                         for(int k = j + 1 ; k < 4 ; k++)
                         {
                             if (tet[i] == centerVertexId || tet[j] == centerVertexId || tet[k] == centerVertexId)
+                            //if (!(tet[i] == centerVertexId || tet[j] == centerVertexId || tet[k] == centerVertexId))
                             {
                                 continue;
                             }
@@ -692,6 +707,8 @@ TracerVisualiserWidget::drawScene()
                             glVertex3fv(pointA);
                             glVertex3fv(pointB);
                             glVertex3fv(pointC);
+
+                            triangles++;
                         }
                     }
                 }

@@ -572,7 +572,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         p.drawEllipse(QPointF(x1, y1), 3, 3);
         //p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
-        //p.drawText(x1, y1, QString::number(i));
+        p.drawText(x1, y1, QString::number(i));
     }
 
     auto penGrey = QPen(QColor(0, 0, 0, 225));
@@ -584,6 +584,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     {
         this->data->faceFibers.clear();
     }
+
+    this->data->tetsWithFibers = vector<bool>(this->data->tetrahedra.size(), false);
 
     // Draw all triangles from the tets
     for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
@@ -651,6 +653,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
                         const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
                         fb.colour = visualiserWidget->fiberColour;
                         this->data->faceFibers.push_back(fb);
+                        this->data->tetsWithFibers[tetId] = true;
 
     //struct FaceFiber{
         //float alpha;

@@ -30,6 +30,13 @@ class Data
     GLfloat minY, maxY;
     GLfloat minZ, maxZ;
 
+    void generateStandardGrid();
+    void generateSphereMesh();
+
+    std::vector<bool> tetsWithFibers;
+
+    void computeMinMaxFG();
+
     std::string longnameF, longnameG, units;
 
     QVector<QPointF> mousePoints;

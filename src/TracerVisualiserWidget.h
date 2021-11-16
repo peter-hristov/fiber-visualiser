@@ -34,9 +34,9 @@ class TracerVisualiserWidget : public QOpenGLWidget
     bool showUIsosurface = false;
     bool showVIsosurface = false;
 
-    float edgeOpacity = 0.0;
-    float faceOpacity = 0.8;
-    float vertexOpacity = 0.0;
+    float edgeOpacity = 0.8;
+    float faceOpacity = 0.2;
+    float vertexOpacity = 0.8;
 
     int fiberColour = 1;
     bool clearFibers = 1;
