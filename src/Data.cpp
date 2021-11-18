@@ -517,17 +517,29 @@ Data::generateSphereMesh()
 
     //this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[5]}));
 
+    vector<float> circleOrder = {
+        0, 
+        0.73 * 2  * M_PI, 
+        0.15 * 2 * M_PI, 
+        0.57 * 2 * M_PI, 
+        0.4 * 2 * M_PI, 
+        0.3 * 2 * M_PI
+    };
+
     for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
     {
         std::random_device rd;
         std::default_random_engine eng(rd());
         std::uniform_real_distribution<float> distr(0, 2 * M_PI);
 
-        float t = distr(eng);
+        //float t = distr(eng);
+        float t = circleOrder[i];
+        t += M_PI / 2;
 
         this->vertexCoordinatesF.push_back(cos(t));
         this->vertexCoordinatesG.push_back(sin(t));
     }
+
 
     this->vertexCoordinatesF[this->vertexDomainCoordinates.size() - 1] = 0;
     this->vertexCoordinatesG[this->vertexDomainCoordinates.size() - 1] = 0;
