@@ -1,5 +1,6 @@
 #include "Data.h"
 #include "./utility/Geometry.h"
+#include "./utility/utility.h"
 
 #include <cassert>
 #include <cstdio>
@@ -14,11 +15,13 @@
 
 #include <random>
 #include <iomanip>
+#include <utility>
 
 using std::cout;
 using std::endl;
 
 using namespace std;
+
 
 size_t Data::trippleToIndex(const size_t i, const size_t j, const size_t k)
 {
@@ -517,32 +520,12 @@ Data::generateSphereMesh()
 
     //this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[5]}));
 
-    vector<float> circleOrder = {
-        0, 
-        0.73 * 2  * M_PI, 
-        0.15 * 2 * M_PI, 
-        0.57 * 2 * M_PI, 
-        0.4 * 2 * M_PI, 
-        0.3 * 2 * M_PI
-    };
+    // Rebecca
+    //vector<string> tophat = {"v0", "V4", "V5", "v1", "V2", "v3"};
 
-    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
-    {
-        std::random_device rd;
-        std::default_random_engine eng(rd());
-        std::uniform_real_distribution<float> distr(0, 2 * M_PI);
+    vector<string> tophat = {"v0", "v4", "v5", "v1", "v2", "v3"};
 
-        //float t = distr(eng);
-        float t = circleOrder[i];
-        t += M_PI / 2;
-
-        this->vertexCoordinatesF.push_back(cos(t));
-        this->vertexCoordinatesG.push_back(sin(t));
-    }
-
-
-    this->vertexCoordinatesF[this->vertexDomainCoordinates.size() - 1] = 0;
-    this->vertexCoordinatesG[this->vertexDomainCoordinates.size() - 1] = 0;
+    std::tie(this->vertexCoordinatesF, vertexCoordinatesG) = utility::generateCoordinatesFromTophat(tophat);
 
     this->computeMinMaxFG();
 

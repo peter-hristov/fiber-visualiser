@@ -51,6 +51,7 @@ set(SOURCES
     ./src/ArcBall/BallAux.cpp
     ./src/ArcBall/BallMath.cpp
     ./src/utility/Geometry.cpp
+    ./src/utility/utility.cpp
     )
 
 #INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
