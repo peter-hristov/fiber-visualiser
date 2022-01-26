@@ -507,23 +507,34 @@ Data::generateSphereMesh()
     this->vertexDomainCoordinates.push_back({.5, 0.8660, 0});
     //this->vertexDomainCoordinates.push_back({.25, .25, 1});
 
+    // Forth vertex of the tetrahedron
     auto fourth = getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[2]});
     fourth[2] += 1;
 
     this->vertexDomainCoordinates.push_back(fourth);
 
+    // Subdividing the sides
     this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[2]}));
     this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[3]}));
+    this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[2], this->vertexDomainCoordinates[3]}));
 
     // Center
     this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[2], this->vertexDomainCoordinates[3]}));
 
     //this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[5]}));
 
-    // Rebecca
+    // Rebecca (3cc)
     //vector<string> tophat = {"v0", "V4", "V5", "v1", "V2", "v3"};
 
-    vector<string> tophat = {"v0", "v4", "v5", "v1", "v2", "v3"};
+    vector<string> tophat = {
+//"v0", "V4", "v2", "V3", "v1", "v5",
+//"v0", "V4", "v3", "v2", "V5", "v1", "V6"
+//"v0", "V4", "v3", "v2", "V6", "v1", "V5"
+"v0", "v3", "v2", "v1", "V4", "V6", "V5"
+};
+
+
+    //vector<string> tophat = {"v0", "v4", "v5", "v1", "v2", "v3"};
 
     std::tie(this->vertexCoordinatesF, vertexCoordinatesG) = utility::generateCoordinatesFromTophat(tophat);
 
@@ -535,7 +546,20 @@ Data::generateSphereMesh()
     //this->tetrahedra.push_back({4, 0, 1, 7});
     //this->tetrahedra.push_back({4, 1, 5, 7});
 
+    // This is for one subdivision
+    // {
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 4});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 4});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 4});
 
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 3});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 3});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 3});
+    //// }
+
+
+    // This is for two subdivisions
+    // {
     this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 4});
     this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 4});
     this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 4});
@@ -544,8 +568,12 @@ Data::generateSphereMesh()
     this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 3, 5});
     this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 3, 5});
 
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 3});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 6});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 6, 3});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 6, 2, 3});
+
     this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 3});
+    // }
 
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
