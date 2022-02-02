@@ -36,7 +36,8 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
     this->sibling = _sibling;
 
     // Default values for paraters
-    this->scale = data->zdim * 2;
+    //this->scale = data->zdim * 2;
+    this->scale = (data->maxZ - data->minZ) * 2;
 
     // Initialise Arcball
     Ball_Init(&theBall);
@@ -512,7 +513,7 @@ TracerVisualiserWidget::drawScene()
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180.);
 
     // Scrolling
-    glTranslatef(0.0, 0.0, -1 * scale / 6);
+    glTranslatef(0.0, 0.0, -1 * scale / 10);
 
     // Offset along x, y (with the right mouse button)
     glTranslatef(translateX, translateY, 0.0);
@@ -529,30 +530,15 @@ TracerVisualiserWidget::drawScene()
     //glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
     //glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
     //glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
-    glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0], 0, 0);
-    glTranslatef(0, 0, this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][1]);
-    glTranslatef(0, -1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][2], 0);
+    glTranslatef(-1.0 * (this->data->maxX - this->data->minX) / 2, 0, 0);
+    glTranslatef(0, 0, (this->data->maxY - this->data->minY) / 2);
+    glTranslatef(0, -1.0 * (this->data->maxZ - this->data->minZ) / 2, 0);
 
     glRotatef(-90., 1., 0., 0.);
 
-    this->drawAxis(1000., 1.0 * this->data->xdim / 800.0);
+    this->drawAxis(1000., 1.0 * (this->data->maxX - this->data->minX) / 1800.0);
 
     glColor3f(1, 1, 1);
-
-    // Bounding Cube
-    glPushMatrix();
-    {
-        float xSize = this->data->maxX - this->data->minX;
-        float ySize = this->data->maxY - this->data->minY;
-        float zSize = this->data->maxZ - this->data->minZ;
-
-        //glTranslatef(-xSize/2, -ySize/2 , -zSize/2 );
-        glScalef(xSize - 1, ySize - 1, zSize - 1);
-
-        setMaterial(255, 255, 255, 100, 30.0);
-        this->drawWiredCube(tv9k::geometry::cubeVertices);
-    }
-    glPopMatrix();
 
     if (true == this->drawEdges)
     {
@@ -797,19 +783,19 @@ void
 TracerVisualiserWidget::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_W) {
-        translateX += 0.1 * this->data->xdim;
+        //translateX += 0.1 * this->data->xdim;
         this->update();
     }
     if (event->key() == Qt::Key_A) {
-        translateY += 0.1 * this->data->xdim;
+        //translateY += 0.1 * this->data->xdim;
         this->update();
     }
     if (event->key() == Qt::Key_S) {
-        translateX -= 0.1 * this->data->xdim;
+        //translateX -= 0.1 * this->data->xdim;
         this->update();
     }
     if (event->key() == Qt::Key_D) {
-        translateY -= 0.1 * this->data->xdim;
+        //translateY -= 0.1 * this->data->xdim;
         this->update();
     }
 }

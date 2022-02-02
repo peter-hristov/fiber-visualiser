@@ -41,6 +41,8 @@ std::pair<std::vector<float>, std::vector<float>> utility::generateCoordinatesFr
         coordinatesF.push_back(cos(t));
         coordinatesG.push_back(-sin(t));
     }
+    coordinatesF.push_back(0.0);
+    coordinatesG.push_back(0.0);
 
     return {coordinatesF, coordinatesG};
 }

@@ -14,17 +14,14 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-    // Read in command line arguments
-    // CLI::App cliApp("K3Pi goofit fitter");
-
+    // Read in the input file
     tv9k::InputInformation input;
-    // cliApp.add_option("-f,--file,file", input.filename, "File name")->required();
-
-    // CLI11_PARSE(cliApp, argc, argv);
+    input.filename = argv[1];
 
     // Read in data file
     Data* data = new Data();
     data->readNcData(input);
+
 
     // Parse the horizontal and vertical lines
     input.explodeLinesToVector();

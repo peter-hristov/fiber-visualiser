@@ -308,7 +308,7 @@ tv9k::geometry::compute3DDistanceField(Data* data,
                                        const int mult)
 {
     QVector<QVector<float>> distanceField;
-    std::vector<std::vector<std::vector<GLfloat>>> signedDistanceField(
-      data->xdim, std::vector<std::vector<GLfloat>>(data->ydim, std::vector<GLfloat>(data->zdim)));
+    std::vector<std::vector<std::vector<GLfloat>>> signedDistanceField;
+      //data->xdim, std::vector<std::vector<GLfloat>>(data->ydim, std::vector<GLfloat>(data->zdim)));
     return signedDistanceField;
 }

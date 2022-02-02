@@ -66,13 +66,12 @@ class Data
     std::vector<FaceFiber> faceFibers;
     std::vector<MeshTriangle> meshTriangles;
 
-
     // Original dimensions of the data before cropping and downsampling - used for
     // reference
-    int originalXdim, originalYdim, originalZdim, originalTdim;
+    //int originalXdim, originalYdim, originalZdim, originalTdim;
 
     // New dimensions after cropping and downsampling - used in the application
-    int xdim, ydim, zdim, tdim;
+    //int xdim, ydim, zdim, tdim;
 
     void readNcData(tv9k::InputInformation);
 

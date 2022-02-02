@@ -2,8 +2,10 @@
 #include "./utility/Geometry.h"
 #include "./utility/utility.h"
 
+#include <fstream>
 #include <cassert>
 #include <cstdio>
+#include <locale>
 #include <omp.h>
 
 //#include <boost/geometry.hpp>
@@ -25,7 +27,7 @@ using namespace std;
 
 size_t Data::trippleToIndex(const size_t i, const size_t j, const size_t k)
 {
-    return this->xdim * this->ydim * k + this->xdim * j + i;
+    //return this->xdim * this->ydim * k + this->xdim * j + i;
 }
 
 void Data::addTetsForCube(const size_t i, const size_t j, const size_t k)
@@ -74,23 +76,10 @@ vector<float> hopfMap(const vector<float> v)
 
 void Data::generateStandardGrid()
 {
-    // Read Dimensions
-    this->originalXdim = 10;
-    this->originalYdim = 10;
-    this->originalZdim = 10;
-    this->originalTdim = 10;
-
-    this->xdim = 4;
-    this->ydim = 4;
-    this->zdim = 4;
-    this->tdim = 5;
-
-    this->minX = 0;
-    this->maxX = this->xdim;
-    this->minY = 0;
-    this->maxY = this->ydim;
-    this->minZ = 0;
-    this->maxZ = this->zdim;
+    //this->xdim = 4;
+    //this->ydim = 4;
+    //this->zdim = 4;
+    //this->tdim = 5;
 
     this->longnameF = "f = tube size";
     this->longnameG = "g = height";
@@ -108,29 +97,29 @@ void Data::generateStandardGrid()
     //}
 
     // Add vertex domain coordinates
-    for (int k = 0 ; k < this->zdim ; k++)
-    {
-        float ratioZ = static_cast<float>(k)/static_cast<float>(this->zdim);
-        for (int j = 0 ; j < this->ydim ; j++)
-        {
-            float ratioY = static_cast<float>(j)/static_cast<float>(this->ydim);
-            for (int i = 0 ; i < this->xdim ; i++)
-            {
-                float ratioX = static_cast<float>(i)/static_cast<float>(this->xdim);
+    //for (int k = 0 ; k < this->zdim ; k++)
+    //{
+        //float ratioZ = static_cast<float>(k)/static_cast<float>(this->zdim);
+        //for (int j = 0 ; j < this->ydim ; j++)
+        //{
+            //float ratioY = static_cast<float>(j)/static_cast<float>(this->ydim);
+            //for (int i = 0 ; i < this->xdim ; i++)
+            //{
+                //float ratioX = static_cast<float>(i)/static_cast<float>(this->xdim);
 
-                // Interpolated the coordinates
-                this->vertexDomainCoordinates.push_back({
-                        (1 - ratioX) * this->minX + ratioX * this->maxX,
-                        (1 - ratioY) * this->minY + ratioY * this->maxY,
-                        (1 - ratioZ) * this->minZ + ratioZ * this->maxZ,
-                        });
-            }
-        }
-    }
+                //// Interpolated the coordinates
+                //this->vertexDomainCoordinates.push_back({
+                        //(1 - ratioX) * this->minX + ratioX * this->maxX,
+                        //(1 - ratioY) * this->minY + ratioY * this->maxY,
+                        //(1 - ratioZ) * this->minZ + ratioZ * this->maxZ,
+                        //});
+            //}
+        //}
+    //}
 
 
     // Add vertex range coordinates
-    for (int i = 0 ; i < this->xdim * this->ydim * this->zdim ; i++)
+    //for (int i = 0 ; i < this->xdim * this->ydim * this->zdim ; i++)
     {
         //std::random_device rd;
         //std::default_random_engine eng(rd());
@@ -139,27 +128,27 @@ void Data::generateStandardGrid()
     }
 
     // Add vertex range coordinates
-    for (int k = 0 ; k < this->zdim ; k++)
-    {
-        for (int j = 0 ; j < this->ydim ; j++)
-        {
-            for (int i = 0 ; i < this->xdim ; i++)
-            {
-                std::random_device rd;
-                std::default_random_engine eng(rd());
-                std::uniform_real_distribution<float> distr(0, 10);
+    //for (int k = 0 ; k < this->zdim ; k++)
+    //{
+        //for (int j = 0 ; j < this->ydim ; j++)
+        //{
+            //for (int i = 0 ; i < this->xdim ; i++)
+            //{
+                //std::random_device rd;
+                //std::default_random_engine eng(rd());
+                //std::uniform_real_distribution<float> distr(0, 10);
 
-                const auto coordinates = this->vertexDomainCoordinates[this->trippleToIndex(i, j, k)];
+                //const auto coordinates = this->vertexDomainCoordinates[this->trippleToIndex(i, j, k)];
 
-                float x = coordinates[0];
-                float y = coordinates[1];
-                float z = coordinates[2];
+                //float x = coordinates[0];
+                //float y = coordinates[1];
+                //float z = coordinates[2];
 
-                float fValue = distr(eng); 
-                float gValue = distr(eng); 
+                //float fValue = distr(eng); 
+                //float gValue = distr(eng); 
 
-                this->vertexCoordinatesF.push_back(fValue);
-                this->vertexCoordinatesG.push_back(gValue);
+                //this->vertexCoordinatesF.push_back(fValue);
+                //this->vertexCoordinatesG.push_back(gValue);
 
                 //cout << i << " " << j << " " << k << " | f = " << fValue << " g = " << gValue << endl;
 
@@ -210,9 +199,9 @@ void Data::generateStandardGrid()
                 //float torusTubeRadius = 0;
                 //this->vertexCoordinatesF.push_back(x + 5);
                 //this->vertexCoordinatesG.push_back((sqrt(x*x  + y*y) - torusBigRadius) * (sqrt(x * x  + y*y) - torusBigRadius) + z*z - torusTubeRadius * torusTubeRadius);
-            }
-        }
-    }
+            //}
+        //}
+    //}
 
     //this->vertexCoordinatesF[0] = 9;
     //this->vertexCoordinatesG[0] = 8;
@@ -356,16 +345,16 @@ void Data::generateStandardGrid()
 
 
     // Add tets
-    for (int i = 0 ; i < this->xdim - 1 ; i++)
-    {
-        for (int j = 0 ; j < this->ydim - 1 ; j++)
-        {
-            for (int k = 0 ; k < this->zdim - 1 ; k++)
-            {
-                this->addTetsForCube(i, j, k);
-            }
-        }
-    }
+    //for (int i = 0 ; i < this->xdim - 1 ; i++)
+    //{
+        //for (int j = 0 ; j < this->ydim - 1 ; j++)
+        //{
+            //for (int k = 0 ; k < this->zdim - 1 ; k++)
+            //{
+                //this->addTetsForCube(i, j, k);
+            //}
+        //}
+    //}
 
 
     //this->tetrahedra.push_back({i,7,2,3});
@@ -409,8 +398,30 @@ void Data::generateStandardGrid()
 void
 Data::computeMinMaxFG()
 {
-    this->minF = this->vertexCoordinatesF[0];
-    this->maxF = this->vertexCoordinatesF[0];
+    //this->xdim = 0;
+    //this->ydim = 0;
+    //this->zdim = 0;
+
+    this->minX = this->vertexDomainCoordinates[0][0];
+    this->maxX = this->vertexDomainCoordinates[0][0];
+
+    this->minY = this->vertexDomainCoordinates[0][1];
+    this->maxY = this->vertexDomainCoordinates[0][1];
+
+    this->minZ = this->vertexDomainCoordinates[0][2];
+    this->maxZ = this->vertexDomainCoordinates[0][2];
+
+    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
+    {
+        this->minX = std::min(this->minX, this->vertexDomainCoordinates[i][0]);
+        this->maxX = std::max(this->maxX, this->vertexDomainCoordinates[i][0]);
+
+        this->minY = std::min(this->minY, this->vertexDomainCoordinates[i][1]);
+        this->maxY = std::max(this->maxY, this->vertexDomainCoordinates[i][1]);
+
+        this->minZ = std::min(this->minZ, this->vertexDomainCoordinates[i][2]);
+        this->maxZ = std::max(this->maxZ, this->vertexDomainCoordinates[i][2]);
+    }
 
     this->minG = this->vertexCoordinatesG[0];
     this->maxG = this->vertexCoordinatesG[0];
@@ -481,22 +492,10 @@ void
 Data::generateSphereMesh()
 {
     // Read Dimensions
-    this->originalXdim = 10;
-    this->originalYdim = 10;
-    this->originalZdim = 10;
-    this->originalTdim = 10;
-
-    this->xdim = 2;
-    this->ydim = 2;
-    this->zdim = 2;
-    this->tdim = 2;
-
-    this->minX = 0;
-    this->maxX = this->xdim;
-    this->minY = 0;
-    this->maxY = this->ydim;
-    this->minZ = 0;
-    this->maxZ = this->zdim;
+    //this->xdim = 2;
+    //this->ydim = 2;
+    //this->zdim = 2;
+    //this->tdim = 2;
 
     this->longnameF = "f";
     this->longnameG = "g";
@@ -515,8 +514,8 @@ Data::generateSphereMesh()
 
     // Subdividing the sides
     this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[2]}));
-    this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[4]}));
-    this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[5], this->vertexDomainCoordinates[4]}));
+    //this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[0], this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[4]}));
+    //this->vertexDomainCoordinates.push_back(getBarycenter({this->vertexDomainCoordinates[1], this->vertexDomainCoordinates[5], this->vertexDomainCoordinates[4]}));
 
 
     // Center
@@ -528,7 +527,8 @@ Data::generateSphereMesh()
     //vector<string> tophat = {"v0", "V4", "V5", "v1", "V2", "v3"};
 
     vector<string> tophat = {
-"v0", "v6", "V3", "v2", "V5", "v1", "v4"
+"v0", "V4", "V3", "v2", "v1"
+//"v0", "v6", "V3", "v2", "V5", "v1", "v4"
 };
 
 
@@ -556,21 +556,47 @@ Data::generateSphereMesh()
     //// }
 
 
-    // This is for two subdivisions
+    // This is for three subdivisions
     // {
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 5});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 5, 4});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 5, 1, 6});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 5, 6, 4});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 6, 1, 4});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 4, 2});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 4, 1, 2});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 3});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 3});
-    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 3});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 5});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 5, 4});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 5, 1, 6});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 5, 6, 4});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 6, 1, 4});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 4, 2});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 4, 1, 2});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 3});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 3});
+    //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 3});
     // }
 
+    // This is for one subdivision
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 3});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 3});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 3});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 1, 4});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 2, 3});
+    this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 1, 2, 4});
+
+    // Print Stuff
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
+
+    cout << this->vertexDomainCoordinates.size() << " " << this->tetrahedra.size() << endl;
+
+    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
+    {
+        printf("%.3f %.3f, %.3f\n", this->vertexDomainCoordinates[i][0], this->vertexDomainCoordinates[i][1], this->vertexDomainCoordinates[i][2]);
+    }
+
+    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
+    {
+        printf("%.3f %.3f\n", this->vertexCoordinatesF[i], this->vertexCoordinatesG[i]);
+    }
+
+    for (int i = 0 ; i < this->tetrahedra.size() ; i++)
+    {
+        printf("%lu %lu %lu %lu\n", this->tetrahedra[i][0], this->tetrahedra[i][1], this->tetrahedra[i][2], this->tetrahedra[i][3]);
+    }
 
 
     //this->tetrahedra.push_back({this->vertexDomainCoordinates.size() - 1, 0, 3, 5});
@@ -587,5 +613,74 @@ void
 Data::readNcData(tv9k::InputInformation input)
 {
     //this->generateStandardGrid();
-    this->generateSphereMesh();
+    //this->generateSphereMesh();
+
+    // Read Dimensions
+    this->longnameF = "f";
+    this->longnameG = "g";
+
+    std::ifstream dataFile (input.filename);
+
+    if (false == dataFile.is_open()) { throw "Could not open data file."; }
+
+    // Read in data in a string and skip the comments
+    string rawStringData;
+    string myline;
+    while (dataFile) {
+        std::getline (dataFile, myline);
+        if (myline[0] == '#')
+        {
+            //std::cout << myline << '\n';
+        }
+        else
+        {
+            rawStringData += " " + myline;
+        }
+    }
+
+    // Set up the inputstream
+    std::istringstream dataStream(rawStringData);
+
+    // Read in the number of vertices and tets
+    int numVertices, numTets;
+    dataStream >> numVertices >> numTets;
+
+    cout << "This is the number of vertices and tets " << numVertices  << " " << numTets << endl;
+
+    // Initialize all the arrays I need
+    this->vertexCoordinatesF = std::vector<GLfloat>(numVertices, 0);
+    this->vertexCoordinatesG = std::vector<GLfloat>(numVertices, 0);
+    this->tetrahedra = std::vector<std::vector<size_t>>(numTets, {0, 0, 0, 0});
+    this->vertexDomainCoordinates = std::vector<std::vector<GLfloat>>(numVertices, {0, 0, 0});
+
+    // Read in the domain coordinates
+    for  (int i = 0 ; i < numVertices ; i++)
+    {
+        dataStream >> this->vertexDomainCoordinates[i][0];
+        dataStream >> this->vertexDomainCoordinates[i][1];
+        dataStream >> this->vertexDomainCoordinates[i][2];
+    }
+
+    // Read in the range coordinates
+    for  (int i = 0 ; i < numVertices ; i++)
+    {
+        dataStream >> this->vertexCoordinatesF[i];
+        dataStream >> this->vertexCoordinatesG[i];
+    }
+    
+    // Read in the tetrahedron configuration
+    for  (int i = 0 ; i < numTets ; i++)
+    {
+        dataStream >> this->tetrahedra[i][0];
+        dataStream >> this->tetrahedra[i][1];
+        dataStream >> this->tetrahedra[i][2];
+        dataStream >> this->tetrahedra[i][3];
+    }
+
+    this->computeMinMaxFG();
+
+    //this->xdim = 2;
+    //this->ydim = 2;
+    //this->zdim = 2;
+    //this->tdim = 2;
 }
