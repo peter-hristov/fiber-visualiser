@@ -16,16 +16,6 @@ namespace geometry {
 const GLfloat cubeVertices[8][3] = { { 0, 0, 0 }, { 0, 0, 1 }, { 0, 1, 0 }, { 0, 1, 1 },
                                      { 1, 0, 0 }, { 1, 0, 1 }, { 1, 1, 0 }, { 1, 1, 1 } };
 
-std::vector<GLfloat>
-computeCentralDifferencingNormal(std::vector<GLfloat> currentVertex,
-                                 int,
-                                 int,
-                                 GLfloat,
-                                 int,
-                                 int,
-                                 int,
-                                 const std::vector<std::vector<std::vector<float>>>&,
-                                 bool);
 
 float dotProduct(QPointF, QPointF);
 QPointF getNormal(QPointF);
@@ -39,13 +29,6 @@ bilinearInterpolation(const float x, const float y, const QVector<QVector<float>
 
 QPointF
 scaleProjectedPoint(const Data* data, const float resolution, GLfloat pointU, const GLfloat pointV);
-
-std::vector<std::vector<std::vector<GLfloat>>>
-compute3DDistanceField(Data* data,
-                       const QVector<QPointF> polyPoints,
-                       const int resolution,
-                       const std::string interpolationType,
-                       const int mult);
 
 }
 }

@@ -141,7 +141,6 @@ TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
             this->tracerVisualiserWidget->update();
             });
 
-
     connect(this->vertexOpacitySlider, &QSlider::valueChanged, plotWidget, [=]() {
         this->tracerVisualiserWidget->vertexOpacity = static_cast<double>(this->vertexOpacitySlider->value()) / 100.0;
         this->tracerVisualiserWidget->update();

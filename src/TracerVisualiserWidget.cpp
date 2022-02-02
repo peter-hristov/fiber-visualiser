@@ -779,6 +779,7 @@ TracerVisualiserWidget::mouseReleaseEvent(QMouseEvent* event)
     }
 }
 
+// Depricated
 void
 TracerVisualiserWidget::keyPressEvent(QKeyEvent* event)
 {
