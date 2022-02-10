@@ -36,7 +36,6 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
     this->sibling = _sibling;
 
     // Default values for paraters
-    //this->scale = data->zdim * 2;
     this->scale = (data->maxZ - data->minZ) * 2;
 
     // Initialise Arcball
@@ -57,9 +56,7 @@ TracerVisualiserWidget::initializeGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Do not enable this, doesn't work properly
-    // glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
+    // Set the projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(90, 1, 0.01, 10000);
@@ -69,223 +66,6 @@ void
 TracerVisualiserWidget::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);
-}
-
-void
-TracerVisualiserWidget::generateDisplayListTriangles(const float isovalue, const vector<float> &values, const int type)
-{
-    this->data->meshTriangles.clear();
-
-    // For every tet do marching tets
-    for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
-    {
-        const auto tet = this->data->tetrahedra[tetId];
-
-        vector<size_t> smallerVertices;
-        vector<size_t> biggerOrEqualVertices;
-
-        // For every vertex in the tet
-        for(int i = 0 ; i < 4 ; i++)
-        {
-            const float vertexValue = values[tet[i]];
-
-            if (vertexValue < isovalue)
-            {
-                smallerVertices.push_back(tet[i]);
-            }
-            else
-            {
-                biggerOrEqualVertices.push_back(tet[i]);
-            }
-        }
-
-        if (smallerVertices.size() == 0)
-        {
-        }
-        else if (smallerVertices.size() == 1)
-        {
-
-            Data::MeshTriangle triangle;
-            // s[0] -> b[0]
-            float t0 = 
-                (isovalue - values[smallerVertices[0]]) / 
-                (values[biggerOrEqualVertices[0]] - values[smallerVertices[0]]);
-
-            float t1 = 
-                (isovalue - values[smallerVertices[0]]) / 
-                (values[biggerOrEqualVertices[1]] - values[smallerVertices[0]]);
-
-            float t2 = 
-                (isovalue - values[smallerVertices[0]]) / 
-                (values[biggerOrEqualVertices[2]] - values[smallerVertices[0]]);
-
-            triangle.vertixA = {
-                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
-                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
-                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
-            };
-
-            triangle.vertixB = {
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
-            };
-
-            triangle.vertixC = {
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[2]][0],
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[2]][1],
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[2]][2],
-            };
-
-            this->data->meshTriangles.push_back(triangle);
-        }
-        else if (smallerVertices.size() == 2)
-        {
-            float t0 = 
-                (isovalue - values[smallerVertices[0]]) / 
-                (values[biggerOrEqualVertices[0]] - values[smallerVertices[0]]);
-
-            float t1 = 
-                (isovalue - values[smallerVertices[0]]) / 
-                (values[biggerOrEqualVertices[1]] - values[smallerVertices[0]]);
-
-            float t2 = 
-                (isovalue - values[smallerVertices[1]]) / 
-                (values[biggerOrEqualVertices[0]] - values[smallerVertices[1]]);
-
-            float t3 = 
-                (isovalue - values[smallerVertices[1]]) / 
-                (values[biggerOrEqualVertices[1]] - values[smallerVertices[1]]);
-
-
-
-            Data::MeshTriangle triangle1;
-
-            triangle1.vertixA = {
-                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
-                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
-                (1 - t0) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t0 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
-            };
-
-            triangle1.vertixB = {
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
-            };
-
-            triangle1.vertixC = {
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][0] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][1] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][2] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
-            };
-
-            Data::MeshTriangle triangle2;
-
-            triangle2.vertixA = {
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][0] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0],
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][1] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1],
-                (1 - t2) * this->data->vertexDomainCoordinates[smallerVertices[1]][2] + t2 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2],
-            };
-
-            triangle2.vertixB = {
-                (1 - t3) * this->data->vertexDomainCoordinates[smallerVertices[1]][0] + t3 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
-                (1 - t3) * this->data->vertexDomainCoordinates[smallerVertices[1]][1] + t3 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
-                (1 - t3) * this->data->vertexDomainCoordinates[smallerVertices[1]][2] + t3 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
-            };
-
-            triangle2.vertixC = {
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][0],
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][1],
-                (1 - t1) * this->data->vertexDomainCoordinates[smallerVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[biggerOrEqualVertices[1]][2],
-            };
-
-            this->data->meshTriangles.push_back(triangle1);
-            this->data->meshTriangles.push_back(triangle2);
-        }
-        else if (smallerVertices.size() == 3)
-        {
-            Data::MeshTriangle triangle;
-            // Interpolate along all edges
-            // s[0] -> b[0]
-            float t0 = 
-                (isovalue - values[biggerOrEqualVertices[0]]) / 
-                (values[smallerVertices[0]] - values[biggerOrEqualVertices[0]]);
-
-            float t1 = 
-                (isovalue - values[biggerOrEqualVertices[0]]) / 
-                (values[smallerVertices[1]] - values[biggerOrEqualVertices[0]]);
-
-            float t2 = 
-                (isovalue - values[biggerOrEqualVertices[0]]) / 
-                (values[smallerVertices[2]] - values[biggerOrEqualVertices[0]]);
-
-            triangle.vertixA = {
-                (1 - t0) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0] + t0 * this->data->vertexDomainCoordinates[smallerVertices[0]][0],
-                (1 - t0) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1] + t0 * this->data->vertexDomainCoordinates[smallerVertices[0]][1],
-                (1 - t0) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2] + t0 * this->data->vertexDomainCoordinates[smallerVertices[0]][2],
-            };
-
-            triangle.vertixB = {
-                (1 - t1) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0] + t1 * this->data->vertexDomainCoordinates[smallerVertices[1]][0],
-                (1 - t1) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1] + t1 * this->data->vertexDomainCoordinates[smallerVertices[1]][1],
-                (1 - t1) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2] + t1 * this->data->vertexDomainCoordinates[smallerVertices[1]][2],
-            };
-
-            triangle.vertixC = {
-                (1 - t2) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][0] + t2 * this->data->vertexDomainCoordinates[smallerVertices[2]][0],
-                (1 - t2) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][1] + t2 * this->data->vertexDomainCoordinates[smallerVertices[2]][1],
-                (1 - t2) * this->data->vertexDomainCoordinates[biggerOrEqualVertices[0]][2] + t2 * this->data->vertexDomainCoordinates[smallerVertices[2]][2],
-            };
-
-            this->data->meshTriangles.push_back(triangle);
-        }
-    }
-
-    if (type == 1)
-    {
-        glDeleteLists(displayListIndexTriangles, 1);
-        displayListIndexTriangles = glGenLists(1);
-        glNewList(displayListIndexTriangles, GL_COMPILE);
-    }
-    else{
-        glDeleteLists(displayListIndexTrianglesG, 1);
-        displayListIndexTrianglesG = glGenLists(1);
-        glNewList(displayListIndexTrianglesG, GL_COMPILE);
-    }
-
-    //setMaterial(1, 0, 0, 1.0, 0.0);
-    if (type == 1)
-    {
-        glColor4f(0, 1, 0, 0.3);
-    }
-    else
-    {
-        glColor4f(0, 0, 1, 0.3);
-    }
-
-    // Draw Fiber
-    glBegin(GL_TRIANGLES);
-    {
-        for (const auto &point : this->data->meshTriangles)
-        {
-            GLfloat pointA[3] = { point.vertixA[0], point.vertixA[1], point.vertixA[2] };
-            GLfloat pointB[3] = { point.vertixB[0], point.vertixB[1], point.vertixB[2] };
-            GLfloat pointC[3] = { point.vertixC[0], point.vertixC[1], point.vertixC[2] };
-
-            //GLfloat pointA[3] = { 0, 0, 0 };
-            //GLfloat pointB[3] = { 0, 10, 0 };
-            //GLfloat pointC[3] = { 0, 0, 10 };
-
-            //printf("Triangle : (%f, %f, %f) | (%f, %f, %f) | (%f, %f, %f).\n", pointA[0], pointA[1], pointA[2], pointB[0], pointB[1], pointB[2], pointC[0], pointC[1], pointC[2]);
-
-            glVertex3fv(pointA);
-            glVertex3fv(pointB);
-            glVertex3fv(pointC);
-        }
-    }
-    glEnd();
-
-    glEndList();
 }
 
 
@@ -304,7 +84,6 @@ TracerVisualiserWidget::generateDisplayList()
     {
         for(const auto &faceFiber : this->data->faceFibers)
         {
-
             int colour = faceFiber.colour;
 
             if (colour == 1)
@@ -320,33 +99,7 @@ TracerVisualiserWidget::generateDisplayList()
                 glColor3f(0, 0, 1);
             }
 
-            GLfloat point[3];
-
-            point[0] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][0] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][0] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][0];
-
-            point[1] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][1] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][1] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][1];
-
-            point[2] = 
-                faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][2] +
-                faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][2] +
-                (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][2];
-
-            //glPushMatrix();
-            //{
-                //glTranslatef(point[0], point[1], point[2]);
-                //GLUquadric* sphere = gluNewQuadric();
-                //gluSphere(sphere, 0.2, 10, 10);
-                //delete sphere;
-            //}
-            //glPopMatrix();
-
-            glVertex3fv(point);
+            glVertex3fv(faceFiber.point.data());
         }
     }
     glEnd();
@@ -369,26 +122,9 @@ TracerVisualiserWidget::generateDisplayList()
             glColor3f(0, 0, 1);
         }
 
-        GLfloat point[3];
-
-        point[0] = 
-            faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][0] +
-            faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][0] +
-            (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][0];
-
-        point[1] = 
-            faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][1] +
-            faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][1] +
-            (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][1];
-
-        point[2] = 
-            faceFiber.alpha * this->data->vertexDomainCoordinates[faceFiber.vertices[0]][2] +
-            faceFiber.betta * this->data->vertexDomainCoordinates[faceFiber.vertices[1]][2] +
-            (1 - faceFiber.alpha - faceFiber.betta) * this->data->vertexDomainCoordinates[faceFiber.vertices[2]][2];
-
         glPushMatrix();
         {
-            glTranslatef(point[0], point[1], point[2]);
+            glTranslatef(faceFiber.point[0], faceFiber.point[1], faceFiber.point[2]);
             GLUquadric* sphere = gluNewQuadric();
             gluSphere(sphere, 0.01, 10, 10);
             delete sphere;
@@ -536,6 +272,7 @@ TracerVisualiserWidget::drawScene()
 
     glRotatef(-90., 1., 0., 0.);
 
+
     this->drawAxis(1000., 1.0 * (this->data->maxX - this->data->minX) / 1800.0);
 
     glColor3f(1, 1, 1);
@@ -556,7 +293,6 @@ TracerVisualiserWidget::drawScene()
                 {
                     for(int j = i + 1 ; j < 4 ; j++)
                     {
-                        //cout << i << " - " << j << endl;
                         GLfloat pointA[3], pointB[3];
 
                         pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
@@ -576,7 +312,6 @@ TracerVisualiserWidget::drawScene()
         }
         glEnd();
     }
-
 
 
     glPushMatrix();

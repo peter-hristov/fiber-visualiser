@@ -7,7 +7,6 @@
 
 
 #include "./Data.h"
-#include "./GlobalConfig.h"
 #include "./PlotWidget.h"
 #include "./TracerVisualiserWidget.h"
 
@@ -15,7 +14,7 @@ class TracerVisualiserWindow : public QWidget
 {
     Q_OBJECT
   public:
-    TracerVisualiserWindow(QWidget*, Data*, tv9k::InputInformation);
+    TracerVisualiserWindow(QWidget*, Data*);
     ~TracerVisualiserWindow();
 
     void keyPressEvent(QKeyEvent* event);

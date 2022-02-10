@@ -24,7 +24,6 @@
 #include "./TracerVisualiserWindow.h"
 #include "./utility/Geometry.h"
 
-#include "GlobalConfig.h"
 #include "PlotWidget.h"
 #include "src/Data.h"
 
@@ -33,16 +32,13 @@ using namespace std;
 const bool DRAW_GRIDLINES = true;
 
 
-PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType, tv9k::InputInformation input)
+PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
   : QWidget(parent)
   , data(_data)
-  , resolution(input.scatterplotResolution)
   , interpolationType(_interpolationType)
 {
     setMouseTracking(true);
     this->setEnabled(true);
-    this->verticalLineNumbers = input.verticalLineNumbers;
-    this->horizontalLineNumbers = input.horizontalLineNumbers;
 }
 
 void
@@ -545,8 +541,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         p.drawLine(a.x() - resolution, a.y(), a.x() + resolution, a.y());
     }
 
-
-
+    // Draw all the vertex coordinates
     for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
     {
 
@@ -571,6 +566,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         }
 
         p.drawEllipse(QPointF(x1, y1), 3, 3);
+        // @TODO Figure out how to rotate the vertex numbers
         //p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
         p.drawText(x1, y1, QString::number(i));
     }
@@ -579,20 +575,17 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     penGrey.setWidthF(0.8);
     p.setPen(penGrey);
 
-
+    // Leave a trail of fibers or not
     if (dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers == true)
     {
         this->data->faceFibers.clear();
     }
 
-    this->data->tetsWithFibers = vector<bool>(this->data->tetrahedra.size(), false);
-
-    // Draw all triangles from the tets
+    // Draw all edges from the tets
     for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
     {
         const auto tet = this->data->tetrahedra[tetId];
 
-        // For every edge in the tet
         for(int i = 0 ; i < 4 ; i++)
         {
             for(int j = i + 1 ; j < 4 ; j++)
@@ -606,82 +599,23 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
                 p.drawLine(x1, y1, x2, y2);
             }
         }
-
-        if (mousePoints.size() == 0)
-            continue;
-
-
-        // For every triangle in every tet, get the fiber in it
-        for(int i = 0 ; i < 4 ; i++)
-        {
-            for(int j = i + 1 ; j < 4 ; j++)
-            {
-                for(int k = j + 1 ; k < 4 ; k++)
-                {
-                    float x1 = this->data->vertexCoordinatesF[tet[i]];
-                    float y1 = this->data->vertexCoordinatesG[tet[i]];
-
-                    float x2 = this->data->vertexCoordinatesF[tet[j]];
-                    float y2 = this->data->vertexCoordinatesG[tet[j]];
-
-                    float x3 = this->data->vertexCoordinatesF[tet[k]];
-                    float y3 = this->data->vertexCoordinatesG[tet[k]];
-
-                    float x = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
-                    float y = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
-
-                    float det = (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3);
-
-                    float alpha = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / det;
-                    float betta = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / det;
-                    float gamma = 1 - alpha - betta;
-
-                    if (alpha >= 0 && betta >= 0 & gamma >= 0 && alpha <= 1 && betta <= 1 && gamma <= 1)
-                    {
-                        //printf("In triangle %d, %d, %d in tet %d.\n", tet[i], tet[j], tet[k], tetId);
-                        //printf("In triangle (%f, %f) | (%f, %f) | (%f, %f) comparing with point (%f, %f) and alpha = %f, betta = %f, gamma = %f.\n", x1, y1, x2, y2, x3, y3, x, y, alpha, betta, gamma);
-                        Data::FaceFiber fb;
-                        fb.alpha = alpha;
-                        fb.betta = betta;
-                        fb.vertices = {tet[i], tet[j], tet[k]};
-
-                        float pointBackX = alpha * x1 + betta * x2 + gamma * x3;
-                        float pointBackY = alpha * y1 + betta * y2 + gamma * y3;
-
-                        //printf ("Projecting back we get (%f, %f).\n", pointBackX, pointBackY);
-
-                        const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
-                        fb.colour = visualiserWidget->fiberColour;
-                        this->data->faceFibers.push_back(fb);
-                        this->data->tetsWithFibers[tetId] = true;
-
-    //struct FaceFiber{
-        //float alpha;
-        //float betta;
-        //std::vector<size_t> vertices;
-    //};
-
-                    }
-
-                }
-            }
-        }
     }
 
-    const float isovalue = 0.0;
+    // If we have selected a point in the scatterplot
+    if (polyPoints.size() == 1)
+    {
+        // Reside to the original range data dimensions
+        float u = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
+        float v = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
 
+        // Compute all tet exit points
+        this->data->computeTetExitPoints(u, v);
 
-    // Generate the fs meshes for all timesteps and the display list for the current timestep
-    const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
-    visualiserWidget->generateDisplayList();
-
-    float iso = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
-    visualiserWidget->generateDisplayListTriangles(iso, this->data->vertexCoordinatesF, 1);
-
-    float iso2 = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
-    visualiserWidget->generateDisplayListTriangles(iso2, this->data->vertexCoordinatesG, 2);
-    visualiserWidget->update();
-
+        // Display fibers
+        const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
+        visualiserWidget->generateDisplayList();
+        visualiserWidget->update();
+    }
 }
 
 bool

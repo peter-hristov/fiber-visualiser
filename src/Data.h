@@ -14,28 +14,30 @@
 #include <string>
 #include <vector>
 
+#include "./FaceFiber.h"
+
 #include <qpoint.h>
 #include <qvector.h>
-#include "GlobalConfig.h"
 
 class Data
 {
   public:
     Data() {}
 
+    // Min/max range coordinates
     GLfloat minF, maxF;
     GLfloat minG, maxG;
 
+    // Min/max domain coordinates
     GLfloat minX, maxX;
     GLfloat minY, maxY;
     GLfloat minZ, maxZ;
 
-    void generateStandardGrid();
-    void generateSphereMesh();
+    // Compute the min/max F, G and X, Y, Z coordinates
+    void computeMinMaxRangeDomainCoordinates();
 
+    // Which of the tets in the tetrahedra array contain a fiber
     std::vector<bool> tetsWithFibers;
-
-    void computeMinMaxFG();
 
     std::string longnameF, longnameG, units;
 
@@ -47,34 +49,11 @@ class Data
     std::vector<GLfloat> vertexCoordinatesF;
     std::vector<GLfloat> vertexCoordinatesG;
 
-    // The location of a fiber on a single tet
-    struct FaceFiber{
-        float alpha;
-        float betta;
-        int colour;
-        std::vector<size_t> vertices;
-    };
 
-    // The location 
-    struct MeshTriangle{
-        std::vector<float> vertixA;
-        std::vector<float> vertixB;
-        std::vector<float> vertixC;
-    };
+    std::vector<FaceFiberPoint> faceFibers;
+
+    void computeTetExitPoints(const float, const float);
 
 
-    std::vector<FaceFiber> faceFibers;
-    std::vector<MeshTriangle> meshTriangles;
-
-    // Original dimensions of the data before cropping and downsampling - used for
-    // reference
-    //int originalXdim, originalYdim, originalZdim, originalTdim;
-
-    // New dimensions after cropping and downsampling - used in the application
-    //int xdim, ydim, zdim, tdim;
-
-    void readNcData(tv9k::InputInformation);
-
-    size_t trippleToIndex(const size_t i, const size_t j, const size_t k);
-    void addTetsForCube(const size_t i, const size_t j, const size_t k);
+    void readData(std::string);
 };

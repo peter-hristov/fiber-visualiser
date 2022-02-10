@@ -3,36 +3,39 @@
 #else
 #include <GL/glut.h>
 #endif
-#include <QApplication>
 
+#include <QApplication>
 #include "./TracerVisualiserWindow.h"
-#include "./external/CLI11.hpp"
-#include "./GlobalConfig.h"
 
 using namespace std;
 
 
 int main(int argc, char* argv[])
 {
-    // Read in the input file
-    tv9k::InputInformation input;
-    input.filename = argv[1];
+    if (argc != 2)
+    {
+        cout << "The usage is ./tv9k <input_file>." << endl;
+        return 0;
+    }
+
+    std::string filename = argv[1];
+
+    // Set up the data class
+    Data* data = new Data();
 
     // Read in data file
-    Data* data = new Data();
-    data->readNcData(input);
+    data->readData(filename);
 
-
-    // Parse the horizontal and vertical lines
-    input.explodeLinesToVector();
+    // Compute domain/range data bounds
+    data->computeMinMaxRangeDomainCoordinates();
 
     // Set up QT Application
     QApplication app(argc, argv);
     glutInit(&argc, argv);
 
     // Create the widget
-    TracerVisualiserWindow* window = new TracerVisualiserWindow(NULL, data, input);
-    window->setWindowTitle("Tracer Visualiser 9000");
+    TracerVisualiserWindow* window = new TracerVisualiserWindow(NULL, data);
+    window->setWindowTitle("Fiber Visualiser");
 
     // Make the window full screen by default
     window->showMaximized();

@@ -18,7 +18,6 @@
 #include <qvector.h>
 #include <utility>
 
-#include "./GlobalConfig.h"
 #include "Data.h"
 #include <cmath>
 
@@ -92,7 +91,7 @@ class PlotWidget : public QWidget
         setFocusPolicy(Qt::StrongFocus);
     }
 
-    PlotWidget(QWidget* parent, Data* _data, std::string _interpolationType, tv9k::InputInformation);
+    PlotWidget(QWidget* parent, Data* _data, std::string _interpolationType);
 
     std::vector<float> verticalLineNumbers;
     std::vector<float> horizontalLineNumbers;

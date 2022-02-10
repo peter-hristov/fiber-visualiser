@@ -58,15 +58,14 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 }
 
 TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
-                                               Data* _data,
-                                               tv9k::InputInformation input
+                                               Data* _data
                                                )
   : QWidget(parent)
 {
     this->data = _data;
 
     // Initialise Widgets
-    plotWidget = new PlotWidget(this, data, "none", input);
+    plotWidget = new PlotWidget(this, data, "none");
     tracerVisualiserWidget = new TracerVisualiserWidget(this, plotWidget, data);
 
     checkboxShowVertices = new QCheckBox("Show Vertices");
