@@ -42,31 +42,6 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
 }
 
 void
-PlotWidget::resetPoints(int mode)
-{
-    assert(mode == 0 || mode == 1);
-    points[mode].clear();
-    this->update();
-}
-void
-PlotWidget::resetTriangles(int mode)
-{
-    assert(mode == 0 || mode == 1);
-    triangles[mode].clear();
-    this->update();
-}
-
-void
-PlotWidget::addPoint(float x, float y, const int c, int mode)
-{
-}
-
-void
-PlotWidget::addTriangle(float x1, float y1, float x2, float y2, float x3, float y3, int id, int mode)
-{
-}
-
-void
 PlotWidget::keyPressEvent(QKeyEvent* event)
 {
     //if (event->key() == Qt::Key_I) {
@@ -113,6 +88,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
 
         if (this->data->vertexCoordinatesF.size() > 0) {
 
+            // Are we close to any of the vertices of the data?
             for (int i = 0; i < this->data->vertexCoordinatesF.size(); i++) {
                 QPointF point;
                 point.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF));
@@ -125,6 +101,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
                 if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, point) <
                     tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
                 {
+                    // Set the closest vertex point
                     closestVertexPoint = i;
                 }
             }
@@ -174,17 +151,6 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
 
             this->data->vertexCoordinatesF[movePoint] = fValue;
             this->data->vertexCoordinatesG[movePoint] = gValue;
-
-
-            //QPointF bestPoint;
-            //bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
-            //bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
-
-
-
-
-
-            //mousePoints[movePoint] = clickPoint;
         }
 
         // Draggin a vertex
@@ -193,14 +159,6 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
             mousePoints[movePoint] = clickPoint;
         }
 
-        // Draggin the polygon
-        else if (MouseDragMode::Polygon == dragMode) {
-            // Translate all the vertices of the polygon
-            for (int i = 0; i < mousePoints.size(); i++) {
-                mousePoints[i] -= (initialMovePoint - clickPoint);
-            }
-            this->initialMovePoint = clickPoint;
-        }
     }
 
     this->update();
@@ -209,11 +167,6 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
 void
 PlotWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-    // If we've just dragged the polygon and it's finalised render fiber surface
-    if (MouseDragMode::Polygon == dragMode && true == this->polygonLocked) {
-        redoFS();
-    }
-
     this->dragMode = MouseDragMode::Nothing;
 }
 
@@ -267,7 +220,6 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
             this->update();
         } else if (clickLocation == ClickLocation::inside) {
             this->polygonLocked = true;
-            this->redoFS();
         }
     } else if (event->button() == Qt::LeftButton) {
         if (clickLocation == ClickLocation::dataPoint)
@@ -325,10 +277,6 @@ PlotWidget::paintEvent(QPaintEvent*)
     drawAxisLabels(p);
 }
 
-void
-PlotWidget::drawInteriorPoints(QPainter& p)
-{
-}
 
 GLfloat
 PlotWidget::rescaleScalar(const GLfloat min, const GLfloat max, const GLfloat value)
@@ -336,10 +284,6 @@ PlotWidget::rescaleScalar(const GLfloat min, const GLfloat max, const GLfloat va
     return (this->resolution / (max - min)) * (value - min);
 }
 
-void
-PlotWidget::drawIsosurfaceTriangles(QPainter& p)
-{
-}
 
 void
 PlotWidget::drawAxisLabels(QPainter& p)
@@ -618,36 +562,3 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     }
 }
 
-bool
-PlotWidget::isPointInsidePolygon(std::vector<GLfloat> trianglePoint)
-{
-    // If we don't have at least a triangle
-    if (this->polyPoints.size() <= 2) {
-        return false;
-    }
-
-    const QPointF scaledProjectedPoint =
-      tv9k::geometry::scaleProjectedPoint(data, this->resolution, trianglePoint[0], trianglePoint[1]);
-
-    float signedDistance;
-    std::tie(signedDistance, std::ignore) =
-      tv9k::geometry::getDistancePointPolygon(this->polyPoints, scaledProjectedPoint);
-
-    if (signedDistance > 0) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-void
-PlotWidget::redoFS()
-{
-    // Update & repaint to update the fscp (rescaled version of the mouse points)
-    this->repaint();
-    this->update();
-}
-
-void
-PlotWidget::resetDistanceField()
-{}

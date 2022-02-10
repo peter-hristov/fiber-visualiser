@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void Data::computeTetExitPoints(const float u, const float v)
+void Data::computeTetExitPoints(const GLfloat u, const GLfloat v)
 {
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
@@ -17,13 +17,6 @@ void Data::computeTetExitPoints(const float u, const float v)
     {
         const auto tet = this->tetrahedra[tetId];
 
-        cout << "Tet " << tetId << " has : ";
-        for(int i = 0 ; i < 4 ; i++)
-        {
-            cout << tet[i] << " ";
-        }
-
-        cout << endl;
         // For every triangle in every tet, get the fiber in it
         for(int i = 0 ; i < 4 ; i++)
         {
@@ -46,28 +39,21 @@ void Data::computeTetExitPoints(const float u, const float v)
                     float beta = ((y3 - y1) * (u - x3) + (x1 - x3) * (v - y3)) / det;
                     float gamma = 1 - alpha - beta;
 
-                    // If it's outside the triangle skip it
-                    if (alpha < 0 || beta < 0 || gamma < 0 || alpha > 1 || beta > 1 || gamma > 1)
+                    // Are we inside the triangle. We exclude the 0 and 1 because weird things happen there
+                    if (alpha > 0 && beta > 0 && gamma > 0 && alpha < 1 && beta < 1 && gamma < 1)
                     {
-                        continue;
+                        //printf("In triangle %ld, %ld, %ld in tet %ld.\n", tet[i], tet[j], tet[k], tetId);
+                        //printf("In triangle (%f, %f) | (%f, %f) | (%f, %f) comparing with point (%f, %f) and alpha = %f, betta = %f, gamma = %f.\n", x1, y1, x2, y2, x3, y3, x, y, alpha, betta, gamma);
+
+                        FaceFiberPoint fb(alpha, beta, {
+                                this->vertexDomainCoordinates[tet[i]],
+                                this->vertexDomainCoordinates[tet[j]],
+                                this->vertexDomainCoordinates[tet[k]]
+                                });
+
+                        this->faceFibers.push_back(fb);
+                        this->tetsWithFibers[tetId] = true;
                     }
-
-                    printf("In triangle %ld, %ld, %ld in tet %ld.\n", tet[i], tet[j], tet[k], tetId);
-                    //printf("In triangle (%f, %f) | (%f, %f) | (%f, %f) comparing with point (%f, %f) and alpha = %f, betta = %f, gamma = %f.\n", x1, y1, x2, y2, x3, y3, x, y, alpha, betta, gamma);
-
-                    FaceFiberPoint fb(alpha, beta, {
-                            this->vertexDomainCoordinates[tet[i]],
-                            this->vertexDomainCoordinates[tet[j]],
-                            this->vertexDomainCoordinates[tet[k]]
-                            });
-
-                    //float pointBackX = alpha * x1 + betta * x2 + gamma * x3;
-                    //float pointBackY = alpha * y1 + betta * y2 + gamma * y3;
-
-                    //printf ("Projecting back we get (%f, %f).\n", pointBackX, pointBackY);
-
-                    this->faceFibers.push_back(fb);
-                    this->tetsWithFibers[tetId] = true;
                 }
             }
         }

@@ -97,22 +97,7 @@ class PlotWidget : public QWidget
     std::vector<float> horizontalLineNumbers;
 
     void paintEvent(QPaintEvent* event);
-    void resetDistanceField();
-    void redoFS();
 
-    void drawCube(float vertices[8][2]);
-    void drawLine(float x1, float y1, float x2, float y2, int id, int);
-    void addTriangle(float x1, float y1, float x2, float y2, float x3, float y3, int, int);
-    void addPoint(float x, float y, const int c, int mode);
-
-    void resetPoints(int);
-    void resetTriangles(int);
-
-    // void resetLines(int);
-
-    void drawIsosurfaceTriangles(QPainter&);
-
-    bool isPointInsidePolygon(std::vector<GLfloat>);
 
   protected:
     void mouseMoveEvent(QMouseEvent* event);
@@ -124,7 +109,6 @@ class PlotWidget : public QWidget
     void computeFSCPDistanceField();
     float getFSCPDistance(float x, float y);
     void drawInteriorPointsImages(QPainter& p);
-    void drawInteriorPoints(QPainter& p);
     void drawAxisLabels(QPainter& p);
     void drawAndRecomputeFS(QPainter& p);
 
