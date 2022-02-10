@@ -552,8 +552,9 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         float u = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
         float v = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
 
+        const int currentFiberColour = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->fiberColour;
         // Compute all tet exit points
-        this->data->computeTetExitPoints(u, v);
+        this->data->computeTetExitPoints(u, v, dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->fiberColours[currentFiberColour]);
 
         // Display fibers
         const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;

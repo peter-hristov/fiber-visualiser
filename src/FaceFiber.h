@@ -8,12 +8,15 @@ class FaceFiberPoint{
 
     public:
 
+    // (x, y, z) domain coodrinates
     std::vector<float> point;
-    int colour;
+    // RGB colour value
+    std::vector<float> colour;
 
     // The barycentric coordinates as well as the three triangle vertices
-    FaceFiberPoint(const float alpha, const float beta, const std::vector<std::vector<float>> vertices)
+    FaceFiberPoint(const float alpha, const float beta, const std::vector<std::vector<float>> &vertices, const std::vector<float> _colour)
     {
+        this->colour = _colour;
         this->point = {0, 0, 0};
 
         point[0] = 

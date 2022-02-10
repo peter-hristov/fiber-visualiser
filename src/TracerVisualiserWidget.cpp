@@ -84,21 +84,7 @@ TracerVisualiserWidget::generateDisplayList()
     {
         for(const auto &faceFiber : this->data->faceFibers)
         {
-            int colour = faceFiber.colour;
-
-            if (colour == 1)
-            {
-                glColor3f(1, 0, 0);
-            }
-            else if (colour == 2)
-            {
-                glColor3f(0, 1, 0);
-            }
-            else if (colour == 3)
-            {
-                glColor3f(0, 0, 1);
-            }
-
+            glColor3fv(faceFiber.colour.data());
             glVertex3fv(faceFiber.point.data());
         }
     }
@@ -107,20 +93,7 @@ TracerVisualiserWidget::generateDisplayList()
     // Draw fiber endpoints (in every tet)
     for(const auto &faceFiber : this->data->faceFibers)
     {
-        int colour = faceFiber.colour;
-
-        if (colour == 1)
-        {
-            glColor3f(1, 0, 0);
-        }
-        else if (colour == 2)
-        {
-            glColor3f(0, 1, 0);
-        }
-        else if (colour == 3)
-        {
-            glColor3f(0, 0, 1);
-        }
+        glColor3fv(faceFiber.colour.data());
 
         glPushMatrix();
         {

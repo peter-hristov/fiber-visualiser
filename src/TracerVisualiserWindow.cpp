@@ -39,15 +39,15 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 
 
     if (event->key() == Qt::Key_7) {
-        this->tracerVisualiserWidget->fiberColour = 1;
+        this->tracerVisualiserWidget->fiberColour = 0;
         this->tracerVisualiserWidget->update();
     }
     if (event->key() == Qt::Key_8) {
-        this->tracerVisualiserWidget->fiberColour = 2;
+        this->tracerVisualiserWidget->fiberColour = 1;
         this->tracerVisualiserWidget->update();
     }
     if (event->key() == Qt::Key_9) {
-        this->tracerVisualiserWidget->fiberColour = 3;
+        this->tracerVisualiserWidget->fiberColour = 2;
         this->tracerVisualiserWidget->update();
     }
 

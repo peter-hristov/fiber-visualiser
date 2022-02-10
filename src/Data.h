@@ -54,7 +54,7 @@ class Data
 
     std::vector<FaceFiberPoint> faceFibers;
 
-    void computeTetExitPoints(const float, const float);
+    void computeTetExitPoints(const float, const float, const std::vector<float> = {1,1,1});
 
 
     void readData(std::string);

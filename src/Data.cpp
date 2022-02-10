@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void Data::computeTetExitPoints(const GLfloat u, const GLfloat v)
+void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
@@ -48,8 +48,9 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v)
                         FaceFiberPoint fb(alpha, beta, {
                                 this->vertexDomainCoordinates[tet[i]],
                                 this->vertexDomainCoordinates[tet[j]],
-                                this->vertexDomainCoordinates[tet[k]]
-                                });
+                                this->vertexDomainCoordinates[tet[k]],
+                                },
+                                color);
 
                         this->faceFibers.push_back(fb);
                         this->tetsWithFibers[tetId] = true;

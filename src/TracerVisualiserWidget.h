@@ -38,7 +38,13 @@ class TracerVisualiserWidget : public QOpenGLWidget
     float faceOpacity = 0.2;
     float vertexOpacity = 0.8;
 
-    int fiberColour = 1;
+    int fiberColour = 0;
+    std::vector<std::vector<float>> fiberColours = {
+        {1, 0, 0},
+        {0, 1, 0},
+        {0, 0, 1}
+    };
+
     bool clearFibers = 1;
 
     GLfloat isovalueMult = -1.0;
