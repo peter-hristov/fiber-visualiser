@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 # Create code from a list of Qt designer ui files
 set(CMAKE_AUTOUIC ON)
 
-set(PROJECT_NAME tv9k)
+set(PROJECT_NAME fv99)
 
 project(${PROJECT_NAME})
 
