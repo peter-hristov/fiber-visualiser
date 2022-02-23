@@ -428,7 +428,7 @@ TracerVisualiserWidget::paintGL()
 void
 TracerVisualiserWidget::wheelEvent(QWheelEvent* event)
 {
-    this->scale -= event->angleDelta().y() / 100;
+    this->scale -= event->angleDelta().y() / 1000.0;
 
     if (scale <= 0) {
         scale = 0;
