@@ -239,9 +239,13 @@ TracerVisualiserWidget::drawScene()
     //glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
     //glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
     //glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
-    glTranslatef(-1.0 * (this->data->maxX - this->data->minX) / 2, 0, 0);
-    glTranslatef(0, 0, (this->data->maxY - this->data->minY) / 2);
-    glTranslatef(0, -1.0 * (this->data->maxZ - this->data->minZ) / 2, 0);
+    //glTranslatef(-1.0 * (this->data->maxX - this->data->minX) / 2, 0, 0);
+    //glTranslatef(0, 0, (this->data->maxY - this->data->minY) / 2);
+    //glTranslatef(0, -1.0 * (this->data->maxZ - this->data->minZ) / 2, 0);
+
+    glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0] , 0, 0);
+    glTranslatef(0, 0, this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][1]);
+    glTranslatef(0, -1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][2], 0);
 
     glRotatef(-90., 1., 0., 0.);
 

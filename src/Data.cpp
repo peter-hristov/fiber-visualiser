@@ -10,7 +10,7 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 {
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
-    cout << endl << endl;
+    //cout << endl << endl;
 
     // For every tet, compute the two exit points
     for(size_t tetId = 0 ; tetId < this->tetrahedra.size(); tetId++)
