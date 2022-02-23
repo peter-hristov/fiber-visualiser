@@ -222,7 +222,7 @@ TracerVisualiserWidget::drawScene()
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 180.);
 
     // Scrolling
-    glTranslatef(0.0, 0.0, -1 * scale / 10);
+    glTranslatef(0.0, 0.0, -1 * scale / 2.6);
 
     // Offset along x, y (with the right mouse button)
     glTranslatef(translateX, translateY, 0.0);
@@ -243,12 +243,12 @@ TracerVisualiserWidget::drawScene()
     //glTranslatef(0, 0, (this->data->maxY - this->data->minY) / 2);
     //glTranslatef(0, -1.0 * (this->data->maxZ - this->data->minZ) / 2, 0);
 
+    // Data center
     glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0] , 0, 0);
     glTranslatef(0, 0, this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][1]);
     glTranslatef(0, -1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][2], 0);
 
     glRotatef(-90., 1., 0., 0.);
-
 
     this->drawAxis(1000., 1.0 * (this->data->maxX - this->data->minX) / 1800.0);
 
