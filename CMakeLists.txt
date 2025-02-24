@@ -16,13 +16,21 @@ project(${PROJECT_NAME})
 
 message(STATUS "${PROJECT_NAME}")
 
-add_compile_options(-std=c++11)
+#add_compile_options(-std=c++11)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
+
+find_package(CGAL REQUIRED)
 
 
 set(SOURCES
@@ -47,5 +55,5 @@ target_link_libraries(${PROJECT_NAME}
     ${Qt5OpenGL_LIBRARIES}
     ${OPENGL_LIBRARIES}  # required so that include is "-framework OpenGL" on macos instad of "-lOpenGL"
     ${GLUT_LIBRARIES}
+    CGAL::CGAL
     )
-

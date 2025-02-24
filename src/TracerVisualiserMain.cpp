@@ -7,6 +7,11 @@
 #include <QApplication>
 #include "./TracerVisualiserWindow.h"
 
+
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Arrangement_2.h>
+//#include <CGAL/arrange_segments.h>
+
 using namespace std;
 
 

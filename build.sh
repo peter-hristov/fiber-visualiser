@@ -1,3 +1,6 @@
+# Outdated
+
+
 # Store the project directory
 DIRECTORY=$(cd `dirname $0` && pwd)
 
