@@ -35,6 +35,7 @@ find_package(CGAL REQUIRED)
 
 set(SOURCES
     ./src/Data.cpp
+    ./src/ReebSpace.cpp
     ./src/PlotWidget.cpp
     ./src/TracerVisualiserMain.cpp
     ./src/TracerVisualiserWidget.cpp

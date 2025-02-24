@@ -7,6 +7,7 @@
 #include <QApplication>
 #include "./TracerVisualiserWindow.h"
 
+#include "./ReebSpace.h"
 
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Arrangement_2.h>
@@ -33,6 +34,10 @@ int main(int argc, char* argv[])
 
     // Compute domain/range data bounds
     data->computeMinMaxRangeDomainCoordinates();
+
+    ReebSpace rs(data);
+
+    return 0;
 
     // Set up QT Application
     QApplication app(argc, argv);
