@@ -14,6 +14,9 @@
 // Done - How to see where the segment came from? Use with_history and originating curve
 // Set up IDs for the faces (use a map for now, store ID field in data later)
 //
+// Get a running BFS
+// Lower and upper star for each edge (loop all tets, maybe we don't need a big datastruture)
+//
 //
 //
 // Later
