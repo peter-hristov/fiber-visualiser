@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/CGALTypedefs.h"
 #include <GL/gl.h>
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
@@ -20,6 +21,8 @@
 
 #include <qpoint.h>
 #include <qvector.h>
+
+#include "./CGALTypedefs.h"
 
 class Data
 {
@@ -50,6 +53,8 @@ class Data
 
     std::vector<GLfloat> vertexCoordinatesF;
     std::vector<GLfloat> vertexCoordinatesG;
+
+    Arrangement_2 arr;
 
 
     std::vector<FaceFiberPoint> faceFibers;

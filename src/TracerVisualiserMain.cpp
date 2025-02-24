@@ -9,9 +9,8 @@
 
 #include "./ReebSpace.h"
 
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-#include <CGAL/Arrangement_2.h>
-//#include <CGAL/arrange_segments.h>
+#include "CGALTypedefs.h"
+
 
 using namespace std;
 
@@ -35,9 +34,8 @@ int main(int argc, char* argv[])
     // Compute domain/range data bounds
     data->computeMinMaxRangeDomainCoordinates();
 
-    ReebSpace rs(data);
-
-    return 0;
+    // Compute the 2D arrangement
+    data->arr = ReebSpace::computeArrangement(data);
 
     // Set up QT Application
     QApplication app(argc, argv);

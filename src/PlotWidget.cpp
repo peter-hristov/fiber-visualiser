@@ -1,3 +1,4 @@
+#include <CGAL/number_utils.h>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QGraphicsScene>
@@ -33,40 +34,84 @@ const bool DRAW_GRIDLINES = true;
 
 
 PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
-  : QWidget(parent)
-  , data(_data)
-  , interpolationType(_interpolationType)
+    : QWidget(parent)
+    , data(_data)
+      , interpolationType(_interpolationType)
 {
     setMouseTracking(true);
     this->setEnabled(true);
+
+
+    for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+    {
+        if (f->is_unbounded()) 
+        {
+            std::cout << "Unbounded face" << std::endl;
+            continue;
+        }
+
+        QVector<QPoint> points;
+
+        typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+        typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+        do {
+            typename Arrangement_2::Halfedge_const_handle e = curr;
+
+            // Get point from CGAL (and convert to double )
+            float u = CGAL::to_double(e->source()->point().x());
+            float v = CGAL::to_double(e->source()->point().y());
+
+            // Translate to the window frame
+            float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
+            float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+
+
+            // Add to the polygon
+            points << QPoint(u1, v1);
+
+            std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
+        } while (++curr != circ);
+
+        this->arrangementPolygons << QPolygon(points);
+    }
+
+
+    // Generate a random color for each arrangement face
+    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) {
+        int red = rand() % 256;
+        int green = rand() % 256;
+        int blue = rand() % 256;
+        this->arrangementPolygonColours << QColor(red, green, blue, 100);
+    }
+
 }
 
-void
+    void
 PlotWidget::keyPressEvent(QKeyEvent* event)
 {
     //if (event->key() == Qt::Key_I) {
-        //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + 1);
-        //this->update();
+    //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + 1);
+    //this->update();
     //}
     //if (event->key() == Qt::Key_J) {
-        //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() - 1);
-        //this->update();
+    //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() - 1);
+    //this->update();
     //}
     //if (event->key() == Qt::Key_K) {
-        //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() - 1);
-        //this->update();
+    //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() - 1);
+    //this->update();
     //}
     //if (event->key() == Qt::Key_L) {
-        //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + 1);
-        //this->update();
+    //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + 1);
+    //this->update();
     //}
 }
 
-void
+    void
 PlotWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {}
 
-void
+    void
 PlotWidget::mouseMoveEvent(QMouseEvent* event)
 {
 #ifdef __APPLE__
@@ -99,7 +144,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
                 bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
 
                 if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, point) <
-                    tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
+                        tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
                 {
                     // Set the closest vertex point
                     closestVertexPoint = i;
@@ -125,7 +170,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
         if (mousePoints.size() > 0 && this->closePointData == -1) {
             for (int i = 0; i < mousePoints.size(); i++) {
                 if (tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[i]) <
-                    tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m])) {
+                        tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m])) {
                     m = i;
                 }
             }
@@ -164,13 +209,13 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
     this->update();
 }
 
-void
+    void
 PlotWidget::mouseReleaseEvent(QMouseEvent* event)
 {
     this->dragMode = MouseDragMode::Nothing;
 }
 
-void
+    void
 PlotWidget::mousePressEvent(QMouseEvent* event)
 {
 
@@ -205,7 +250,7 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
         // If we at least have a triangle
         if (mousePoints.size() >= 3) {
             std::tie(distanceFromPolygon, closestEdge) =
-              tv9k::geometry::getDistancePointPolygon(mousePoints, QPointF(clickPoint.x(), clickPoint.y()));
+                tv9k::geometry::getDistancePointPolygon(mousePoints, QPointF(clickPoint.x(), clickPoint.y()));
 
             if (distanceFromPolygon < 0) {
                 clickLocation = ClickLocation::inside;
@@ -255,7 +300,7 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
     this->update();
 }
 
-void
+    void
 PlotWidget::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
@@ -278,14 +323,14 @@ PlotWidget::paintEvent(QPaintEvent*)
 }
 
 
-GLfloat
+    GLfloat
 PlotWidget::rescaleScalar(const GLfloat min, const GLfloat max, const GLfloat value)
 {
     return (this->resolution / (max - min)) * (value - min);
 }
 
 
-void
+    void
 PlotWidget::drawAxisLabels(QPainter& p)
 {
     auto penGrey = QPen(QColor(0, 0, 0, 50));
@@ -415,19 +460,19 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // x label
     p.drawText(resolution / 2 - 30,
-               resolution - boxOffset + 10,
-               QString::fromStdString(data->longnameF) + " (" + QString::fromStdString(data->units) +
-                 ")");
+            resolution - boxOffset + 10,
+            QString::fromStdString(data->longnameF) + " (" + QString::fromStdString(data->units) +
+            ")");
 
     p.translate(boxOffset - 5, resolution / 2 + 20);
     p.rotate(-90);
 
     // y label
     p.drawText(
-      0, 0, QString::fromStdString(data->longnameG) + " (" + QString::fromStdString(data->units) + ")");
+            0, 0, QString::fromStdString(data->longnameG) + " (" + QString::fromStdString(data->units) + ")");
 }
 
-void
+    void
 PlotWidget::drawAndRecomputeFS(QPainter& p)
 {
     auto &mousePoints = this->data->mousePoints;
@@ -475,15 +520,32 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         p.drawEllipse(QPointF(a.x(), a.y()), sphereRadius, sphereRadius);
 
-        
+
         penGrey.setWidthF(1.0);
         p.setPen(penGrey);
 
-        
+
 
         p.drawLine(a.x(), a.y() - resolution, a.x(), a.y() + resolution);
         p.drawLine(a.x() - resolution, a.y(), a.x() + resolution, a.y());
     }
+
+    // Draw each polygon with a random color
+    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) 
+    {
+        // Set the random color for filling the polygon
+        p.setBrush(this->arrangementPolygonColours[i]);
+
+        // Draw the filled polygon with the random color
+        p.drawPolygon(this->arrangementPolygons[i]);
+
+        qDebug() << "New polygon --- ";
+        for (const QPoint& point : this->arrangementPolygons[i]) {
+            qDebug() << "(" << point.x() << ", " << point.y() << ")";
+        }
+    }
+
+
 
     // Draw all the vertex coordinates
     for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
@@ -562,4 +624,3 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         visualiserWidget->update();
     }
 }
-

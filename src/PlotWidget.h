@@ -97,7 +97,8 @@ class PlotWidget : public QWidget
     std::vector<float> horizontalLineNumbers;
 
     void paintEvent(QPaintEvent* event);
-
+    QList<QPolygon> arrangementPolygons;
+    QList<QColor> arrangementPolygonColours;
 
   protected:
     void mouseMoveEvent(QMouseEvent* event);
