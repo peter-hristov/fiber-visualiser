@@ -14,10 +14,14 @@ typedef CGAL::Arrangement_with_history_2<Traits_2> Arrangement_2;
 typedef K::Point_2 Point_2;
 typedef K::Segment_2 Segment_2;
 
-//typedef CGAL::Arrangement_2<Traits_2> Arrangement_2;
-typedef Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
-typedef Arrangement_2::Face_const_handle Face_const_handle;
 
 typedef Arrangement_2::Halfedge_handle Halfedge_handle;
 typedef Arrangement_2::Face_handle Face_handle;
 typedef Arrangement_2::Vertex_iterator Vertex_iterator;
+
+// Const iterators and handles
+typedef Arrangement_2::Face_const_iterator Face_const_iterator;
+
+//typedef CGAL::Arrangement_2<Traits_2> Arrangement_2;
+typedef Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
+typedef Arrangement_2::Face_const_handle Face_const_handle;

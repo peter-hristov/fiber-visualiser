@@ -26,5 +26,11 @@
 
 namespace ReebSpace
 {
-        Arrangement_2 computeArrangement(Data *data);
+        bool isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data);
+
+        // We only add upperLink/lowerLink to data, the rest of data is unchagned
+        void computeUpperLowerLink(Data *);
+        // We only add data->arr, the rest of data is unchanged
+        void computeArrangement(Data *data);
+        void BFS(Data *);
 };

@@ -54,8 +54,6 @@ class Data
     std::vector<GLfloat> vertexCoordinatesF;
     std::vector<GLfloat> vertexCoordinatesG;
 
-    Arrangement_2 arr;
-
 
     std::vector<FaceFiberPoint> faceFibers;
 
@@ -63,4 +61,22 @@ class Data
 
 
     void readData(std::string);
+
+
+
+    // Reeb stuff relted content
+    Arrangement_2 arr;
+
+    // Ideally we do want this with a proper data structure with a STAR, then there's no write conflits
+    // Make sure to always keep the edge (u, v) such that u < v in index value,
+    std::map<std::pair<int, int>, std::set<int>> upperLink;
+    std::map<std::pair<int, int>, std::set<int>> lowerLink;
+
+    // Map from Int -> Point_2
+    std::vector<Point_2> arrangementPoints;
+
+    // Map from Point_2 -> Int
+    std::map<Point_2, int> arrangementPointsIdices;
+    std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
+
 };

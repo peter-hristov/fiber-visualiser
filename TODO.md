@@ -5,7 +5,7 @@
 // Set up IDs for the faces (use a map for now, store ID field in data later)
 //
 // Get a running BFS
-// Lower and upper star for each edge (loop all tets, maybe we don't need a big datastruture)
+// Done - Lower and upper star for each edge (loop all tets, maybe we don't need a big datastruture)
 //
 //
 //

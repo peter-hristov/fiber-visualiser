@@ -46,7 +46,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
     {
         if (f->is_unbounded()) 
         {
-            std::cout << "Unbounded face" << std::endl;
+            //std::cout << "Unbounded face" << std::endl;
             continue;
         }
 
@@ -69,7 +69,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             // Add to the polygon
             points << QPoint(u1, v1);
 
-            std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
+            //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
         } while (++curr != circ);
 
         this->arrangementPolygons << QPolygon(points);
@@ -539,10 +539,10 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         // Draw the filled polygon with the random color
         p.drawPolygon(this->arrangementPolygons[i]);
 
-        qDebug() << "New polygon --- ";
-        for (const QPoint& point : this->arrangementPolygons[i]) {
-            qDebug() << "(" << point.x() << ", " << point.y() << ")";
-        }
+        //qDebug() << "New polygon --- ";
+        //for (const QPoint& point : this->arrangementPolygons[i]) {
+            //qDebug() << "(" << point.x() << ", " << point.y() << ")";
+        //}
     }
 
 

@@ -35,7 +35,10 @@ int main(int argc, char* argv[])
     data->computeMinMaxRangeDomainCoordinates();
 
     // Compute the 2D arrangement
-    data->arr = ReebSpace::computeArrangement(data);
+    ReebSpace::computeArrangement(data);
+    ReebSpace::computeUpperLowerLink(data);
+
+    ReebSpace::BFS(data);
 
     // Set up QT Application
     QApplication app(argc, argv);
