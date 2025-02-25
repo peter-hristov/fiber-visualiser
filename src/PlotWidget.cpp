@@ -75,13 +75,37 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
         this->arrangementPolygons << QPolygon(points);
     }
 
+    QColor colours[] = {
+        QColor(255, 0, 0, 200),
+        QColor(0, 255, 200),
+        QColor(0, 0, 255, 200),
+    };
 
-    // Generate a random color for each arrangement face
-    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) {
-        int red = rand() % 256;
-        int green = rand() % 256;
-        int blue = rand() % 256;
-        this->arrangementPolygonColours << QColor(red, green, blue, 100);
+    for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+    {
+        if (f->is_unbounded()) 
+        {
+            //std::cout << "Unbounded face" << std::endl;
+            continue;
+        }
+
+        //int red = rand() % 256;
+        //int green = rand() % 256;
+        //int blue = rand() % 256;
+        //this->arrangementPolygonColours << QColor(red, green, blue, 100);
+        //this->arrangementPolygonColours << QColor(255, 0, 0, 100);
+
+
+        int maxFiberComponents = *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end());
+
+        float grayscaleValue = 256.0 - 256.0 * static_cast<float>(data->arrangementFiberComponents[data->arrangementFacesIdices[f]]) / static_cast<float>(maxFiberComponents);
+
+        int currentCC = data->arrangementFiberComponents[data->arrangementFacesIdices[f]];
+
+        qDebug() << currentCC << " ";
+
+        //this->arrangementPolygonColours << QColor(grayscaleValue, grayscaleValue, grayscaleValue, 100);
+        this->arrangementPolygonColours << colours[currentCC-1];
     }
 
 }
@@ -475,6 +499,22 @@ PlotWidget::drawAxisLabels(QPainter& p)
     void
 PlotWidget::drawAndRecomputeFS(QPainter& p)
 {
+
+    // Draw each polygon with a random color
+    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) 
+    {
+        // Set the random color for filling the polygon
+        p.setBrush(this->arrangementPolygonColours[i]);
+
+        // Draw the filled polygon with the random color
+        p.drawPolygon(this->arrangementPolygons[i]);
+
+        //qDebug() << "New polygon --- ";
+        //for (const QPoint& point : this->arrangementPolygons[i]) {
+            //qDebug() << "(" << point.x() << ", " << point.y() << ")";
+        //}
+    }
+
     auto &mousePoints = this->data->mousePoints;
 
     // Only recompute the polygon if we have a new point
@@ -528,21 +568,6 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         p.drawLine(a.x(), a.y() - resolution, a.x(), a.y() + resolution);
         p.drawLine(a.x() - resolution, a.y(), a.x() + resolution, a.y());
-    }
-
-    // Draw each polygon with a random color
-    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) 
-    {
-        // Set the random color for filling the polygon
-        p.setBrush(this->arrangementPolygonColours[i]);
-
-        // Draw the filled polygon with the random color
-        p.drawPolygon(this->arrangementPolygons[i]);
-
-        //qDebug() << "New polygon --- ";
-        //for (const QPoint& point : this->arrangementPolygons[i]) {
-            //qDebug() << "(" << point.x() << ", " << point.y() << ")";
-        //}
     }
 
 

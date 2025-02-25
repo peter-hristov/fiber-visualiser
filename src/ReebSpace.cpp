@@ -1,4 +1,5 @@
 #include "./ReebSpace.h"
+#include "./DisjointSet.h"
 #include "src/CGALTypedefs.h"
 
 #include <cstddef>
@@ -147,6 +148,39 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 void ReebSpace::computeArrangement(Data *data) 
 {
 
+    for (const std::vector<size_t> tet : data->tetrahedra)
+    {
+        // The triangles of the tet
+        std::set<std::set<int>> triangles;
+
+        // All pairs give you all six edges
+        for (int a = 0 ; a < 4 ; a++)
+        {
+            for (int b = a + 1 ; b < 4 ; b++)
+            {
+                for (int c = b + 1 ; c < 4 ; c++)
+                {
+                    int aIndex = tet[a];
+                    int bIndex = tet[b];
+                    int cIndex = tet[c];
+                    triangles.insert({aIndex, bIndex, cIndex});
+                }
+            }
+        }
+
+        // Connect all the triangles together
+        for(const std::set<int> t1 : triangles)
+        {
+            for(const std::set<int> t2 : triangles)
+            {
+                // Create a pair of sets
+                std::pair<std::set<int>, std::set<int>> pairOfTriangles = {t1, t2};
+
+                // Insert the pair into the set
+                data->connectedTriangles.insert(pairOfTriangles);
+            }
+        }
+    }
 
     // Example simple arrangement
     // |3--2|
@@ -348,6 +382,7 @@ void ReebSpace::BFS(Data *data)
 
     // The preimage graph for each face
     std::vector<std::set<std::set<int>>> preimageGraphs(data->arrangementFacesIdices.size());
+    data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
 
     while (false == traversalQueue.empty())
     {
@@ -453,6 +488,46 @@ void ReebSpace::BFS(Data *data)
                 printf("\n");
             }
 
+            DisjointSet ds(preimageGraphs[twinFaceID]);
+
+
+            for (const auto t1: preimageGraphs[twinFaceID])
+            {
+                for(const auto t2: preimageGraphs[twinFaceID])
+                {
+                    if (t1 == t2)
+                    {
+                        continue;
+                    }
+
+                    printf("First triangle: ");
+                    for (const auto v: t1)
+                    {
+                        printf("%d ", v);
+                    }
+
+                    printf("\nSecond triangle: ");
+                    for (const auto v: t2)
+                    {
+                        printf("%d ", v);
+                    }
+
+
+                    std::pair<std::set<int>, std::set<int>> trianglePair({t1, t2});
+
+                    if (data->connectedTriangles.find(trianglePair) != data->connectedTriangles.end()) 
+                    {
+                        printf("Unioning\n");
+                        ds.union_setsTriangle(t1, t2);
+                    }
+
+                    printf("-----------\n");
+                }
+            }
+
+            printf("That preimage graph has %d connected components.\n", ds.countConnectedComponents());
+            data->arrangementFiberComponents[twinFaceID] = ds.countConnectedComponents();
+
             printf("------------------------------------------------------------------------ \n");
 
 
@@ -479,6 +554,17 @@ void ReebSpace::BFS(Data *data)
             } while (curr != start);
         }
     }
+
+
+
+
+    std::cout << "This is the max of the fiber components - " << *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end()) << std::endl;
+
+    // Compute the connected components in each preimage graph
+
+
+
+
 
     //do {
         //typename Arrangement::Halfedge_const_handle e = curr;

@@ -78,5 +78,11 @@ class Data
     // Map from Point_2 -> Int
     std::map<Point_2, int> arrangementPointsIdices;
     std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
+    std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
+    std::vector<int> arrangementFiberComponents;
 
 };
+
+
+
+
