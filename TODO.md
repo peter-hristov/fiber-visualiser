@@ -1,17 +1,18 @@
-// What do I need from the arrangement?
-// Done - Compute the arrangement of a number of line segments
-// Done - Traverse the half-edge arrangement data struture (use ccb and twin)
-// Done - How to see where the segment came from? Use with_history and originating curve
-// Set up IDs for the faces (use a map for now, store ID field in data later)
-//
-// Get a running BFS
-// Done - Lower and upper star for each edge (loop all tets, maybe we don't need a big datastruture)
-//
-//
-//
-// Later
-// - Can you tell the algo which segments have the same point? Does that help?
-// - How do we use rational numbers for precision? Robustness.
+# Tasks
+Done - Compute the arrangement of a number of line segments
+Done - Traverse the half-edge arrangement data struture (use ccb and twin)
+Done - How to see where the segment came from? Use with_history and originating curve
+Done - Set up IDs for the faces (use a map for now, store ID field in data later)
+Done - Get a running BFS
+Done - Lower and upper star for each edge (loop all tets, maybe we don't need a big datastruture)
+
+Compute fibers in each face
+
+
+
+Later
+- Can you tell the algo which segments have the same point? Does that help?
+- How do we use rational numbers for precision? Robustness.
 
 
 

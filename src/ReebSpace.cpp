@@ -79,6 +79,12 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                 int aIndex = tet[a];
                 int bIndex = tet[b];
 
+                // Make sure the vertices of the edge are in sorted order to have consistent orientation
+                if (aIndex > bIndex)
+                {
+                    std::swap(aIndex, bIndex);
+                }
+
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
                 {
@@ -89,7 +95,7 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                     {
                         bool isUpperLink = isUpperLinkEdgeVertex(aIndex, bIndex, vIndex, data);
 
-                        if (true == isUpperLink ) {
+                        if (true == isUpperLink) {
                             data->upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
                         } else {
                             data->lowerLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
@@ -339,12 +345,16 @@ void ReebSpace::BFS(Data *data)
     std::set<Arrangement_2::Face_const_handle> visited;
     visited.insert(outerHalfEdge->face());
 
+
+    // The preimage graph for each face
+    std::vector<std::set<std::set<int>>> preimageGraphs(data->arrangementFacesIdices.size());
+
     while (false == traversalQueue.empty())
     {
         // Pop an half edge out
         Arrangement_2::Halfedge_const_handle currentHalfEdge = traversalQueue.front();
         traversalQueue.pop();
-
+        Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
 
         // Get the twin
         Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
@@ -353,8 +363,99 @@ void ReebSpace::BFS(Data *data)
         // If we have never visited this face, then we have never visited any of the half edges.
         if (visited.find(twinFace) == visited.end())
         {
-            printf("NEW FACE ------------------------------------------ %d \n", data->arrangementFacesIdices[twinFace]);
+            printf("NEW FACE ------------------------------------------ %d -> %d \n", data->arrangementFacesIdices[currentFace], data->arrangementFacesIdices[twinFace]);
             visited.insert(twinFace);
+
+
+
+
+
+            // At this point, we know the graph at currentFace, we want the graph at twinFace
+
+            // This is the original segment that this half edge came from
+            const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
+            
+            std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
+            std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+
+            // These will always be sorted, it's how we created the segments
+            int aIndex = data->arrangementPointsIdices[segment.source()];
+            int bIndex = data->arrangementPointsIdices[segment.target()];
+
+            assert(aIndex < bIndex);
+
+            printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+            printf("\n");
+
+
+
+            bool isSegmentLeftToRight = segment.source() < segment.target(); 
+            bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
+
+            int currentFaceID = data->arrangementFacesIdices[currentFace];
+            int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+            // The current graphs copies the old one, then we change some elements
+            preimageGraphs[twinFaceID] = preimageGraphs[currentFaceID];
+
+
+            // The half edge has the same direction as the original edge
+            if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
+            {
+                std::cout << "Upper link becomes lower link." << std::endl;
+
+                printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+                for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+                {
+                    preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
+                    printf("%d ", v);
+                }
+                printf("\n");
+
+                printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+                for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+                {
+                    preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
+                    printf("%d ", v);
+                }
+                printf("\n");
+            }
+            else
+            {
+                std::cout << "Upper link becomes lower link." << std::endl;
+
+                printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+                for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+                {
+                    preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
+                    printf("%d ", v);
+                }
+                printf("\n");
+
+                printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+                for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+                {
+                    preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
+                    printf("%d ", v);
+                }
+                printf("\n");
+            }
+
+
+
+            printf("The preimage graph is :\n");
+            for(const auto triangle : preimageGraphs[twinFaceID])
+            {
+                for(const auto vertex : triangle)
+                {
+                    printf("%d ", vertex);
+                }
+                printf("\n");
+            }
+
+            printf("------------------------------------------------------------------------ \n");
+
+
 
             // We should only have onbounded face, the outside face.
             assert(false == twinFace->is_unbounded());
@@ -365,9 +466,7 @@ void ReebSpace::BFS(Data *data)
             do {
                 traversalQueue.push(curr);
 
-
                 // Make sure there is only one originating curve (sanity check)
-                assert(std::distance(data->arr.originating_curves_begin(outerHalfEdge), data->arr.originating_curves_end(outerHalfEdge)) == 1);
                 const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
 
                 std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
