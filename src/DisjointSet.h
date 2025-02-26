@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <iostream>
 #include <vector>
 #include <set>
@@ -27,13 +28,22 @@ class DisjointSet {
             initialize(preimageGraph);
         }
 
+        // Make sure everyone is poiting to the root
+        void update()
+        {
+            for (int i = 0 ; i < parent.size() ; i++)
+            {
+                this->find(i);
+            }
+        }
+
         std::vector<int> getUniqueRoots()
         {
             std::set<int> uniqueRoots;
 
-            for (const int &r : this->parent)
+            for(int i  = 0 ; i < parent.size() ; i++)
             {
-                uniqueRoots.insert(r);
+                uniqueRoots.insert(find(i));
             }
 
             return std::vector<int>(uniqueRoots.begin(), uniqueRoots.end());
@@ -77,17 +87,22 @@ class DisjointSet {
         // Interface for triangles
         int findTriangle(DataType triangle)
         {
+            assert(data.contains(triangle));
             return find(data[triangle]);
         }
 
         void union_setsTriangle(const DataType triangle1, const DataType triangle2) 
         {
+            assert(data.contains(triangle1));
+            assert(data.contains(triangle2));
             union_sets(data[triangle1], data[triangle2]);
 
         }
 
         bool connectedTriangle(const DataType triangle1, const DataType triangle2)
         {
+            assert(data.contains(triangle1));
+            assert(data.contains(triangle2));
             return connected(data[triangle1], data[triangle2]);
         }
 
@@ -129,4 +144,3 @@ class DisjointSet {
             return find(x) == find(y);
         }
 };
-

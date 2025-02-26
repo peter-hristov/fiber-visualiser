@@ -609,6 +609,8 @@ void ReebSpace::BFS(Data *data)
 
         const int faceID = data->arrangementFacesIdices[face];
 
+        // Make ure everyone is pointing to their root
+        disjointSets[faceID].update();
         for (const int &r : disjointSets[faceID].getUniqueRoots())
         {
             facesAndRoots.insert({faceID, r});
@@ -737,7 +739,13 @@ void ReebSpace::BFS(Data *data)
                 if (activeRootsFace.contains(triangleRootFace)) { continue; }
 
                 // The root of the triangle in the twin face
-                const int triangleRootTwinFace = disjointSets[faceID].findTriangle(t);
+                const int triangleRootTwinFace = disjointSets[twinFaceID].findTriangle(t);
+
+                std::pair<int, int> faceRoot({faceID, triangleRootFace});
+                std::pair<int, int> twinFaceRoot({twinFaceID, triangleRootTwinFace});
+                std::pair<std::pair<int, int>, std::pair<int, int>> reebSpaceConnection({faceRoot, twinFaceRoot});
+
+                connectedFacesAndRoots.insert(reebSpaceConnection);
 
                 // Add aded [faceId, triangleRoot] -> [twinFaceId, triangleRootTwinFace]
             }
@@ -752,6 +760,11 @@ void ReebSpace::BFS(Data *data)
     //std::set<std::pair<std::set<int>, std::set<int>>> connectedFacesAndRoots;
     
     DisjointSet<std::pair<int, int>> reebSpace(facesAndRoots);
+
+    for (const auto &[face, root] : facesAndRoots)
+    {
+        printf("Face ID = %d, fiber component root = %d\n", face, root);
+    }
 
     for (const auto &[faceRoot1, faceRoot2] : connectedFacesAndRoots)
     {
