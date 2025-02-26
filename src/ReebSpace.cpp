@@ -461,7 +461,7 @@ void ReebSpace::BFS(Data *data)
     std::vector<std::set<std::set<int>>> preimageGraphs(data->arrangementFacesIdices.size());
 
     // The disjoint set to track the connected components of the preimage graph
-    std::vector<DisjointSet> disjointSets(data->arrangementFacesIdices.size());
+    std::vector<DisjointSet<std::set<int>>> disjointSets(data->arrangementFacesIdices.size());
 
     // The number of connected components for each preimage graph (computed from the disjoint set)
     data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
@@ -593,53 +593,176 @@ void ReebSpace::BFS(Data *data)
 
 
 
+
+
+
+
+
+
+
+    // Assemble all faces and their roots, the face is given as an int ID and same for the root (in it's respective DS)
+    std::set<std::pair<int, int>> facesAndRoots;
     for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
     {
         // Skip the outer face
         if (face->is_unbounded()) { continue; }
 
+        const int faceID = data->arrangementFacesIdices[face];
 
-        // Traverse the neighbouring faces
-        Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
-        Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+        for (const int &r : disjointSets[faceID].getUniqueRoots())
+        {
+            facesAndRoots.insert({faceID, r});
+        }
+    }
+
+    // Talls us which faces, root pairs are connected to each other
+    std::set<std::pair<std::pair<int, int>, std::pair<int, int>>> connectedFacesAndRoots;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // For evey face
+    for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
+    {
+        // Skip the outer face
+        if (face->is_unbounded()) { continue; }
+
+        //
+        // Traverse the neighbouring faces to collect them and the minusPlusTriangles
+        //
 
         // List of adjacent faces
         std::vector<Face_const_handle> adjacentFaces;
-        std::map<Face_const_handle, std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>>> pluMinusTriangles;
+
+        // Map from a face to it's plus and minus triangles as we go from face -> twinFace
+        std::map<Face_const_handle, std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>>> minusPlusTriangles;
+
+        // Walk around the boundary of the face
+        Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
+        Arrangement_2::Ccb_halfedge_const_circulator curr = start;
 
         do {
             traversalQueue.push(curr);
 
-            // Make sure there is only one originating curve (sanity check)
+            // Only for debug
             const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
-
             std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
             std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-
             printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
             printf("\n\n");
 
+            // Pull out the face and the minusPlusTriangles
             Arrangement_2::Halfedge_const_handle twinHalfEdge = curr->twin();
             Arrangement_2::Face_const_handle twinFace = twinHalfEdge->face();
-
-            // Type is [std::vector<std::set<int>>, std::vector<std::set<int>>]
-            pluMinusTriangles[twinFace] = getMinusPlusTriangles(curr, data);
+            minusPlusTriangles[twinFace] = getMinusPlusTriangles(curr, data);
 
             ++curr;
         } while (curr != start);
 
 
-
-
-        for (const auto& [twinFace, pluMinusTriangles] : pluMinusTriangles) 
+        //
+        // Go over all adjacent twinFaces
+        //
+        for (const auto& [twinFace, mpt] : minusPlusTriangles) 
         { 
-            const auto& [minusTriangles, plusTriangles] = pluMinusTriangles;
+            // Get the plusMinus triangles for the current face
+            const auto& [minusTriangles, plusTriangles] = mpt;
 
             // Face Graph - minusTriangles + plusTriangles = twinFace Graph
             const int faceID = data->arrangementFacesIdices[face];
             const int twinFaceID = data->arrangementFacesIdices[twinFace];
 
+            // See which of he roots (connected components) are active (contain an active triangle)
+            std::set<int> activeRootsFace;
+            for (std::set<int> triangle : minusTriangles)
+            {
+                activeRootsFace.insert(disjointSets[faceID].findTriangle(triangle));
+            }
+
+            std::set<int> activeRootsTwinFace;
+            for (std::set<int> triangle : plusTriangles)
+            {
+                activeRootsTwinFace.insert(disjointSets[twinFaceID].findTriangle(triangle));
+
+            }
+
+            // This is a regular edge then connect the two active components, for singular edge we skip this, they are considered new
+            if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
+            {
+                // Active roots point to each other
+                // Add edge [faceId, activeRootsFace.begin()->second()] -> [twinFaceId, activeRootsTwinFace.begin()->second()]
+                //connectedFacesAndRoots
+                //std::set<int> faceRoot({faceID, *activeRootsFace.begin()->second(});
+                //std::pair<std::set<int>, std::set<int>> reebSpaceConnection({t1, t2});
+
+
+                // @TODO Ulgy, but hard to get the first element out otherwise
+                for (const int &rFace :activeRootsFace)
+                {
+                    for (const int &rTwinFace :activeRootsTwinFace)
+                    {
+                        std::pair<int, int> faceRoot({faceID, rFace});
+                        std::pair<int, int> twinFaceRoot({twinFaceID, rTwinFace});
+                        std::pair<std::pair<int, int>, std::pair<int, int>> reebSpaceConnection({faceRoot, twinFaceRoot});
+
+                        connectedFacesAndRoots.insert(reebSpaceConnection);
+                    }
+                }
+            }
+
+            //
+            // Link together all other connected components
+            //
+            for (const std::set<int>& t : preimageGraphs[faceID]) 
+            {
+                // The root of the triangle in the face
+                const int triangleRootFace = disjointSets[faceID].findTriangle(t);
+
+                // We have already deal with the active fiber
+                if (activeRootsFace.contains(triangleRootFace)) { continue; }
+
+                // The root of the triangle in the twin face
+                const int triangleRootTwinFace = disjointSets[faceID].findTriangle(t);
+
+                // Add aded [faceId, triangleRoot] -> [twinFaceId, triangleRootTwinFace]
+            }
+
         }
+    }
+
+
+    // Final disjoint set to compute the Reeb space
+
+    //std::set<std::set<int>> facesAndRoots;
+    //std::set<std::pair<std::set<int>, std::set<int>>> connectedFacesAndRoots;
+    
+    DisjointSet<std::pair<int, int>> reebSpace(facesAndRoots);
+
+    for (const auto &[faceRoot1, faceRoot2] : connectedFacesAndRoots)
+    {
+        reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
+    }
+
+
+    for (const auto &[key, value] : reebSpace.data)
+    {
+        printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, reebSpace.findTriangle(key));
+
     }
 
 

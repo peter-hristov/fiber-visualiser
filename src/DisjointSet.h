@@ -5,27 +5,41 @@
 #include <set>
 #include <map>
 
+template<typename DataType>
 class DisjointSet {
 
-    private:
+    public:
+
         std::vector<int> parent;
         std::vector<int> rank;
 
-        // Map a triangle to an ID
-        std::map<std::set<int>, int> data;
+        // Map a triangle to an ID (element ID)
+        //std::map<std::set<int>, int> data;
+        std::map<DataType, int> data;
 
-    public:
         DisjointSet() 
         {
 
         }
 
-        DisjointSet(const std::set<std::set<int>> &preimageGraph) 
+        DisjointSet(const std::set<DataType> &preimageGraph) 
         {
             initialize(preimageGraph);
         }
 
-        void initialize(const std::set<std::set<int>> &preimageGraph) 
+        std::vector<int> getUniqueRoots()
+        {
+            std::set<int> uniqueRoots;
+
+            for (const int &r : this->parent)
+            {
+                uniqueRoots.insert(r);
+            }
+
+            return std::vector<int>(uniqueRoots.begin(), uniqueRoots.end());
+        }
+
+        void initialize(const std::set<DataType> &preimageGraph) 
         {
             int n = preimageGraph.size();
 
@@ -39,7 +53,7 @@ class DisjointSet {
 
             // Map each triangle to an ID in the disjoint set
             int counter = 0;
-            for(const std::set<int> triangle: preimageGraph)
+            for(const DataType triangle: preimageGraph)
             {
                 data[triangle] = counter++;
             }
@@ -61,23 +75,21 @@ class DisjointSet {
 
 
         // Interface for triangles
-        int findTriangle(std::set<int> triangle)
+        int findTriangle(DataType triangle)
         {
             return find(data[triangle]);
         }
 
-        void union_setsTriangle(const std::set<int> triangle1, const std::set<int> triangle2) 
+        void union_setsTriangle(const DataType triangle1, const DataType triangle2) 
         {
             union_sets(data[triangle1], data[triangle2]);
 
         }
 
-        bool connectedTriangle(const std::set<int> triangle1, const std::set<int> triangle2)
+        bool connectedTriangle(const DataType triangle1, const DataType triangle2)
         {
             return connected(data[triangle1], data[triangle2]);
         }
-
-
 
         // Find with path compression
         int find(int x) {
