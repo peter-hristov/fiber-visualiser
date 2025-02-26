@@ -379,9 +379,13 @@ void ReebSpace::BFS(Data *data)
     std::set<Arrangement_2::Face_const_handle> visited;
     visited.insert(outerHalfEdge->face());
 
-
     // The preimage graph for each face
     std::vector<std::set<std::set<int>>> preimageGraphs(data->arrangementFacesIdices.size());
+
+    // The disjoint set to track the connected components of the preimage graph
+    std::vector<DisjointSet> disjointSets(data->arrangementFacesIdices.size());
+
+    // The number of connected components for each preimage graph (computed from the disjoint set)
     data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
 
     while (false == traversalQueue.empty())
@@ -395,17 +399,27 @@ void ReebSpace::BFS(Data *data)
         Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
         Arrangement_2::Face_const_handle twinFace = twin->face();
 
+        // Get ids of both
+        int currentFaceID = data->arrangementFacesIdices[currentFace];
+        int twinFaceID = data->arrangementFacesIdices[twinFace];
+
         // If we have never visited this face, then we have never visited any of the half edges.
         if (visited.find(twinFace) == visited.end())
         {
             printf("NEW FACE ------------------------------------------ %d -> %d \n", data->arrangementFacesIdices[currentFace], data->arrangementFacesIdices[twinFace]);
             visited.insert(twinFace);
 
+            // Sanity check we should only have onbounded face, the outside face.
+            assert(false == twinFace->is_unbounded());
 
 
 
 
-            // At this point, we know the graph at currentFace, we want the graph at twinFace
+
+
+            //
+            // Step 1. Find the edge from the mesh that corresponds to the current half edge.
+            //
 
             // This is the original segment that this half edge came from
             const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
@@ -423,16 +437,17 @@ void ReebSpace::BFS(Data *data)
             printf("\n");
 
 
+            //
+            // Step 2. Compute preimageGraphs[twinFaceID] using preimageGraph[currentFaceID]
+            //
 
-            bool isSegmentLeftToRight = segment.source() < segment.target(); 
-            bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
-
-            int currentFaceID = data->arrangementFacesIdices[currentFace];
-            int twinFaceID = data->arrangementFacesIdices[twinFace];
 
             // The current graphs copies the old one, then we change some elements
             preimageGraphs[twinFaceID] = preimageGraphs[currentFaceID];
 
+            // Orientation of both edges
+            bool isSegmentLeftToRight = segment.source() < segment.target(); 
+            bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
 
             // The half edge has the same direction as the original edge
             if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
@@ -488,8 +503,15 @@ void ReebSpace::BFS(Data *data)
                 printf("\n");
             }
 
-            DisjointSet ds(preimageGraphs[twinFaceID]);
 
+
+
+            //
+            // Step 3. Compute disjointSets[twinFaceID]
+            //
+
+
+            disjointSets[twinFaceID].initialize(preimageGraphs[twinFaceID]);
 
             for (const auto t1: preimageGraphs[twinFaceID])
             {
@@ -518,22 +540,20 @@ void ReebSpace::BFS(Data *data)
                     if (data->connectedTriangles.find(trianglePair) != data->connectedTriangles.end()) 
                     {
                         printf("Unioning\n");
-                        ds.union_setsTriangle(t1, t2);
+                        disjointSets[twinFaceID].union_setsTriangle(t1, t2);
                     }
 
                     printf("-----------\n");
                 }
             }
 
-            printf("That preimage graph has %d connected components.\n", ds.countConnectedComponents());
-            data->arrangementFiberComponents[twinFaceID] = ds.countConnectedComponents();
+            printf("That preimage graph has %d connected components.\n", disjointSets[twinFaceID].countConnectedComponents());
+            data->arrangementFiberComponents[twinFaceID] = disjointSets[twinFaceID].countConnectedComponents();
 
             printf("------------------------------------------------------------------------ \n");
 
 
 
-            // We should only have onbounded face, the outside face.
-            assert(false == twinFace->is_unbounded());
 
             Arrangement_2::Ccb_halfedge_const_circulator start = twinFace->outer_ccb();
             Arrangement_2::Ccb_halfedge_const_circulator curr = start;

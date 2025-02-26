@@ -102,7 +102,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
 
         int currentCC = data->arrangementFiberComponents[data->arrangementFacesIdices[f]];
 
-        qDebug() << currentCC << " ";
+        //qDebug() << currentCC << " ";
 
         //this->arrangementPolygonColours << QColor(grayscaleValue, grayscaleValue, grayscaleValue, 100);
         this->arrangementPolygonColours << colours[currentCC-1];

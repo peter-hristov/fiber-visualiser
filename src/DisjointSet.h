@@ -15,7 +15,17 @@ class DisjointSet {
         std::map<std::set<int>, int> data;
 
     public:
-        DisjointSet(std::set<std::set<int>> preimageGraph) 
+        DisjointSet() 
+        {
+
+        }
+
+        DisjointSet(const std::set<std::set<int>> &preimageGraph) 
+        {
+            initialize(preimageGraph);
+        }
+
+        void initialize(const std::set<std::set<int>> &preimageGraph) 
         {
             int n = preimageGraph.size();
 
