@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "./FaceFiber.h"
+#include "./DisjointSet.h"
 
 #include <qpoint.h>
 #include <qvector.h>
@@ -80,7 +81,7 @@ class Data
     std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
     std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
     std::vector<int> arrangementFiberComponents;
-
+    DisjointSet<std::pair<int, int>> reebSpace;
 };
 
 

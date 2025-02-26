@@ -759,7 +759,7 @@ void ReebSpace::BFS(Data *data)
     //std::set<std::set<int>> facesAndRoots;
     //std::set<std::pair<std::set<int>, std::set<int>>> connectedFacesAndRoots;
     
-    DisjointSet<std::pair<int, int>> reebSpace(facesAndRoots);
+    data->reebSpace.initialize(facesAndRoots);
 
     for (const auto &[face, root] : facesAndRoots)
     {
@@ -768,13 +768,13 @@ void ReebSpace::BFS(Data *data)
 
     for (const auto &[faceRoot1, faceRoot2] : connectedFacesAndRoots)
     {
-        reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
+        data->reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
     }
 
 
-    for (const auto &[key, value] : reebSpace.data)
+    for (const auto &[key, value] : data->reebSpace.data)
     {
-        printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, reebSpace.findTriangle(key));
+        printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, data->reebSpace.findTriangle(key));
 
     }
 

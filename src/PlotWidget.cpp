@@ -72,41 +72,76 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
         } while (++curr != circ);
 
-        this->arrangementPolygons << QPolygon(points);
+        // Add the polygon with a multiplicty
+        for (int i = 0 ; i < data->arrangementFiberComponents[data->arrangementFacesIdices[f]]; i++)
+        {
+            this->arrangementPolygons << QPolygon(points);
+        }
     }
 
     QColor colours[] = {
-        QColor(255, 0, 0, 200),
-        QColor(0, 255, 200),
-        QColor(0, 0, 255, 200),
+        QColor(255, 0, 0, 100),
+        QColor(0, 255, 0, 100),
+        QColor(0, 0, 255, 100),
+        QColor(255, 255, 0, 100),
+        QColor(0, 255, 255, 100),
+        QColor(255, 0, 255, 100),
+        QColor(150, 0, 255, 100),
     };
 
-    for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+
+
+    std::set<int> uniqueSheetIDs;
+
+    for (const auto &[key, value] : data->reebSpace.data)
     {
-        if (f->is_unbounded()) 
-        {
-            //std::cout << "Unbounded face" << std::endl;
-            continue;
-        }
+        uniqueSheetIDs.insert(data->reebSpace.findTriangle(key));
+        //printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, data->reebSpace.findTriangle(key));
+    }
+
+    std::map<int, int> sheetToColour;
+
+    int counter = 0;
+    for (const auto &sheetID : uniqueSheetIDs)
+    {
+        cout << sheetID << endl;
+        sheetToColour[sheetID] = counter++;
+    }
+
+
+    for (const auto &[key, value] : data->reebSpace.data)
+    {
+        cout << "FACE ID = " << key.first << ", CC ID = " << key.second << endl;
+
+        // Paint with the sheet ID of this guy
+        //
+        int colourID = sheetToColour[data->reebSpace.findTriangle(std::pair<int, int>({key.first, key.second}))];
+
+        this->arrangementPolygonColours << colours[colourID];
+    }
+
+
+    //for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+    //{
+        //if (f->is_unbounded()) 
+        //{
+            ////std::cout << "Unbounded face" << std::endl;
+            //continue;
+        //}
 
         //int red = rand() % 256;
         //int green = rand() % 256;
         //int blue = rand() % 256;
         //this->arrangementPolygonColours << QColor(red, green, blue, 100);
-        //this->arrangementPolygonColours << QColor(255, 0, 0, 100);
 
 
-        int maxFiberComponents = *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end());
-
-        float grayscaleValue = 256.0 - 256.0 * static_cast<float>(data->arrangementFiberComponents[data->arrangementFacesIdices[f]]) / static_cast<float>(maxFiberComponents);
-
-        int currentCC = data->arrangementFiberComponents[data->arrangementFacesIdices[f]];
-
-        //qDebug() << currentCC << " ";
-
-        //this->arrangementPolygonColours << QColor(grayscaleValue, grayscaleValue, grayscaleValue, 100);
-        this->arrangementPolygonColours << colours[currentCC-1];
-    }
+        ////int maxFiberComponents = *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end());
+        ////float grayscaleValue = 256.0 - 256.0 * static_cast<float>(data->arrangementFiberComponents[data->arrangementFacesIdices[f]]) / static_cast<float>(maxFiberComponents);
+        ////int currentCC = data->arrangementFiberComponents[data->arrangementFacesIdices[f]];
+        //////qDebug() << currentCC << " ";
+        //////this->arrangementPolygonColours << QColor(grayscaleValue, grayscaleValue, grayscaleValue, 100);
+        ////this->arrangementPolygonColours << colours[currentCC-1];
+    //}
 
 }
 
