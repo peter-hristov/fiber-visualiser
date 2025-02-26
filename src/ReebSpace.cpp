@@ -7,6 +7,84 @@
 #include <queue>
 #include <set>
 
+
+std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
+{
+
+    // Step 1. Initialize lists
+    std::vector<std::set<int>> plusTriangles;
+    std::vector<std::set<int>> minusTriangles;
+
+
+    // Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
+    const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
+    std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
+    std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+
+    // These will always be sorted, it's how we created the segments
+    int aIndex = data->arrangementPointsIdices[segment.source()];
+    int bIndex = data->arrangementPointsIdices[segment.target()];
+
+    // Sanity check
+    assert(aIndex < bIndex);
+
+    printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+    printf("\n");
+
+
+    // Check to see if the segment and half edge have the same orientation
+    bool isSegmentLeftToRight = segment.source() < segment.target(); 
+    bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
+
+    // The half edge has the same direction as the original edge
+    if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
+    {
+        std::cout << "Upper link becomes lower link." << std::endl;
+
+        printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+        for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        {
+            minusTriangles.push_back({aIndex, bIndex, v});
+            //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
+            printf("%d ", v);
+        }
+        printf("\n");
+
+        printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+        for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        {
+            plusTriangles.push_back({aIndex, bIndex, v});
+            //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
+            printf("%d ", v);
+        }
+        printf("\n");
+    }
+    else
+    {
+        std::cout << "Upper link becomes lower link." << std::endl;
+
+        printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+        for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        {
+            plusTriangles.push_back({aIndex, bIndex, v});
+            //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
+            printf("%d ", v);
+        }
+        printf("\n");
+
+        printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+        for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        {
+            //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
+            minusTriangles.push_back({aIndex, bIndex, v});
+            printf("%d ", v);
+        }
+        printf("\n");
+    }
+
+    return {minusTriangles, plusTriangles};
+}
+
 template <typename Arrangement>
 void print_ccb(typename Arrangement::Ccb_halfedge_const_circulator circ) 
 {
@@ -412,86 +490,19 @@ void ReebSpace::BFS(Data *data)
             // Sanity check we should only have onbounded face, the outside face.
             assert(false == twinFace->is_unbounded());
 
-
-
-
-
-
-            //
-            // Step 1. Find the edge from the mesh that corresponds to the current half edge.
-            //
-
-            // This is the original segment that this half edge came from
-            const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
-            
-            std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
-            std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-
-            // These will always be sorted, it's how we created the segments
-            int aIndex = data->arrangementPointsIdices[segment.source()];
-            int bIndex = data->arrangementPointsIdices[segment.target()];
-
-            assert(aIndex < bIndex);
-
-            printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-            printf("\n");
-
-
-            //
-            // Step 2. Compute preimageGraphs[twinFaceID] using preimageGraph[currentFaceID]
-            //
-
-
-            // The current graphs copies the old one, then we change some elements
+            // Type is [std::vector<std::set<int>>, std::vector<std::set<int>>]
+            auto [minusTriangles, plusTriangles] = getMinusPlusTriangles(currentHalfEdge, data);
             preimageGraphs[twinFaceID] = preimageGraphs[currentFaceID];
 
-            // Orientation of both edges
-            bool isSegmentLeftToRight = segment.source() < segment.target(); 
-            bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
-
-            // The half edge has the same direction as the original edge
-            if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
+            for (const auto triangle: minusTriangles)
             {
-                std::cout << "Upper link becomes lower link." << std::endl;
-
-                printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-                for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
-                {
-                    preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-                    printf("%d ", v);
-                }
-                printf("\n");
-
-                printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-                for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
-                {
-                    preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-                    printf("%d ", v);
-                }
-                printf("\n");
-            }
-            else
-            {
-                std::cout << "Upper link becomes lower link." << std::endl;
-
-                printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-                for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
-                {
-                    preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-                    printf("%d ", v);
-                }
-                printf("\n");
-
-                printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-                for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
-                {
-                    preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-                    printf("%d ", v);
-                }
-                printf("\n");
+                preimageGraphs[twinFaceID].erase(triangle);
             }
 
-
+            for (const auto triangle: plusTriangles)
+            {
+                preimageGraphs[twinFaceID].insert(triangle);
+            }
 
             printf("The preimage graph is :\n");
             for(const auto triangle : preimageGraphs[twinFaceID])
@@ -579,6 +590,58 @@ void ReebSpace::BFS(Data *data)
 
 
     std::cout << "This is the max of the fiber components - " << *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end()) << std::endl;
+
+
+
+    for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
+    {
+        // Skip the outer face
+        if (face->is_unbounded()) { continue; }
+
+
+        // Traverse the neighbouring faces
+        Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
+        Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+
+        // List of adjacent faces
+        std::vector<Face_const_handle> adjacentFaces;
+        std::map<Face_const_handle, std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>>> pluMinusTriangles;
+
+        do {
+            traversalQueue.push(curr);
+
+            // Make sure there is only one originating curve (sanity check)
+            const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
+
+            std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
+            std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+
+            printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+            printf("\n\n");
+
+            Arrangement_2::Halfedge_const_handle twinHalfEdge = curr->twin();
+            Arrangement_2::Face_const_handle twinFace = twinHalfEdge->face();
+
+            // Type is [std::vector<std::set<int>>, std::vector<std::set<int>>]
+            pluMinusTriangles[twinFace] = getMinusPlusTriangles(curr, data);
+
+            ++curr;
+        } while (curr != start);
+
+
+
+
+        for (const auto& [twinFace, pluMinusTriangles] : pluMinusTriangles) 
+        { 
+            const auto& [minusTriangles, plusTriangles] = pluMinusTriangles;
+
+            // Face Graph - minusTriangles + plusTriangles = twinFace Graph
+            const int faceID = data->arrangementFacesIdices[face];
+            const int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+        }
+    }
+
 
     // Compute the connected components in each preimage graph
 
