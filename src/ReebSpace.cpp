@@ -10,11 +10,9 @@
 
 std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
 {
-
     // Step 1. Initialize lists
     std::vector<std::set<int>> plusTriangles;
     std::vector<std::set<int>> minusTriangles;
-
 
     // Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
     const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
@@ -22,8 +20,8 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTr
     std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
 
     // These will always be sorted, it's how we created the segments
-    int aIndex = data->arrangementPointsIdices[segment.source()];
-    int bIndex = data->arrangementPointsIdices[segment.target()];
+    const int aIndex = data->arrangementPointsIdices[segment.source()];
+    const int bIndex = data->arrangementPointsIdices[segment.target()];
 
     // Sanity check
     assert(aIndex < bIndex);
@@ -33,8 +31,8 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTr
 
 
     // Check to see if the segment and half edge have the same orientation
-    bool isSegmentLeftToRight = segment.source() < segment.target(); 
-    bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
+    const bool isSegmentLeftToRight = segment.source() < segment.target(); 
+    const bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
 
     // The half edge has the same direction as the original edge
     if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
@@ -61,7 +59,7 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTr
     }
     else
     {
-        std::cout << "Upper link becomes lower link." << std::endl;
+        std::cout << "Lower link becomes upper link." << std::endl;
 
         printf("The upper link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
@@ -110,14 +108,14 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
     }
 
     // Define the two points that form the line
-    Point_2 a(data->vertexCoordinatesF[aIndex], data->vertexCoordinatesG[aIndex]);
-    Point_2 b(data->vertexCoordinatesF[bIndex], data->vertexCoordinatesG[bIndex]);
+    const Point_2 a(data->vertexCoordinatesF[aIndex], data->vertexCoordinatesG[aIndex]);
+    const Point_2 b(data->vertexCoordinatesF[bIndex], data->vertexCoordinatesG[bIndex]);
 
     // Define the test point
-    Point_2 v(data->vertexCoordinatesF[vIndex], data->vertexCoordinatesG[vIndex]);  // Change this to test different locations
+    const Point_2 v(data->vertexCoordinatesF[vIndex], data->vertexCoordinatesG[vIndex]);  // Change this to test different locations
 
     // Determine which half-plane r is in
-    CGAL::Orientation result = CGAL::orientation(a, b, v);
+    const CGAL::Orientation result = CGAL::orientation(a, b, v);
 
     printf("Checking line (%d, %d) against vertex %d\n", aIndex, bIndex, vIndex);
 
@@ -140,6 +138,7 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
         assert(false);
     }
 
+    // Paranoid assert
     assert(false);
 }
 
@@ -568,6 +567,9 @@ void ReebSpace::BFS(Data *data)
 
 
 
+            //
+            // Push all the half edge around the twinFace, that lead to other faces
+            //
 
             Arrangement_2::Ccb_halfedge_const_circulator start = twinFace->outer_ccb();
             Arrangement_2::Ccb_halfedge_const_circulator curr = start;
@@ -577,10 +579,8 @@ void ReebSpace::BFS(Data *data)
 
                 // Make sure there is only one originating curve (sanity check)
                 const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
-
                 std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
                 std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-
                 printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
                 printf("\n\n");
 
@@ -721,11 +721,11 @@ void ReebSpace::BFS(Data *data)
                 {
                     for (const int &rTwinFace :activeRootsTwinFace)
                     {
-                        std::pair<int, int> faceRoot({faceID, rFace});
-                        std::pair<int, int> twinFaceRoot({twinFaceID, rTwinFace});
-                        std::pair<std::pair<int, int>, std::pair<int, int>> reebSpaceConnection({faceRoot, twinFaceRoot});
-
-                        connectedFacesAndRoots.insert(reebSpaceConnection);
+                        //connectedFacesAndRoots.insert(reebSpaceConnection);
+                        connectedFacesAndRoots.insert({
+                                {faceID, rFace},
+                                {twinFaceID, rTwinFace}
+                                });
                     }
                 }
             }
@@ -744,31 +744,21 @@ void ReebSpace::BFS(Data *data)
                 // The root of the triangle in the twin face
                 const int triangleRootTwinFace = data->faceDisjointSets[twinFaceID].findTriangle(t);
 
-                std::pair<int, int> faceRoot({faceID, triangleRootFace});
-                std::pair<int, int> twinFaceRoot({twinFaceID, triangleRootTwinFace});
-                std::pair<std::pair<int, int>, std::pair<int, int>> reebSpaceConnection({faceRoot, twinFaceRoot});
-
-                connectedFacesAndRoots.insert(reebSpaceConnection);
-
-                // Add aded [faceId, triangleRoot] -> [twinFaceId, triangleRootTwinFace]
+                //connectedFacesAndRoots.insert(reebSpaceConnection);
+                connectedFacesAndRoots.insert({
+                        {faceID, triangleRootFace}, 
+                        {twinFaceID, triangleRootTwinFace}
+                        });
             }
 
         }
     }
 
 
-    // Final disjoint set to compute the Reeb space
-
-    //std::set<std::set<int>> facesAndRoots;
-    //std::set<std::pair<std::set<int>, std::set<int>>> connectedFacesAndRoots;
-    
+    //
+    // Compute the Reeb space
+    //
     data->reebSpace.initialize(facesAndRoots);
-
-    for (const auto &[face, root] : facesAndRoots)
-    {
-        printf("Face ID = %d, fiber component root = %d\n", face, root);
-    }
-
     for (const auto &[faceRoot1, faceRoot2] : connectedFacesAndRoots)
     {
         data->reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
@@ -778,33 +768,19 @@ void ReebSpace::BFS(Data *data)
     data->reebSpace.update();
 
 
+    //
     // Set up colourIDs for each sheet
+    //
     std::set<int> uniqueSheetIDs;
 
     for (const auto &[key, value] : data->reebSpace.data)
     {
         uniqueSheetIDs.insert(data->reebSpace.findTriangle(key));
-        //printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, data->reebSpace.findTriangle(key));
     }
-
     int counter = 0;
     for (const auto &sheetID : uniqueSheetIDs)
     {
         data->sheetToColour[sheetID] = counter++;
     }
 
-
-    // Compute the connected components in each preimage graph
-
-
-
-
-
-    //do {
-        //typename Arrangement::Halfedge_const_handle e = curr;
-        //// Get the twin half-edge and its adjacent face
-        //typename Arrangement::Halfedge_const_handle twin = e->twin();
-
-        //std::cout << "   [" << e->curve() << "]   " << "(" << e->target()->point() << ")" << std::endl;
-    //} while (++curr != circ);
 }

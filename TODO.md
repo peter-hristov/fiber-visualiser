@@ -5,8 +5,16 @@ Done - How to see where the segment came from? Use with_history and originating 
 Done - Set up IDs for the faces (use a map for now, store ID field in data later)
 Done - Get a running BFS
 Done - Lower and upper star for each edge (loop all tets, maybe we don't need a big datastruture)
+Done - Compute fibers in each face
+Done - Compute preimage graph for each face
+Done - Compute connectivity of fibers for each face (via disjoint set)
+Done - Compute fiber fiber components assignemtns (make sure differnt sheets show the same)
+Done - Compute the Reeb space
+Done - Colour the sheets in the range
+Done - Flexible fibers
 
-Compute fibers in each face
+Use better startegy to find fiber components.
+Use better maps between various handles and indices and so on.
 
 
 
