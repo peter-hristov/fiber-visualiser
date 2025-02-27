@@ -8,6 +8,7 @@
 #include <CGAL/Segment_2.h>
 #include <CGAL/Line_2.h>
 
+
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 typedef CGAL::Arr_segment_traits_2<K> Traits_2;
 typedef CGAL::Arrangement_with_history_2<Traits_2> Arrangement_2;
@@ -25,3 +26,7 @@ typedef Arrangement_2::Face_const_iterator Face_const_iterator;
 //typedef CGAL::Arrangement_2<Traits_2> Arrangement_2;
 typedef Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
 typedef Arrangement_2::Face_const_handle Face_const_handle;
+
+// Used to find which face a point is in 
+#include <CGAL/Arr_trapezoid_ric_point_location.h>
+typedef CGAL::Arr_trapezoid_ric_point_location<Arrangement_2> Point_location;

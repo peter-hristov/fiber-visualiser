@@ -79,34 +79,15 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
         }
     }
 
-    QColor colours[] = {
-        QColor(255, 0, 0, 100),
-        QColor(0, 255, 0, 100),
-        QColor(0, 0, 255, 100),
-        QColor(255, 255, 0, 100),
-        QColor(0, 255, 255, 100),
-        QColor(255, 0, 255, 100),
-        QColor(150, 0, 255, 100),
-    };
-
-
-
-    std::set<int> uniqueSheetIDs;
-
-    for (const auto &[key, value] : data->reebSpace.data)
-    {
-        uniqueSheetIDs.insert(data->reebSpace.findTriangle(key));
-        //printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, data->reebSpace.findTriangle(key));
-    }
-
-    std::map<int, int> sheetToColour;
-
-    int counter = 0;
-    for (const auto &sheetID : uniqueSheetIDs)
-    {
-        cout << sheetID << endl;
-        sheetToColour[sheetID] = counter++;
-    }
+    //QColor colours[] = {
+        //QColor::fromRgbF(1.0f, 0.0f, 0.0f, 0.392f),
+        //QColor::fromRgbF(0.0f, 1.0f, 0.0f, 0.392f),
+        //QColor::fromRgbF(0.0f, 0.0f, 1.0f, 0.392f),
+        //QColor::fromRgbF(1.0f, 1.0f, 0.0f, 0.392f),
+        //QColor::fromRgbF(0.0f, 1.0f, 1.0f, 0.392f),
+        //QColor::fromRgbF(1.0f, 0.0f, 1.0f, 0.392f),
+        //QColor::fromRgbF(0.588f, 0.0f, 1.0f, 0.392f),
+    //};
 
 
     for (const auto &[key, value] : data->reebSpace.data)
@@ -115,9 +96,11 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
 
         // Paint with the sheet ID of this guy
         //
-        int colourID = sheetToColour[data->reebSpace.findTriangle(std::pair<int, int>({key.first, key.second}))];
+        int colourID = data->sheetToColour[data->reebSpace.findTriangle(std::pair<int, int>({key.first, key.second}))];
 
-        this->arrangementPolygonColours << colours[colourID];
+        vector<float> colorF = data->fiberColours[colourID];
+
+        this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
     }
 
 
@@ -674,9 +657,9 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         float u = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
         float v = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
 
-        const int currentFiberColour = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->fiberColour;
+        const int currentFiberColour = 0;
         // Compute all tet exit points
-        this->data->computeTetExitPoints(u, v, dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->fiberColours[currentFiberColour]);
+        this->data->computeTetExitPoints(u, v, data->fiberColours[currentFiberColour]);
 
         // Display fibers
         const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;

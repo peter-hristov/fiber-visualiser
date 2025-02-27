@@ -10,6 +10,48 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 {
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
+
+    // Find the point in the arrangement
+
+    // Create the point-location query structure
+    Point_location pl(arr);
+
+    // The query point (u, v)
+    Point_2 query_point(u, v);
+
+    // Locate the point in the arrangement
+    CGAL::Object result = pl.locate(query_point);
+
+    // Try to assign to a face, edge or a vertex
+    Arrangement_2::Face_const_handle face;
+    Arrangement_2::Halfedge_const_handle edge;
+    Arrangement_2::Vertex_const_handle vertex;
+
+    int currentFaceID = 0;
+
+
+    if (CGAL::assign(face, result)) 
+    {
+        currentFaceID = this->arrangementFacesIdices[face];
+    } 
+    // If we are on an edge, just grad an adjacent face
+    else if (CGAL::assign(edge, result)) 
+    {
+        face = edge->face();
+        currentFaceID = this->arrangementFacesIdices[face];
+    } 
+    // If we are on a vertex grab an indicent edge and get its face
+    else if (CGAL::assign(vertex, result)) 
+    {
+        edge = vertex->incident_halfedges();
+        face = edge->face();
+        currentFaceID = this->arrangementFacesIdices[face];
+    } else {
+        assert(false);
+    }
+
+
+
     //cout << endl << endl;
 
     // For every tet, compute the two exit points
@@ -45,12 +87,57 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
                         //printf("In triangle %ld, %ld, %ld in tet %ld.\n", tet[i], tet[j], tet[k], tetId);
                         //printf("In triangle (%f, %f) | (%f, %f) | (%f, %f) comparing with point (%f, %f) and alpha = %f, betta = %f, gamma = %f.\n", x1, y1, x2, y2, x3, y3, x, y, alpha, betta, gamma);
 
+                        //const std::set<int> triangle({tet[i], tet[j], tet[k]});
+
+                        const int triangleVertexA = tet[i];
+                        const int triangleVertexB = tet[j];
+                        const int triangleVertexC = tet[k];
+
+                        //printf("Current triangle (%d, %d, %d)\n", triangleVertexA, triangleVertexB, triangleVertexC);
+
+
+                        //for (const auto [key, value] : this->faceDisjointSets[currentFaceID].data)
+                        //{
+                            //cout << "Triangle ";
+                            //for (const auto v : key)
+                            //{
+                                //cout << v << " ";
+                            //}
+
+                            //cout << " with root " << this->faceDisjointSets[currentFaceID].find(value) << " ( " << this->faceDisjointSets[currentFaceID].findTriangle(key) << ") " << endl;
+
+                        //}
+
+
+                        //for (const auto &[key, value] : this->reebSpace.data)
+                        //{
+                            //printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, this->reebSpace.findTriangle(key));
+
+                        //}
+
+
+                        // Which sheets does this fiber belong to?
+                        // 1. Triangle -> Face ComponentID
+                        const int componentID = this->faceDisjointSets[currentFaceID].findTriangle(std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC}));
+                        //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
+
+                        // 2. Fac ComponentID -> Reeb Space Sheet
+                        const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
+
+                        //printf("The Sheet ID is = %d\n", sheetID);
+
+                        const int sheetColourID = this->sheetToColour[sheetID];
+
+                        // 3. Get the colou of the sheet
+                        const vector<float> sheetColour = this->fiberColours[sheetColourID];
+
+
                         FaceFiberPoint fb(alpha, beta, {
                                 this->vertexDomainCoordinates[tet[i]],
                                 this->vertexDomainCoordinates[tet[j]],
                                 this->vertexDomainCoordinates[tet[k]],
                                 },
-                                color);
+                                sheetColour);
 
                         this->faceFibers.push_back(fb);
                         this->tetsWithFibers[tetId] = true;
