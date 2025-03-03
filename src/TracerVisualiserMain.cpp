@@ -5,6 +5,7 @@
 #endif
 
 #include <QApplication>
+#include <filesystem>
 #include "./TracerVisualiserWindow.h"
 
 #include "./ReebSpace.h"
@@ -13,6 +14,7 @@
 
 
 using namespace std;
+namespace fs = std::filesystem;
 
 
 int main(int argc, char* argv[])
@@ -25,11 +27,41 @@ int main(int argc, char* argv[])
 
     std::string filename = argv[1];
 
+
+
+    fs::path filePath(filename);
+    
+    if (!fs::exists(filePath)) {
+        std::cerr << "Error: File does not exist: " << filename << std::endl;
+    }
+
     // Set up the data class
     Data* data = new Data();
 
+    std::string extension = filePath.extension().string();
+    if (extension == ".vtu") 
+    {
+        data->readDataVTK(filename);
+    } else if (extension == ".txt") 
+    {
+        data->readData(filename);
+    } else 
+    {
+        std::cerr << "Error: Unsupported file type: " << extension << std::endl;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     // Read in data file
-    data->readData(filename);
 
     // Compute domain/range data bounds
     data->computeMinMaxRangeDomainCoordinates();

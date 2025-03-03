@@ -63,6 +63,8 @@ class Data
 
     void readData(std::string);
 
+    void readDataVTK(std::string);
+
 
 
     // Reeb stuff relted content

@@ -31,7 +31,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
 find_package(CGAL REQUIRED)
-
+find_package(VTK REQUIRED)
 
 set(SOURCES
     ./src/Data.cpp
@@ -56,5 +56,6 @@ target_link_libraries(${PROJECT_NAME}
     ${Qt5OpenGL_LIBRARIES}
     ${OPENGL_LIBRARIES}  # required so that include is "-framework OpenGL" on macos instad of "-lOpenGL"
     ${GLUT_LIBRARIES}
+    ${VTK_LIBRARIES}
     CGAL::CGAL
     )

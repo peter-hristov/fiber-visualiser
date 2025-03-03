@@ -4,6 +4,15 @@
 #include <sstream>
 #include <utility>
 
+#include <vtkSmartPointer.h>
+#include <vtkXMLUnstructuredGridReader.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkPoints.h>
+#include <vtkCell.h>
+#include <vtkDataArray.h>
+#include <vtkPointData.h>
+
+
 using namespace std;
 
 void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vector<float> color)
@@ -191,12 +200,95 @@ Data::computeMinMaxRangeDomainCoordinates()
     }
 
     // Add some padding to the range coordinates for better visibility
-    this->minF -= .2;
-    this->maxF += .2;
-    this->minG -= .2;
-    this->maxG += .2;
+    //this->minF -= .2;
+    //this->maxF += .2;
+    //this->minG -= .2;
+    //this->maxG += .2;
+
+    this->minF -= 0.2 * (this->maxF - this->minF);
+    this->maxF += 0.2 * (this->maxF - this->minF);
+    this->minG -= 0.2 * (this->maxG - this->minG);
+    this->maxG += 0.2 * (this->maxG - this->minG);
 }
 
+void Data::readDataVTK(string filename)
+{
+    // Read the VTU file
+    vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+    reader->SetFileName(filename.c_str());
+    reader->Update();
+
+    vtkSmartPointer<vtkUnstructuredGrid> mesh = reader->GetOutput();
+
+
+
+
+    // Set deault names for the range axis
+    this->longnameF = "f";
+    this->longnameG = "g";
+
+    int numVertices = mesh->GetPoints()->GetNumberOfPoints(); 
+    int numTets = mesh->GetNumberOfCells();
+
+    // Initialize all the data arrays
+    this->vertexCoordinatesF = std::vector<GLfloat>(numVertices, 0);
+    this->vertexCoordinatesG = std::vector<GLfloat>(numVertices, 0);
+    this->tetrahedra = std::vector<std::vector<size_t>>(numTets, {0, 0, 0, 0});
+    this->vertexDomainCoordinates = std::vector<std::vector<GLfloat>>(numVertices, {0, 0, 0});
+
+
+
+    // Print vertices
+    vtkSmartPointer<vtkPoints> points = mesh->GetPoints();
+    std::cout << "Vertices:\n";
+    for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++) {
+        double p[3];
+        points->GetPoint(i, p);
+        std::cout << "Vertex " << i << ": (" << p[0] << ", " << p[1] << ", " << p[2] << ")\n";
+
+        this->vertexDomainCoordinates[i][0] = p[0];
+        this->vertexDomainCoordinates[i][1] = p[1];
+        this->vertexDomainCoordinates[i][2] = p[2];
+    }
+
+    // Print tetrahedra
+    std::cout << "\nTetrahedra:\n";
+    for (vtkIdType i = 0; i < mesh->GetNumberOfCells(); i++) {
+        vtkCell* cell = mesh->GetCell(i);
+        if (cell->GetNumberOfPoints() == 4) { // Tetrahedron check
+            std::cout << "Tetrahedron " << i << ": ";
+            for (vtkIdType j = 0; j < 4; j++) {
+                std::cout << cell->GetPointId(j) << " ";
+                this->tetrahedra[i][j] = cell->GetPointId(j);
+            }
+            std::cout << "\n";
+        }
+    }
+
+    // Print vertex data arrays
+    std::cout << "\nVertex Data Arrays:\n";
+    vtkPointData* pointData = mesh->GetPointData();
+
+    assert(pointData->GetNumberOfArrays() >= 2);
+
+    vtkDataArray* fDataArray = pointData->GetArray(0);
+    vtkDataArray* gDataArray = pointData->GetArray(1);
+
+    assert(fDataArray->GetNumberOfTuples() == numVertices);
+    assert(gDataArray->GetNumberOfTuples() == numVertices);
+
+    for (vtkIdType i = 0; i < fDataArray->GetNumberOfTuples(); i++) 
+    {
+
+        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i);
+    }
+
+    for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
+    {
+        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i);
+    }
+
+}
 
 void
 Data::readData(string filename)
