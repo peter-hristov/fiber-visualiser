@@ -11,9 +11,16 @@
 #include <vtkCell.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
+#include <random>
 
 
 using namespace std;
+
+double randomPerturbation(double epsilon) {
+    static std::mt19937 gen(std::random_device{}()); // Seeded generator
+    std::uniform_real_distribution<double> dist(-epsilon, epsilon);
+    return dist(gen);
+}
 
 void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
@@ -240,11 +247,11 @@ void Data::readDataVTK(string filename)
 
     // Print vertices
     vtkSmartPointer<vtkPoints> points = mesh->GetPoints();
-    std::cout << "Vertices:\n";
+    //std::cout << "Vertices:\n";
     for (vtkIdType i = 0; i < points->GetNumberOfPoints(); i++) {
         double p[3];
         points->GetPoint(i, p);
-        std::cout << "Vertex " << i << ": (" << p[0] << ", " << p[1] << ", " << p[2] << ")\n";
+        //std::cout << "Vertex " << i << ": (" << p[0] << ", " << p[1] << ", " << p[2] << ")\n";
 
         this->vertexDomainCoordinates[i][0] = p[0];
         this->vertexDomainCoordinates[i][1] = p[1];
@@ -252,16 +259,16 @@ void Data::readDataVTK(string filename)
     }
 
     // Print tetrahedra
-    std::cout << "\nTetrahedra:\n";
+    //std::cout << "\nTetrahedra:\n";
     for (vtkIdType i = 0; i < mesh->GetNumberOfCells(); i++) {
         vtkCell* cell = mesh->GetCell(i);
         if (cell->GetNumberOfPoints() == 4) { // Tetrahedron check
-            std::cout << "Tetrahedron " << i << ": ";
+            //std::cout << "Tetrahedron " << i << ": ";
             for (vtkIdType j = 0; j < 4; j++) {
-                std::cout << cell->GetPointId(j) << " ";
+                //std::cout << cell->GetPointId(j) << " ";
                 this->tetrahedra[i][j] = cell->GetPointId(j);
             }
-            std::cout << "\n";
+            //std::cout << "\n";
         }
     }
 
@@ -279,13 +286,12 @@ void Data::readDataVTK(string filename)
 
     for (vtkIdType i = 0; i < fDataArray->GetNumberOfTuples(); i++) 
     {
-
-        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i);
+        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i) + randomPerturbation(1e-5);
     }
 
     for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
     {
-        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i);
+        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-5);
     }
 
 }
