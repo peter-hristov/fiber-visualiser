@@ -286,12 +286,12 @@ void Data::readDataVTK(string filename)
 
     for (vtkIdType i = 0; i < fDataArray->GetNumberOfTuples(); i++) 
     {
-        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i) + randomPerturbation(1e-5);
+        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i) + randomPerturbation(1e-6);
     }
 
     for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
     {
-        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-5);
+        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-6);
     }
 
 }
