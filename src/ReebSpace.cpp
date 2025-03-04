@@ -16,8 +16,8 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTr
 
     // Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
     const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
-    std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
-    std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+    //std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
+    //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
 
     // These will always be sorted, it's how we created the segments
     const int aIndex = data->arrangementPointsIdices[segment.source()];
@@ -26,8 +26,8 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTr
     // Sanity check
     assert(aIndex < bIndex);
 
-    printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-    printf("\n");
+    //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+    //printf("\n");
 
 
     // Check to see if the segment and half edge have the same orientation
@@ -37,47 +37,47 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTr
     // The half edge has the same direction as the original edge
     if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
     {
-        std::cout << "Upper link becomes lower link." << std::endl;
+        //std::cout << "Upper link becomes lower link." << std::endl;
 
-        printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+        //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
             minusTriangles.push_back({aIndex, bIndex, v});
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-            printf("%d ", v);
+            //printf("%d ", v);
         }
-        printf("\n");
+        //printf("\n");
 
-        printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+        //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
             plusTriangles.push_back({aIndex, bIndex, v});
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-            printf("%d ", v);
+            //printf("%d ", v);
         }
-        printf("\n");
+        //printf("\n");
     }
     else
     {
-        std::cout << "Lower link becomes upper link." << std::endl;
+        //std::cout << "Lower link becomes upper link." << std::endl;
 
-        printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+        //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
             plusTriangles.push_back({aIndex, bIndex, v});
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-            printf("%d ", v);
+            //printf("%d ", v);
         }
-        printf("\n");
+        //printf("\n");
 
-        printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+        //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
             minusTriangles.push_back({aIndex, bIndex, v});
-            printf("%d ", v);
+            //printf("%d ", v);
         }
-        printf("\n");
+        //printf("\n");
     }
 
     return {minusTriangles, plusTriangles};
@@ -87,16 +87,16 @@ template <typename Arrangement>
 void print_ccb(typename Arrangement::Ccb_halfedge_const_circulator circ) 
 {
 
-    std::cout << "Start = (" << circ->source()->point() << ")" << std::endl;
+    //std::cout << "Start = (" << circ->source()->point() << ")" << std::endl;
     typename Arrangement::Ccb_halfedge_const_circulator curr = circ;
     do {
         typename Arrangement::Halfedge_const_handle e = curr;
         // Get the twin half-edge and its adjacent face
         typename Arrangement::Halfedge_const_handle twin = e->twin();
 
-        std::cout << "   [" << e->curve() << "]   " << "(" << e->target()->point() << ")" << std::endl;
+        //std::cout << "   [" << e->curve() << "]   " << "(" << e->target()->point() << ")" << std::endl;
     } while (++curr != circ);
-    std::cout << std::endl;
+    //std::cout << std::endl;
 }
 
 bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data)
@@ -117,24 +117,24 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
     // Determine which half-plane r is in
     const CGAL::Orientation result = CGAL::orientation(a, b, v);
 
-    printf("Checking line (%d, %d) against vertex %d\n", aIndex, bIndex, vIndex);
+    //printf("Checking line (%d, %d) against vertex %d\n", aIndex, bIndex, vIndex);
 
-    std::cout << "a coords = " << a << std::endl;
-    std::cout << "b coords = " << b << std::endl;
-    std::cout << "v coords = " << v << std::endl;
+    //std::cout << "a coords = " << a << std::endl;
+    //std::cout << "b coords = " << b << std::endl;
+    //std::cout << "v coords = " << v << std::endl;
 
 
     // Upper link = left
     if (result == CGAL::LEFT_TURN) {
         return true;
-        std::cout << "Point r is in the LEFT half-plane.\n";
+        //std::cout << "Point r is in the LEFT half-plane.\n";
     // Lower link = right
     } else if (result == CGAL::RIGHT_TURN) {
         return false;
-        std::cout << "Point r is in the RIGHT half-plane.\n";
+        //std::cout << "Point r is in the RIGHT half-plane.\n";
     // This should not happen for generic maps
     } else {
-        std::cout << "Point r is on the line.\n";
+        //std::cout << "Point r is on the line.\n";
         assert(false);
     }
 
@@ -184,6 +184,103 @@ void ReebSpace::computeUpperLowerLink(Data *data)
         }
     }
 
+
+    // If the upper link is empty we have a definite edge
+    for (const auto &[edge, linkVertices] : data->upperLink)
+    {
+        //printf("Upper link of (%d, %d) is:\n", edge.first, edge.second);
+        //for (const auto &v : linkVertices)
+        //{
+            //printf("(%d, %d, %d)\n", edge.first, edge.second, v);
+        //}
+
+        // If the upper link is full, but the lower link is empty
+        if (false == data->lowerLink.contains(edge))
+        {
+            data->jacobiType[edge] = 0;
+        }
+
+    }
+
+    for (const auto &[edge, linkVertices] : data->lowerLink)
+    {
+        //printf("Lower link of (%d, %d) is:\n", edge.first, edge.second);
+
+        //for (const auto &v : linkVertices)
+        //{
+            //printf("(%d, %d, %d)\n", edge.first, edge.second, v);
+        //}
+
+        // If the lower link is full but the upper link is empty we have a definite edge
+        if (false == data->upperLink.contains(edge))
+        {
+            data->jacobiType[edge] = 0;
+            continue;
+        }
+
+        // If both the upper and lower link are not empty, we can have a regular or indefinite edge
+        assert(data->lowerLink.contains(edge) && data->upperLink.contains(edge));
+
+        std::set<std::set<int>> adjacentTriangles;
+
+        
+        // Assemble the triangles
+        for (const auto &v : linkVertices)
+        {
+            adjacentTriangles.insert({edge.first, edge.second, v});
+        }
+
+        DisjointSet<std::set<int>> linkConnectedComponents;
+        linkConnectedComponents.initialize(adjacentTriangles);
+
+        for (const auto &t1 : adjacentTriangles)
+        {
+            for (const auto &t2 : adjacentTriangles)
+            {
+                if (data->connectedTriangles.contains({t1, t2}))
+                {
+                    linkConnectedComponents.union_setsTriangle(t1, t2);
+                }
+
+            }
+        }
+ 
+        data->jacobiType[edge] = linkConnectedComponents.countConnectedComponents();
+    }
+
+    std::map<int, int> typeCount;
+    for (auto &[edge, jacobiType]: data->jacobiType)
+    {
+        if (false == typeCount.contains(jacobiType))
+        {
+            typeCount[jacobiType] = 0;
+        }
+
+        typeCount[jacobiType] += 1;
+
+        printf("The Jacobi type of edge (%d, %d) is %d.\n", edge.first, edge.second, jacobiType);
+    }
+
+    for (auto &[jacobiType, count]: typeCount)
+    {
+        printf("There are %d edges of type %d.\n", count, jacobiType);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Print upper/lower links to debug
 
     // otherwise the lower and upper link flip around
@@ -203,19 +300,19 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                     std::swap(aIndex, bIndex);
                 }
 
-                printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-                for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
-                {
-                    printf("%d ", v);
-                }
-                printf("\n");
+                //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+                //for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+                //{
+                    //printf("%d ", v);
+                //}
+                //printf("\n");
 
-                printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-                for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
-                {
-                    printf("%d ", v);
-                }
-                printf("\n");
+                //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+                //for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+                //{
+                    //printf("%d ", v);
+                //}
+                //printf("\n");
             }
         }
     }
@@ -302,7 +399,7 @@ void ReebSpace::computeArrangement(Data *data)
         assert(edgeVector.size() == 2);
 
         segments.push_back(Segment_2(data->arrangementPoints[edgeVector[0]], data->arrangementPoints[edgeVector[1]]));
-        std::cout << "Adding edge " << edgeVector[0] << " - " << edgeVector[1] << std::endl;
+        //std::cout << "Adding edge " << edgeVector[0] << " - " << edgeVector[1] << std::endl;
     }
 
 
@@ -333,7 +430,7 @@ void ReebSpace::computeArrangement(Data *data)
 
 
     // Print out all the faces in the arrangement
-    std::cout << "Faces in the arrangement:" << std::endl;
+    //std::cout << "Faces in the arrangement:" << std::endl;
 
     int counter = 0;
     for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
@@ -343,22 +440,22 @@ void ReebSpace::computeArrangement(Data *data)
         data->arrangementFacesIdices[a] = counter;
         counter++;
 
-        std::cout << data->arrangementFacesIdices[a] << std::endl;
+        //std::cout << data->arrangementFacesIdices[a] << std::endl;
 
-        if (f->is_unbounded()) {
-            std::cout << "Unbounded face" << std::endl;
-            continue;
-        }
+        //if (f->is_unbounded()) {
+            //std::cout << "Unbounded face" << std::endl;
+            //continue;
+        //}
 
-        std::cout << "Bounded face with " << f->number_of_holes() << " holes " << std::endl;
+        //std::cout << "Bounded face with " << f->number_of_holes() << " holes " << std::endl;
 
 
-        std::cout << "inner     = " << f->number_of_inner_ccbs() << std::endl;
-        std::cout << "outer     = " << f->number_of_outer_ccbs() << std::endl;
-        std::cout << "holes     = " << f->number_of_holes() << std::endl;
-        std::cout << "isolated  = " << f->number_of_isolated_vertices() << std::endl;
+        //std::cout << "inner     = " << f->number_of_inner_ccbs() << std::endl;
+        //std::cout << "outer     = " << f->number_of_outer_ccbs() << std::endl;
+        //std::cout << "holes     = " << f->number_of_holes() << std::endl;
+        //std::cout << "isolated  = " << f->number_of_isolated_vertices() << std::endl;
 
-        print_ccb<Arrangement_2>(f->outer_ccb());
+        //print_ccb<Arrangement_2>(f->outer_ccb());
 
 
         //f->number_of_inner_ccbs
@@ -416,24 +513,24 @@ void ReebSpace::BFS(Data *data)
 
     // Iterate over the halfedges forming the inner CCB
     do {
-        std::cout << he->source()->point() << " -> ";
-        std::cout << he->target()->point() << std::endl;
+        //std::cout << he->source()->point() << " -> ";
+        //std::cout << he->target()->point() << std::endl;
 
         // Get the originating curve of the half edge
         // Maybe need a function for this
-        const Segment_2& segment = *data->arr.originating_curves_begin(he);
-        std::cout << data->arrangementPointsIdices[segment.source()] << ", ";
-        std::cout << data->arrangementPointsIdices[segment.target()] << std::endl;
+        //const Segment_2& segment = *data->arr.originating_curves_begin(he);
+        //std::cout << data->arrangementPointsIdices[segment.source()] << ", ";
+        //std::cout << data->arrangementPointsIdices[segment.target()] << std::endl;
     } while (++he != inner_ccb);
 
-    printf("\n\n");
+    //printf("\n\n");
 
     // Get the first edge
-    printf("This is the first half edge:\n");
+    //printf("This is the first half edge:\n");
     Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
-    std::cout << outerHalfEdge->source()->point() << " -> " << outerHalfEdge->target()->point() << std::endl;
+    //std::cout << outerHalfEdge->source()->point() << " -> " << outerHalfEdge->target()->point() << std::endl;
 
-    printf("\n\n");
+    //printf("\n\n");
 
 
     // Make sure there is only one originating curve, something has gone wrong otherwise (edge overlap)
@@ -442,11 +539,11 @@ void ReebSpace::BFS(Data *data)
     // Extract the original curve
     const Segment_2& segment = *data->arr.originating_curves_begin(outerHalfEdge);
 
-    printf("The half edge came from this edge:\n");
-    std::cout << segment.source() << " -> " << segment.target() << std::endl;
+    //printf("The half edge came from this edge:\n");
+    //std::cout << segment.source() << " -> " << segment.target() << std::endl;
 
-    printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-    printf("\n\n");
+    //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+    //printf("\n\n");
 
     // Starting from an outer half edge
     std::queue<Arrangement_2::Halfedge_const_handle> traversalQueue;
@@ -483,7 +580,7 @@ void ReebSpace::BFS(Data *data)
         // If we have never visited this face, then we have never visited any of the half edges.
         if (visited.find(twinFace) == visited.end())
         {
-            printf("NEW FACE ------------------------------------------ %d -> %d \n", data->arrangementFacesIdices[currentFace], data->arrangementFacesIdices[twinFace]);
+            //printf("NEW FACE ------------------------------------------ %d -> %d \n", data->arrangementFacesIdices[currentFace], data->arrangementFacesIdices[twinFace]);
             visited.insert(twinFace);
 
             // Sanity check we should only have onbounded face, the outside face.
@@ -503,15 +600,15 @@ void ReebSpace::BFS(Data *data)
                 preimageGraphs[twinFaceID].insert(triangle);
             }
 
-            printf("The preimage graph is :\n");
-            for(const auto triangle : preimageGraphs[twinFaceID])
-            {
-                for(const auto vertex : triangle)
-                {
-                    printf("%d ", vertex);
-                }
-                printf("\n");
-            }
+            //printf("The preimage graph is :\n");
+            //for(const auto triangle : preimageGraphs[twinFaceID])
+            //{
+                //for(const auto vertex : triangle)
+                //{
+                    //printf("%d ", vertex);
+                //}
+                //printf("\n");
+            //}
 
 
 
@@ -532,38 +629,38 @@ void ReebSpace::BFS(Data *data)
                         continue;
                     }
 
-                    printf("First triangle: ");
-                    for (const auto v: t1)
-                    {
-                        printf("%d ", v);
-                    }
+                    //printf("First triangle: ");
+                    //for (const auto v: t1)
+                    //{
+                        //printf("%d ", v);
+                    //}
 
-                    printf("\nSecond triangle: ");
-                    for (const auto v: t2)
-                    {
-                        printf("%d ", v);
-                    }
+                    //printf("\nSecond triangle: ");
+                    //for (const auto v: t2)
+                    //{
+                        //printf("%d ", v);
+                    //}
 
 
                     std::pair<std::set<int>, std::set<int>> trianglePair({t1, t2});
 
                     if (data->connectedTriangles.find(trianglePair) != data->connectedTriangles.end()) 
                     {
-                        printf("Unioning\n");
+                        //printf("Unioning\n");
                         data->faceDisjointSets[twinFaceID].union_setsTriangle(t1, t2);
                     }
 
-                    printf("-----------\n");
+                    //printf("-----------\n");
                 }
             }
             
             // Finaly make sure everyon points to their root
             data->faceDisjointSets[twinFaceID].update();
 
-            printf("That preimage graph has %d connected components.\n", data->faceDisjointSets[twinFaceID].countConnectedComponents());
+            //printf("That preimage graph has %d connected components.\n", data->faceDisjointSets[twinFaceID].countConnectedComponents());
             data->arrangementFiberComponents[twinFaceID] = data->faceDisjointSets[twinFaceID].countConnectedComponents();
 
-            printf("------------------------------------------------------------------------ \n");
+            //printf("------------------------------------------------------------------------ \n");
 
 
 
@@ -579,10 +676,10 @@ void ReebSpace::BFS(Data *data)
 
                 // Make sure there is only one originating curve (sanity check)
                 const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
-                std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
-                std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-                printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-                printf("\n\n");
+                //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
+                //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+                //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+                //printf("\n\n");
 
                 ++curr;
             } while (curr != start);
@@ -592,7 +689,7 @@ void ReebSpace::BFS(Data *data)
 
 
 
-    std::cout << "This is the max of the fiber components - " << *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end()) << std::endl;
+    //std::cout << "This is the max of the fiber components - " << *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end()) << std::endl;
 
 
 
@@ -666,10 +763,10 @@ void ReebSpace::BFS(Data *data)
 
             // Only for debug
             const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
-            std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
-            std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-            printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-            printf("\n\n");
+            //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
+            //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+            //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+            //printf("\n\n");
 
             // Pull out the face and the minusPlusTriangles
             Arrangement_2::Halfedge_const_handle twinHalfEdge = curr->twin();

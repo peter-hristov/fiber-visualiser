@@ -86,6 +86,8 @@ class Data
     DisjointSet<std::pair<int, int>> reebSpace;
     std::vector<DisjointSet<std::set<int>>> faceDisjointSets;
 
+    std::map<std::pair<int, int>, int> jacobiType;
+
     std::map<int, int> sheetToColour;
 
     // Colour map for Reeb space sheets and fibers

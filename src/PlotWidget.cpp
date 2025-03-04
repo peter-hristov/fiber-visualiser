@@ -92,7 +92,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
 
     for (const auto &[key, value] : data->reebSpace.data)
     {
-        cout << "FACE ID = " << key.first << ", CC ID = " << key.second << endl;
+        //cout << "FACE ID = " << key.first << ", CC ID = " << key.second << endl;
 
         // Paint with the sheet ID of this guy
         //
