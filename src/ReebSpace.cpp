@@ -1,6 +1,7 @@
 #include "./ReebSpace.h"
 #include "./DisjointSet.h"
-#include "src/CGALTypedefs.h"
+#include "./CGALTypedefs.h"
+#include "./Timer.h"
 
 #include <cstddef>
 #include <map>
@@ -331,27 +332,23 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
 
 void ReebSpace::computeArrangement(Data *data) 
 {
+    Timer::start();
 
-
-    // Example simple arrangement
-    // |3--2|
-    // |\  /|
-    // | \/ |
-    // | /\ |
-    // |/  \|
-    // |0--1|
-
-    // Add in the points
+    // Add in the vertices of the mesh 
+    data->arrangementPoints.resize(data->vertexCoordinatesF.size());
     for (int i = 0 ; i < data->vertexCoordinatesF.size() ; i++)
     {
         const float u = data->vertexCoordinatesF[i];
         const float v = data->vertexCoordinatesG[i];
-        Point_2 point(u, v);
+        const Point_2 point(u, v);
 
-        data->arrangementPoints.push_back(point);
+        data->arrangementPoints[i] = point;
         data->arrangementPointsIdices[point] = i;
     };
 
+    Timer::stop("Converted vertices to points           :");
+
+    Timer::start();
     // Make sure you don't add duplicate edge to the arrangement
     std::map<std::set<size_t>, bool> uniqueEdges;
     for (int i = 0 ; i < data->tetrahedra.size() ; i++)
@@ -366,7 +363,9 @@ void ReebSpace::computeArrangement(Data *data)
         uniqueEdges[std::set<size_t>({data->tetrahedra[i][1], data->tetrahedra[i][3]})] = true;
         uniqueEdges[std::set<size_t>({data->tetrahedra[i][2], data->tetrahedra[i][3]})] = true;
     }
+    Timer::stop("Computed unique edges                  :");
 
+    Timer::start();
     // Add the unique edges as setments to the arrangement
     std::vector<Segment_2> segments;
     for (const auto& edge : uniqueEdges) 
@@ -379,31 +378,17 @@ void ReebSpace::computeArrangement(Data *data)
         //std::cout << "Adding edge " << edgeVector[0] << " - " << edgeVector[1] << std::endl;
     }
 
+    Timer::stop("Converted edges to segments            :");
 
-    //std::vector<Segment_2> segments = {
-        //// Edges of the square
-        //Segment_2(points[0], points[1]),
-        //Segment_2(points[1], points[2]),
-        //Segment_2(points[2], points[3]),
-        //Segment_2(points[3], points[0]),
-
-        //// Diaganals
-        //Segment_2(points[0], points[2]),
-        //Segment_2(points[1], points[3]),
-
-    //};
-
-    // Create the arrangement to store the lines
-
+    Timer::start();
     // Insert all the segments into the arrangement using the range insert method
     CGAL::insert(data->arr, segments.begin(), segments.end());
-
+    Timer::stop("Computed arrangement                   :");
 
     std::cout << "The arrangement size:\n"
         << "   |V| = " << data->arr.number_of_vertices()
         << ",  |E| = " << data->arr.number_of_edges()
         << ",  |F| = " << data->arr.number_of_faces() << std::endl;
-
 
 
     // Print out all the faces in the arrangement
@@ -503,10 +488,6 @@ void ReebSpace::computePreimageGraphs(Data *data)
 
     // Get the the first half edge of the outerFace (could be any edge, this is a matter of convention)
     Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
-    //std::cout << outerHalfEdge->source()->point() << " -> " << outerHalfEdge->target()->point() << std::endl;
-
-    //printf("\n\n");
-
 
     // Make sure there is only one originating curve, something has gone wrong otherwise (edge overlap)
     assert(std::distance(data->arr.originating_curves_begin(outerHalfEdge), data->arr.originating_curves_end(outerHalfEdge)) == 1);
