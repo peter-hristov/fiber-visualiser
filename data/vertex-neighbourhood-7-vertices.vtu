@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="1.0" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <Piece NumberOfPoints="8" NumberOfCells="10">
+      <!-- Vertices of the mesh -->
+      <Points>
+        <DataArray type="Float32" NumberOfComponents="3" format="ascii">
+          0.000000 0.000000 0.000000
+          1.000000 0.000000 0.000000
+          0.500000 0.866000 0.000000
+          0.500000 0.288667 1.000000
+          0.500000 0.288667 0.000000
+          0.500000 0.096222 0.000000
+          0.666667 0.128296 0.000000
+          0.500000 0.288667 0.250000
+        </DataArray>
+      </Points>
+
+      <!-- Tetrahedral elements, defined by vertex indices -->
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+          0 1 5 7
+          0 5 4 7
+          5 1 6 7
+          5 6 4 7
+          6 1 4 7
+          0 4 2 7
+          4 1 2 7
+          0 1 3 7
+          0 2 3 7
+          1 2 3 7
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">
+          4 8 12 16 20 24 28 32 36 40
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="ascii">
+          10 10 10 10 10 10 10 10 10 10
+        </DataArray>
+      </Cells>
+
+      <!-- Vertex Data Arrays -->
+      <PointData Scalars="RangePositions">
+        <DataArray type="Float32" Name="RangeX" NumberOfComponents="1" format="ascii">
+          -0.000000
+          0.781832
+          0.974928
+          -0.974928
+          0.433884
+          -0.781832
+          0.433884
+          0.000000
+        </DataArray>
+        <DataArray type="Float32" Name="RangeY" NumberOfComponents="1" format="ascii">
+          1.000000
+          -0.623490
+          -0.222521
+          -0.222521
+          -0.900969
+          -0.623490
+          0.900969
+          0.000000
+        </DataArray>
+      </PointData>
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

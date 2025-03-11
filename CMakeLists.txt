@@ -30,8 +30,8 @@ find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
-find_package(CGAL REQUIRED)
-find_package(VTK REQUIRED)
+find_package(CGAL 6.0.1 REQUIRED)
+find_package(VTK 9.4.1 REQUIRED)
 
 set(SOURCES
     ./src/Data.cpp

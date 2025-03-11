@@ -1,0 +1,25 @@
+# The first two integers are the number of vertices and number of tetrahedra.
+6 3
+
+# Next we have the domain positions of the vertices in R3. v1 v2 v3 v4 a b
+2.0 2.0 2.0
+2.0 2.0 1.0
+1.0 2.0 1.0
+1.0 2.0 2.0
+1.5 1.5 1.5
+1.5 2.5 1.5
+
+# Next we have the range positions of the vertices in R2.
+3.0 6.0
+3.0 1.0
+1.5 1.0
+1.5 6.0
+1.0 3.0
+4.0 4.0
+
+
+# Finally we have a list of all the tetrahedra.
+0 1 4 5
+1 2 4 5
+2 3 4 5
+

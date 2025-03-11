@@ -1,3 +1,0 @@
-cmake -DCGAL_DIR=/home/peter/Projects/libraries/cgal -DCMAKE_PREFIX_PATH="/home/peter/Projects/libraries/VTK-9.4.1/install" -DCMAKE_EXPORT_COMPILE_COMMANDS=On ..
-
-Using CGAL version 6.0.1 and VTK 9.4.1
