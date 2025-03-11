@@ -75,20 +75,50 @@ class Data
     std::map<std::pair<int, int>, std::set<int>> upperLink;
     std::map<std::pair<int, int>, std::set<int>> lowerLink;
 
-    // Map from Int -> Point_2
+
+
+    //
+    // <Reeb space related stuff>
+    //
+
+    // The points of the line segments that define the arrangement, does not include new intersection points
     std::vector<Point_2> arrangementPoints;
 
-    // Map from Point_2 -> Int
+    // The inverse map of arrangementPoints, returns the index of a point
     std::map<Point_2, int> arrangementPointsIdices;
-    std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
-    std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
-    std::vector<int> arrangementFiberComponents;
-    DisjointSet<std::pair<int, int>> reebSpace;
-    std::vector<DisjointSet<std::set<int>>> faceDisjointSets;
 
+    // The integer ID of every face in the arrangement
+    std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
+
+    // Tell us which triangles (as sets of IDs) are connected (part of a tetrahedron)
+    std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
+
+    // The number of fiber components for each preimage graph, more of a utility thing
+    std::vector<int> arrangementFiberComponents;
+    // The connected components of the preimage graph for each face in the arrangement
+    std::vector<DisjointSet<std::set<int>>> preimageGraphs;
+
+    // The jacobi type of each edge 0 for definite, 1 for regular and n > 1 for indefinite of type n
     std::map<std::pair<int, int>, int> jacobiType;
 
+
+    // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
+    DisjointSet<std::pair<int, int>> reebSpace;
+
+    // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
     std::map<int, int> sheetToColour;
+
+
+    //
+    // </Reeb space related stuff>
+    //
+
+
+
+
+
+
+
 
     // Colour map for Reeb space sheets and fibers
     const std::vector<std::vector<float>> fiberColours = {
@@ -111,7 +141,5 @@ class Data
         {0.5, 0.5, 0.0}    // Olive
     };
 };
-
-
 
 

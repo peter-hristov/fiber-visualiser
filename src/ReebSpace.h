@@ -30,7 +30,16 @@ namespace ReebSpace
 
         // We only add upperLink/lowerLink to data, the rest of data is unchagned
         void computeUpperLowerLink(Data *);
+
+        // Get the upper/lower link with the orientation of the half edge with respect to the original edge.
+        std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data);
+
         // We only add data->arr, the rest of data is unchanged
         void computeArrangement(Data *data);
-        void BFS(Data *);
+
+        // Compute the preimage graphs for each cell in the arrangement
+        void computePreimageGraphs(Data *);
+
+        // Compute the Reeb space from all the preimage graphs
+        void computeReebSpace(Data *);
 };

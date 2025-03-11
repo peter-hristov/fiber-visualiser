@@ -51,26 +51,21 @@ int main(int argc, char* argv[])
     }
 
 
-
-
-
-
-
-
-
-
-
-
-    // Read in data file
-
-    // Compute domain/range data bounds
-    data->computeMinMaxRangeDomainCoordinates();
+    // Compute the upper and lower links of each edge
+    ReebSpace::computeUpperLowerLink(data);
 
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
-    ReebSpace::computeUpperLowerLink(data);
 
-    ReebSpace::BFS(data);
+    // Compute the preimageGraphs of each face in the arrangement
+    ReebSpace::computePreimageGraphs(data);
+
+    // Compute the Reeb space (connected components of preimage graph components)
+    ReebSpace::computeReebSpace(data);
+
+
+
+
 
     // Set up QT Application
     QApplication app(argc, argv);

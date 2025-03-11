@@ -26,7 +26,6 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 {
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
-
     // Find the point in the arrangement
 
     // Create the point-location query structure
@@ -134,7 +133,7 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
                         // Which sheets does this fiber belong to?
                         // 1. Triangle -> Face ComponentID
-                        const int componentID = this->faceDisjointSets[currentFaceID].findTriangle(std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC}));
+                        const int componentID = this->preimageGraphs[currentFaceID].findTriangle(std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC}));
                         //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
 
                         // 2. Fac ComponentID -> Reeb Space Sheet
@@ -294,6 +293,8 @@ void Data::readDataVTK(string filename)
         this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-6);
     }
 
+    // Compute the ranges for a bounding box in the range.
+    this->computeMinMaxRangeDomainCoordinates();
 }
 
 void
@@ -358,4 +359,6 @@ Data::readData(string filename)
         dataStream >> this->tetrahedra[i][2];
         dataStream >> this->tetrahedra[i][3];
     }
+
+    this->computeMinMaxRangeDomainCoordinates();
 }
