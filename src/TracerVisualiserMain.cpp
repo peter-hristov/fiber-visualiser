@@ -54,6 +54,9 @@ int main(int argc, char* argv[])
     // Compute the upper and lower links of each edge
     ReebSpace::computeUpperLowerLink(data);
 
+    // Compute the adjacency of triangles in the mesh
+    ReebSpace::computeTriangleAdjacency(data);
+
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
 

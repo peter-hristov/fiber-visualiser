@@ -26,13 +26,12 @@
 
 namespace ReebSpace
 {
-        bool isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data);
 
         // We only add upperLink/lowerLink to data, the rest of data is unchagned
         void computeUpperLowerLink(Data *);
-
-        // Get the upper/lower link with the orientation of the half edge with respect to the original edge.
-        std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data);
+        
+        // We only add upperLink/lowerLink to data, the rest of data is unchagned
+        void computeTriangleAdjacency(Data *);
 
         // We only add data->arr, the rest of data is unchanged
         void computeArrangement(Data *data);
@@ -42,4 +41,16 @@ namespace ReebSpace
 
         // Compute the Reeb space from all the preimage graphs
         void computeReebSpace(Data *);
+
+
+        //
+        // Helper functions
+        //
+
+        // Give the edge (aIndex, bIndex), is the vertex vIndex from its link in the upper and lower link of the edge
+        // We assume that aIndex < bIndex for consistent orientation.
+        bool isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data);
+
+        // Get the upper/lower link with the orientation of the half edge with respect to the original edge.
+        std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data);
 };

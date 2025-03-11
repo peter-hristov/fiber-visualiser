@@ -83,22 +83,6 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::get
     return {minusTriangles, plusTriangles};
 }
 
-template <typename Arrangement>
-void print_ccb(typename Arrangement::Ccb_halfedge_const_circulator circ) 
-{
-
-    //std::cout << "Start = (" << circ->source()->point() << ")" << std::endl;
-    typename Arrangement::Ccb_halfedge_const_circulator curr = circ;
-    do {
-        typename Arrangement::Halfedge_const_handle e = curr;
-        // Get the twin half-edge and its adjacent face
-        typename Arrangement::Halfedge_const_handle twin = e->twin();
-
-        //std::cout << "   [" << e->curve() << "]   " << "(" << e->target()->point() << ")" << std::endl;
-    } while (++curr != circ);
-    //std::cout << std::endl;
-}
-
 bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data)
 {
     // Make sure the vertices of the edge are in sorted order to have consistent orientation
@@ -221,15 +205,16 @@ void ReebSpace::computeUpperLowerLink(Data *data)
         // If both the upper and lower link are not empty, we can have a regular or indefinite edge
         assert(data->lowerLink.contains(edge) && data->upperLink.contains(edge));
 
+        // The list of the triangles adjacent to the edge in the star
         std::set<std::set<int>> adjacentTriangles;
 
-        
         // Assemble the triangles
         for (const auto &v : linkVertices)
         {
             adjacentTriangles.insert({edge.first, edge.second, v});
         }
 
+        // Compute the number of connected components in the link
         DisjointSet<std::set<int>> linkConnectedComponents;
         linkConnectedComponents.initialize(adjacentTriangles);
 
@@ -268,60 +253,47 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     // Print upper/lower links to debug
 
     // otherwise the lower and upper link flip around
-    for (const std::vector<size_t> tet : data->tetrahedra)
-    {
-        // All pairs give you all six edges
-        for (int a = 0 ; a < 4 ; a++)
-        {
-            for (int b = a + 1 ; b < 4 ; b++)
-            {
-                int aIndex = tet[a];
-                int bIndex = tet[b];
+    //for (const std::vector<size_t> tet : data->tetrahedra)
+    //{
+        //// All pairs give you all six edges
+        //for (int a = 0 ; a < 4 ; a++)
+        //{
+            //for (int b = a + 1 ; b < 4 ; b++)
+            //{
+                //int aIndex = tet[a];
+                //int bIndex = tet[b];
                 
-                // Make sure the vertices of the edge are in sorted order to have consistent orientation
-                if (aIndex > bIndex)
-                {
-                    std::swap(aIndex, bIndex);
-                }
-
-                //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-                //for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+                //// Make sure the vertices of the edge are in sorted order to have consistent orientation
+                //if (aIndex > bIndex)
                 //{
-                    //printf("%d ", v);
+                    //std::swap(aIndex, bIndex);
                 //}
-                //printf("\n");
 
-                //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-                //for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
-                //{
-                    //printf("%d ", v);
-                //}
-                //printf("\n");
-            }
-        }
-    }
+                ////printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+                ////for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+                ////{
+                    ////printf("%d ", v);
+                ////}
+                ////printf("\n");
+
+                ////printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+                ////for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+                ////{
+                    ////printf("%d ", v);
+                ////}
+                ////printf("\n");
+            //}
+        //}
+    //}
 }
 
 
-void ReebSpace::computeArrangement(Data *data) 
+void ReebSpace::computeTriangleAdjacency(Data *data)
 {
-
+    // Compute the adjacency of triangles in the mesh, two triangles are adjacent when they are the faces of the same tet
     for (const std::vector<size_t> tet : data->tetrahedra)
     {
         // The triangles of the tet
@@ -355,6 +327,11 @@ void ReebSpace::computeArrangement(Data *data)
             }
         }
     }
+}
+
+void ReebSpace::computeArrangement(Data *data) 
+{
+
 
     // Example simple arrangement
     // |3--2|
@@ -500,19 +477,18 @@ void ReebSpace::computePreimageGraphs(Data *data)
         }
     }
 
-    // Sanity check
+    // Sanity check, make sure the outer face is simple
     assert(outerFace->number_of_inner_ccbs() == 1);
     assert(outerFace->number_of_outer_ccbs() == 0);
     assert(outerFace->number_of_holes() == 1);
     assert(outerFace->number_of_isolated_vertices() == 0);
 
-
     // Loop the edges of the boundary
-    Arrangement_2::Ccb_halfedge_const_circulator inner_ccb = *outerFace->holes_begin();
-    Arrangement_2::Ccb_halfedge_const_circulator he = inner_ccb;
+    //Arrangement_2::Ccb_halfedge_const_circulator inner_ccb = *outerFace->holes_begin();
+    //Arrangement_2::Ccb_halfedge_const_circulator he = inner_ccb;
 
     // Iterate over the halfedges forming the inner CCB
-    do {
+    //do {
         //std::cout << he->source()->point() << " -> ";
         //std::cout << he->target()->point() << std::endl;
 
@@ -521,12 +497,11 @@ void ReebSpace::computePreimageGraphs(Data *data)
         //const Segment_2& segment = *data->arr.originating_curves_begin(he);
         //std::cout << data->arrangementPointsIdices[segment.source()] << ", ";
         //std::cout << data->arrangementPointsIdices[segment.target()] << std::endl;
-    } while (++he != inner_ccb);
+    //} while (++he != inner_ccb);
 
     //printf("\n\n");
 
-    // Get the first edge
-    //printf("This is the first half edge:\n");
+    // Get the the first half edge of the outerFace (could be any edge, this is a matter of convention)
     Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
     //std::cout << outerHalfEdge->source()->point() << " -> " << outerHalfEdge->target()->point() << std::endl;
 
@@ -537,7 +512,7 @@ void ReebSpace::computePreimageGraphs(Data *data)
     assert(std::distance(data->arr.originating_curves_begin(outerHalfEdge), data->arr.originating_curves_end(outerHalfEdge)) == 1);
 
     // Extract the original curve
-    const Segment_2& segment = *data->arr.originating_curves_begin(outerHalfEdge);
+    //const Segment_2& segment = *data->arr.originating_curves_begin(outerHalfEdge);
 
     //printf("The half edge came from this edge:\n");
     //std::cout << segment.source() << " -> " << segment.target() << std::endl;
@@ -668,7 +643,7 @@ void ReebSpace::computePreimageGraphs(Data *data)
                 traversalQueue.push(curr);
 
                 // Make sure there is only one originating curve (sanity check)
-                const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
+                //const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
                 //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
                 //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
                 //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
@@ -678,10 +653,6 @@ void ReebSpace::computePreimageGraphs(Data *data)
             } while (curr != start);
         }
     }
-
-
-
-
 }
 
 
