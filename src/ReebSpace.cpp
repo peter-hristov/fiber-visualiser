@@ -244,12 +244,12 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
         typeCount[jacobiType] += 1;
 
-        printf("The Jacobi type of edge (%d, %d) is %d.\n", edge.first, edge.second, jacobiType);
+        //printf("The Jacobi type of edge (%d, %d) is %d.\n", edge.first, edge.second, jacobiType);
     }
 
     for (auto &[jacobiType, count]: typeCount)
     {
-        printf("There are %d edges of type %d.\n", count, jacobiType);
+        //printf("There are %d edges of type %d.\n", count, jacobiType);
     }
 
 
@@ -385,7 +385,7 @@ void ReebSpace::computeArrangement(Data *data)
     CGAL::insert(data->arr, segments.begin(), segments.end());
     Timer::stop("Computed arrangement                   :");
 
-    std::cout << "The arrangement size:\n"
+    std::cout << std::endl << std::endl << "The arrangement size:\n"
         << "   |V| = " << data->arr.number_of_vertices()
         << ",  |E| = " << data->arr.number_of_edges()
         << ",  |F| = " << data->arr.number_of_faces() << std::endl;

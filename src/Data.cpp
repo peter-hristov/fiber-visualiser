@@ -272,7 +272,7 @@ void Data::readDataVTK(string filename)
     }
 
     // Print vertex data arrays
-    std::cout << "\nVertex Data Arrays:\n";
+    //std::cout << "\nVertex Data Arrays:\n";
     vtkPointData* pointData = mesh->GetPointData();
 
     assert(pointData->GetNumberOfArrays() >= 2);

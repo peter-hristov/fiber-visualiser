@@ -7,7 +7,7 @@
 #include <QApplication>
 #include <filesystem>
 #include "./TracerVisualiserWindow.h"
-
+#include "./Timer.h"
 #include "./ReebSpace.h"
 
 #include "CGALTypedefs.h"
@@ -52,13 +52,20 @@ int main(int argc, char* argv[])
 
 
     // Compute the upper and lower links of each edge
+    Timer::start();
     ReebSpace::computeUpperLowerLink(data);
+    Timer::stop("Computed upper and lower link          :");
 
     // Compute the adjacency of triangles in the mesh
+    Timer::start();
     ReebSpace::computeTriangleAdjacency(data);
+    Timer::stop("Computed triangle adjacency            :");
 
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
+
+
+    return 0;
 
     // Compute the preimageGraphs of each face in the arrangement
     ReebSpace::computePreimageGraphs(data);
