@@ -652,11 +652,11 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         const int currentFiberColour = 0;
         // Compute all tet exit points
 
-        qDebug() << "Computing fiber ...";
+        //qDebug() << "Computing fiber ...";
 
-        Timer::start();
-        this->data->computeTetExitPoints(u, v, data->fiberColours[currentFiberColour]);
-        Timer::stop("Computed fiber                         :");
+        //Timer::start();
+        //this->data->computeTetExitPoints(u, v, data->fiberColours[currentFiberColour]);
+        //Timer::stop("Computed fiber                         :");
 
         Timer::start();
         this->data->computeTetExitPointsNew(u, v, data->fiberColours[currentFiberColour]);

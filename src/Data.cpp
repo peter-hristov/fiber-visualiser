@@ -40,6 +40,8 @@ double randomPerturbation(double epsilon) {
 
 void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
+    return;
+
     this->faceFibers.clear();
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
