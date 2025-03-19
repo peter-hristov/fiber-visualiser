@@ -523,6 +523,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     {
         // Set the random color for filling the polygon
         p.setBrush(this->arrangementPolygonColours[i]);
+        p.setPen(Qt::NoPen);
 
         // Draw the filled polygon with the random color
         p.drawPolygon(this->arrangementPolygons[i]);
@@ -623,6 +624,34 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     //auto penGrey = QPen(QColor(0, 0, 0, 225));
     //penGrey.setWidthF(0.8);
     //p.setPen(penGrey);
+
+
+
+    // Draw the Jacobi edges
+    for (const auto &[edge, type] : data->jacobiType)
+    {
+        if (type != 1)
+        {
+            if (type == 0)
+            {
+                p.setPen(QPen(Qt::black, 0.5, Qt::DashLine));
+            }
+            else
+            {
+                p.setPen(QPen(Qt::black, 1));
+            }
+
+            float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
+            float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.first] - data->minG);
+
+            float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
+            float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
+
+            p.drawLine(x1, y1, x2, y2);
+
+        }
+
+    }
 
     //// Draw all edges from the tets
     //for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)

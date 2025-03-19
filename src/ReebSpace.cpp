@@ -172,86 +172,86 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
 
     // If the upper link is empty we have a definite edge
-    for (const auto &[edge, linkVertices] : data->upperLink)
-    {
-        //printf("Upper link of (%d, %d) is:\n", edge.first, edge.second);
-        //for (const auto &v : linkVertices)
+    //for (const auto &[edge, linkVertices] : data->upperLink)
+    //{
+        ////printf("Upper link of (%d, %d) is:\n", edge.first, edge.second);
+        ////for (const auto &v : linkVertices)
+        ////{
+            ////printf("(%d, %d, %d)\n", edge.first, edge.second, v);
+        ////}
+
+        //// If the upper link is full, but the lower link is empty
+        //if (false == data->lowerLink.contains(edge))
         //{
-            //printf("(%d, %d, %d)\n", edge.first, edge.second, v);
+            //data->jacobiType[edge] = 0;
         //}
 
-        // If the upper link is full, but the lower link is empty
-        if (false == data->lowerLink.contains(edge))
-        {
-            data->jacobiType[edge] = 0;
-        }
+    //}
 
-    }
+    //for (const auto &[edge, linkVertices] : data->lowerLink)
+    //{
+        ////printf("Lower link of (%d, %d) is:\n", edge.first, edge.second);
 
-    for (const auto &[edge, linkVertices] : data->lowerLink)
-    {
-        //printf("Lower link of (%d, %d) is:\n", edge.first, edge.second);
+        ////for (const auto &v : linkVertices)
+        ////{
+            ////printf("(%d, %d, %d)\n", edge.first, edge.second, v);
+        ////}
 
-        //for (const auto &v : linkVertices)
+        //// If the lower link is full but the upper link is empty we have a definite edge
+        //if (false == data->upperLink.contains(edge))
         //{
-            //printf("(%d, %d, %d)\n", edge.first, edge.second, v);
+            //data->jacobiType[edge] = 0;
+            //continue;
         //}
 
-        // If the lower link is full but the upper link is empty we have a definite edge
-        if (false == data->upperLink.contains(edge))
-        {
-            data->jacobiType[edge] = 0;
-            continue;
-        }
+        //// If both the upper and lower link are not empty, we can have a regular or indefinite edge
+        //assert(data->lowerLink.contains(edge) && data->upperLink.contains(edge));
 
-        // If both the upper and lower link are not empty, we can have a regular or indefinite edge
-        assert(data->lowerLink.contains(edge) && data->upperLink.contains(edge));
+        //// The list of the triangles adjacent to the edge in the star
+        //std::set<std::set<int>> adjacentTriangles;
 
-        // The list of the triangles adjacent to the edge in the star
-        std::set<std::set<int>> adjacentTriangles;
+        //// Assemble the triangles
+        //for (const auto &v : linkVertices)
+        //{
+            //adjacentTriangles.insert({edge.first, edge.second, v});
+        //}
 
-        // Assemble the triangles
-        for (const auto &v : linkVertices)
-        {
-            adjacentTriangles.insert({edge.first, edge.second, v});
-        }
+        //// Compute the number of connected components in the link
+        //DisjointSet<std::set<int>> linkConnectedComponents;
+        //linkConnectedComponents.initialize(adjacentTriangles);
 
-        // Compute the number of connected components in the link
-        DisjointSet<std::set<int>> linkConnectedComponents;
-        linkConnectedComponents.initialize(adjacentTriangles);
+        //for (const auto &t1 : adjacentTriangles)
+        //{
+            //for (const auto &t2 : adjacentTriangles)
+            //{
+                //if (data->connectedTriangles.contains({t1, t2}))
+                //{
+                    //linkConnectedComponents.union_setsTriangle(t1, t2);
+                //}
 
-        for (const auto &t1 : adjacentTriangles)
-        {
-            for (const auto &t2 : adjacentTriangles)
-            {
-                if (data->connectedTriangles.contains({t1, t2}))
-                {
-                    linkConnectedComponents.union_setsTriangle(t1, t2);
-                }
-
-            }
-        }
+            //}
+        //}
  
-        data->jacobiType[edge] = linkConnectedComponents.countConnectedComponents();
-    }
+        //data->jacobiType[edge] = linkConnectedComponents.countConnectedComponents();
+    //}
 
-    std::map<int, int> typeCount;
-    for (auto &[edge, jacobiType]: data->jacobiType)
-    {
-        if (false == typeCount.contains(jacobiType))
-        {
-            typeCount[jacobiType] = 0;
-        }
+    //std::map<int, int> typeCount;
+    //for (auto &[edge, jacobiType]: data->jacobiType)
+    //{
+        //if (false == typeCount.contains(jacobiType))
+        //{
+            //typeCount[jacobiType] = 0;
+        //}
 
-        typeCount[jacobiType] += 1;
+        //typeCount[jacobiType] += 1;
 
-        //printf("The Jacobi type of edge (%d, %d) is %d.\n", edge.first, edge.second, jacobiType);
-    }
+        ////printf("The Jacobi type of edge (%d, %d) is %d.\n", edge.first, edge.second, jacobiType);
+    //}
 
-    for (auto &[jacobiType, count]: typeCount)
-    {
-        //printf("There are %d edges of type %d.\n", count, jacobiType);
-    }
+    //for (auto &[jacobiType, count]: typeCount)
+    //{
+        ////printf("There are %d edges of type %d.\n", count, jacobiType);
+    //}
 
 
 
@@ -708,6 +708,9 @@ void ReebSpace::computeReebSpace(Data *data)
         // List of adjacent faces
         std::vector<Face_const_handle> adjacentFaces;
 
+        //std::vector<std::pair<int, int>> adjacentEdges;
+        std::map<Face_const_handle, std::pair<int, int>> adjacentEdges;
+
         // Map from a face to it's plus and minus triangles as we go from face -> twinFace
         std::map<Face_const_handle, std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>>> minusPlusTriangles;
 
@@ -721,12 +724,21 @@ void ReebSpace::computeReebSpace(Data *data)
             //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
             //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
             //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+
+
+            //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
             //printf("\n\n");
 
             // Pull out the face and the minusPlusTriangles
             Arrangement_2::Halfedge_const_handle twinHalfEdge = curr->twin();
             Arrangement_2::Face_const_handle twinFace = twinHalfEdge->face();
             minusPlusTriangles[twinFace] = ReebSpace::getMinusPlusTriangles(curr, data);
+
+            // Which edge leeds to that adjacent face
+            const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
+            adjacentEdges[twinFace] = {data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]};
+
+
             ++curr;
         } while (curr != start);
 
@@ -743,7 +755,7 @@ void ReebSpace::computeReebSpace(Data *data)
             const int faceID = data->arrangementFacesIdices[face];
             const int twinFaceID = data->arrangementFacesIdices[twinFace];
 
-            // See which of he roots (connected components) are active (contain an active triangle)
+            // See which of the roots (connected components) are active (contain an active triangle)
             std::set<int> activeRootsFace;
             for (std::set<int> triangle : minusTriangles)
             {
@@ -754,6 +766,25 @@ void ReebSpace::computeReebSpace(Data *data)
             for (std::set<int> triangle : plusTriangles)
             {
                 activeRootsTwinFace.insert(data->preimageGraphs[twinFaceID].findTriangle(triangle));
+
+            }
+
+            // Definite edge
+            if (activeRootsFace.size() == 0 || activeRootsTwinFace.size() == 0)
+            {
+
+                data->jacobiType[adjacentEdges[twinFace]] = 0;
+            }
+            // Reeb-regular
+            else if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
+            {
+
+                data->jacobiType[adjacentEdges[twinFace]] = 1;
+            }
+            // Indefinite edge
+            else
+            {
+                data->jacobiType[adjacentEdges[twinFace]] = 2;
 
             }
 
