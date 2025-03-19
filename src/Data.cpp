@@ -1,5 +1,6 @@
 #include "Data.h"
 
+#include <CGAL/enum.h>
 #include <fstream>
 #include <sstream>
 #include <utility>
@@ -14,6 +15,15 @@
 #include <random>
 
 
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Bbox_2.h>
+#include <CGAL/Barycentric_coordinates_2/triangle_coordinates_2.h>
+#include <CGAL/Polygon_2_algorithms.h>
+
+//typedef CGAL::Simple_cartesian<double> KernelCartesian;
+//typedef KernelCartesian::Point_2 PointCartesian;
+
+
 using namespace std;
 
 double randomPerturbation(double epsilon) {
@@ -26,7 +36,9 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 {
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
-    // Find the point in the arrangement
+    //
+    // Get the ID of the face we are intersecting
+    //
 
     // Create the point-location query structure
     Point_location pl(arr);
@@ -44,7 +56,6 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
     int currentFaceID = 0;
 
-
     if (CGAL::assign(face, result)) 
     {
         currentFaceID = this->arrangementFacesIdices[face];
@@ -61,20 +72,17 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
         edge = vertex->incident_halfedges();
         face = edge->face();
         currentFaceID = this->arrangementFacesIdices[face];
-    } else {
+    } else 
+    {
         assert(false);
     }
-
-
-
-    //cout << endl << endl;
 
     // For every tet, compute the two exit points
     for(size_t tetId = 0 ; tetId < this->tetrahedra.size(); tetId++)
     {
         const auto tet = this->tetrahedra[tetId];
 
-        // For every triangle in every tet, get the fiber in it
+        // For every triangle in every tet, get the fiber point in it
         for(int i = 0 ; i < 4 ; i++)
         {
             for(int j = i + 1 ; j < 4 ; j++)
@@ -89,6 +97,19 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
                     float x3 = this->vertexCoordinatesF[tet[k]];
                     float y3 = this->vertexCoordinatesG[tet[k]];
+
+
+                    const float xmin = std::min({x1, x2, x3});
+                    const float xmax = std::max({x1, x2, x3});
+                    const float ymin = std::min({y1, y2, y3});
+                    const float ymax = std::max({y1, y2, y3});
+
+                    // This triangle is not relevant, point is outside the bounding box
+                    if (u < xmin || u > xmax || v < ymin || v > ymax) 
+                    {
+                        continue;
+                    }
+
 
                     float det = (x1 - x3) * (y2 - y3) - (x2 - x3) * (y1 - y3);
 
@@ -113,20 +134,20 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
                         //for (const auto [key, value] : this->faceDisjointSets[currentFaceID].data)
                         //{
-                            //cout << "Triangle ";
-                            //for (const auto v : key)
-                            //{
-                                //cout << v << " ";
-                            //}
+                        //cout << "Triangle ";
+                        //for (const auto v : key)
+                        //{
+                        //cout << v << " ";
+                        //}
 
-                            //cout << " with root " << this->faceDisjointSets[currentFaceID].find(value) << " ( " << this->faceDisjointSets[currentFaceID].findTriangle(key) << ") " << endl;
+                        //cout << " with root " << this->faceDisjointSets[currentFaceID].find(value) << " ( " << this->faceDisjointSets[currentFaceID].findTriangle(key) << ") " << endl;
 
                         //}
 
 
                         //for (const auto &[key, value] : this->reebSpace.data)
                         //{
-                            //printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, this->reebSpace.findTriangle(key));
+                        //printf("Face ID = %d, fiber component root = %d, SheetID = %d\n", key.first, key.second, this->reebSpace.findTriangle(key));
 
                         //}
 
@@ -285,12 +306,12 @@ void Data::readDataVTK(string filename)
 
     for (vtkIdType i = 0; i < fDataArray->GetNumberOfTuples(); i++) 
     {
-        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i) + randomPerturbation(1e-6);
+        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i) + randomPerturbation(1e-3);
     }
 
     for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
     {
-        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-6);
+        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-3);
     }
 
     // Compute the ranges for a bounding box in the range.

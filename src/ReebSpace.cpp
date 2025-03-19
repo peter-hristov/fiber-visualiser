@@ -7,6 +7,7 @@
 #include <map>
 #include <queue>
 #include <set>
+#include <iterator>
 
 
 std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
@@ -377,18 +378,51 @@ void ReebSpace::computeArrangement(Data *data)
         segments.push_back(Segment_2(data->arrangementPoints[edgeVector[0]], data->arrangementPoints[edgeVector[1]]));
         //std::cout << "Adding edge " << edgeVector[0] << " - " << edgeVector[1] << std::endl;
     }
-
     Timer::stop("Converted edges to segments            :");
+
+
+
+    Timer::start();
+    int intersections = 0;
+    for (int i = 0 ; i < segments.size(); i++)
+    {
+        for (int j = i+1 ; j < segments.size(); j++)
+        {
+            // Check for intersection
+            if (CGAL::do_intersect(segments[i], segments[j])) 
+            {
+                intersections++;
+            }
+        }
+    }
+
+    std::cout << "There are " << intersections << " out of " << segments.size() << " segments." << std::endl;
+    Timer::stop("Checking intersections                 :");
+
 
     Timer::start();
     // Insert all the segments into the arrangement using the range insert method
     CGAL::insert(data->arr, segments.begin(), segments.end());
     Timer::stop("Computed arrangement                   :");
 
+    //Timer::start();
+    //Arrangement_2 arr;
+    //for (const auto& segment : segments) {
+        //CGAL::insert(arr, Curve_2(segment));
+    //}
+    //Timer::stop("Computed arrangement sequantially      :");
+
+
     std::cout << std::endl << std::endl << "The arrangement size:\n"
         << "   |V| = " << data->arr.number_of_vertices()
         << ",  |E| = " << data->arr.number_of_edges()
         << ",  |F| = " << data->arr.number_of_faces() << std::endl;
+
+    //std::cout << std::endl << std::endl << "The sequantial arrangement size:\n"
+        //<< "   |V| = " << arr.number_of_vertices()
+        //<< ",  |E| = " << arr.number_of_edges()
+        //<< ",  |F| = " << arr.number_of_faces() << std::endl;
+
 
 
     // Print out all the faces in the arrangement

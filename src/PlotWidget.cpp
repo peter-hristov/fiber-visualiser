@@ -98,7 +98,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
         //
         int colourID = data->sheetToColour[data->reebSpace.findTriangle(std::pair<int, int>({key.first, key.second}))];
 
-        vector<float> colorF = data->fiberColours[colourID];
+        vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
 
         this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
     }

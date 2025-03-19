@@ -91,20 +91,20 @@ TracerVisualiserWidget::generateDisplayList()
     glEnd();
 
     // Draw fiber endpoints (in every tet)
-    for(const auto &faceFiber : this->data->faceFibers)
-    {
-        glColor3fv(faceFiber.colour.data());
+    //for(const auto &faceFiber : this->data->faceFibers)
+    //{
+        //glColor3fv(faceFiber.colour.data());
 
-        glPushMatrix();
-        {
-            glTranslatef(faceFiber.point[0], faceFiber.point[1], faceFiber.point[2]);
-            GLUquadric* sphere = gluNewQuadric();
-            gluSphere(sphere, 0.01, 10, 10);
-            delete sphere;
-        }
-        glPopMatrix();
+        //glPushMatrix();
+        //{
+            //glTranslatef(faceFiber.point[0], faceFiber.point[1], faceFiber.point[2]);
+            //GLUquadric* sphere = gluNewQuadric();
+            //gluSphere(sphere, 0.01, 10, 10);
+            //delete sphere;
+        //}
+        //glPopMatrix();
 
-    }
+    //}
 
     glEndList();
 }

@@ -27,12 +27,12 @@ int main(int argc, char* argv[])
 
     std::string filename = argv[1];
 
-
-
-    fs::path filePath(filename);
+    fs::path filePath(argv[1]);
     
-    if (!fs::exists(filePath)) {
+    if (!fs::exists(filePath)) 
+    {
         std::cerr << "Error: File does not exist: " << filename << std::endl;
+        return 0;
     }
 
     // Set up the data class
@@ -42,40 +42,40 @@ int main(int argc, char* argv[])
     if (extension == ".vtu") 
     {
         data->readDataVTK(filename);
-    } else if (extension == ".txt") 
+    } 
+    else if (extension == ".txt") 
     {
         data->readData(filename);
-    } else 
+    } 
+    else 
     {
         std::cerr << "Error: Unsupported file type: " << extension << std::endl;
     }
 
+    // Compute the 2D arrangement
+    ReebSpace::computeArrangement(data);
 
     // Compute the upper and lower links of each edge
     Timer::start();
     ReebSpace::computeUpperLowerLink(data);
     Timer::stop("Computed upper and lower link          :");
 
+
     // Compute the adjacency of triangles in the mesh
     Timer::start();
     ReebSpace::computeTriangleAdjacency(data);
     Timer::stop("Computed triangle adjacency            :");
 
-    // Compute the 2D arrangement
-    ReebSpace::computeArrangement(data);
-
-
-    return 0;
 
     // Compute the preimageGraphs of each face in the arrangement
+    Timer::start();
     ReebSpace::computePreimageGraphs(data);
+    Timer::stop("Computed preimage graph                :");
+
 
     // Compute the Reeb space (connected components of preimage graph components)
     ReebSpace::computeReebSpace(data);
-
-
-
-
+    Timer::stop("Computed H and RS                      :");
 
     // Set up QT Application
     QApplication app(argc, argv);
