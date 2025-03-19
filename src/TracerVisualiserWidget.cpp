@@ -239,14 +239,28 @@ TracerVisualiserWidget::drawScene()
     //glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
     //glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
     //glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
-    //glTranslatef(-1.0 * (this->data->maxX - this->data->minX) / 2, 0, 0);
-    //glTranslatef(0, 0, (this->data->maxY - this->data->minY) / 2);
-    //glTranslatef(0, -1.0 * (this->data->maxZ - this->data->minZ) / 2, 0);
+    glTranslatef(-1.0 * (this->data->maxX - this->data->minX) / 2, 0, 0);
+    glTranslatef(0, 0, (this->data->maxY - this->data->minY) / 2);
+    glTranslatef(0, -1.0 * (this->data->maxZ - this->data->minZ) / 2, 0);
+
+    GLfloat vertices[8][3] = {
+        {this->data->minX, this->data->minY, this->data->minY},
+        {this->data->minX, this->data->minY, this->data->maxY},
+        {this->data->minX, this->data->maxY, this->data->minY},
+        {this->data->minX, this->data->maxY, this->data->maxY},
+
+        {this->data->maxX, this->data->minY, this->data->minY},
+        {this->data->maxX, this->data->minY, this->data->maxY},
+        {this->data->maxX, this->data->maxY, this->data->minY},
+        {this->data->maxX, this->data->maxY, this->data->maxY},
+    };
+
+    drawWiredCube(vertices);
 
     // Data center
-    glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0] , 0, 0);
-    glTranslatef(0, 0, this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][1]);
-    glTranslatef(0, -1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][2], 0);
+    //glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0] , 0, 0);
+    //glTranslatef(0, 0, this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][1]);
+    //glTranslatef(0, -1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][2], 0);
 
     glRotatef(-90., 1., 0., 0.);
 
@@ -428,7 +442,7 @@ TracerVisualiserWidget::paintGL()
 void
 TracerVisualiserWidget::wheelEvent(QWheelEvent* event)
 {
-    this->scale -= event->angleDelta().y() / 1000.0;
+    this->scale -= event->angleDelta().y() / 100.0;
 
     if (scale <= 0) {
         scale = 0;

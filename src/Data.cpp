@@ -298,8 +298,8 @@ void Data::readDataVTK(string filename)
 
     assert(pointData->GetNumberOfArrays() >= 2);
 
-    vtkDataArray* fDataArray = pointData->GetArray(0);
-    vtkDataArray* gDataArray = pointData->GetArray(1);
+    vtkDataArray* fDataArray = pointData->GetArray(1);
+    vtkDataArray* gDataArray = pointData->GetArray(0);
 
     assert(fDataArray->GetNumberOfTuples() == numVertices);
     assert(gDataArray->GetNumberOfTuples() == numVertices);
