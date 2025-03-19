@@ -40,10 +40,7 @@ double randomPerturbation(double epsilon) {
 
 void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
-    return;
-
     this->faceFibers.clear();
-    this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
     //
     // Get the ID of the face we are intersecting
@@ -105,7 +102,7 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
             {
                 const int componentID = this->preimageGraphs[currentFaceID].find(triangleId);
                 const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
-                const int sheetColourID = this->sheetToColour[sheetID];
+                const int sheetColourID = this->sheetToColour[sheetID] % this->fiberColours.size();
                 const vector<float> sheetColour = this->fiberColours[sheetColourID];
 
                 //

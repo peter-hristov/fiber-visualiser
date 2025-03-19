@@ -118,32 +118,24 @@ class Data
     // </Reeb space related stuff>
     //
 
-
-
-
-
-
-
-
     // Colour map for Reeb space sheets and fibers
     const std::vector<std::vector<float>> fiberColours = {
-
-        {1.0f, 0.0f, 0.0f, 0.392f},  // Red
-        {0.0f, 1.0f, 0.0f, 0.392f},  // Green
-        {0.0f, 0.0f, 1.0f, 0.392f},  // Blue
-        {1.0f, 1.0f, 0.0f, 0.392f},  // Yellow
-        {0.0f, 1.0f, 1.0f, 0.392f},  // Cyan
-        {1.0f, 0.0f, 1.0f, 0.392f},  // Magenta
-        {0.588f, 0.0f, 1.0f, 0.392f}, // Purple
-        {0.0, 0.45, 0.7},   // Blue
-        {0.8, 0.4, 0.0},    // Orange
-        {0.0, 0.6, 0.5},    // Teal
-        {0.9, 0.6, 0.0},    // Gold
-        {0.8, 0.6, 0.7},    // Pink/Mauve
-        {0.35, 0.7, 0.9},   // Sky Blue
-        {0.0, 0.6, 0.3},    // Green
-        {0.9, 0.2, 0.2},    // Red
-        {0.5, 0.5, 0.0}    // Olive
+        {1.0f, 0.0f, 0.0f, 0.392f},    // Vivid Red
+        {0.0f, 1.0f, 0.0f, 0.392f},    // Bright Green
+        {0.0f, 0.0f, 1.0f, 0.392f},    // Pure Blue
+        {1.0f, 1.0f, 0.0f, 0.392f},    // Bright Yellow
+        {0.0f, 1.0f, 1.0f, 0.392f},    // Cyan
+        {1.0f, 0.0f, 1.0f, 0.392f},    // Magenta
+        {0.58f, 0.0f, 1.0f, 0.392f},   // Deep Purple
+        {0.0f, 0.45f, 0.7f, 0.392f},   // Ocean Blue
+        {1.0f, 0.5f, 0.0f, 0.392f},    // Orange
+        {0.0f, 0.6f, 0.5f, 0.392f},    // Teal
+        {1.0f, 0.84f, 0.0f, 0.392f},   // Gold
+        {0.85f, 0.4f, 0.55f, 0.392f},  // Mauve
+        {0.4f, 0.8f, 1.0f, 0.392f},    // Sky Blue
+        {0.2f, 0.8f, 0.2f, 0.392f},    // Leaf Green
+        {0.9f, 0.3f, 0.3f, 0.392f},    // Coral Red
+        {0.6f, 0.6f, 0.0f, 0.392f}     // Olive
     };
 };
 

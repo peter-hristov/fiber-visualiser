@@ -22,18 +22,22 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 
     if (event->key() == Qt::Key_I) {
         this->data->mousePoints[0].setY(this->data->mousePoints[0].y() - speed);
+        this->plotWidget->recomputeFiber = true;
         this->update();
     }
     if (event->key() == Qt::Key_J) {
         this->data->mousePoints[0].setX(this->data->mousePoints[0].x() - speed);
+        this->plotWidget->recomputeFiber = true;
         this->update();
     }
     if (event->key() == Qt::Key_K) {
         this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + speed);
+        this->plotWidget->recomputeFiber = true;
         this->update();
     }
     if (event->key() == Qt::Key_L) {
         this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + speed);
+        this->plotWidget->recomputeFiber = true;
         this->update();
     }
 

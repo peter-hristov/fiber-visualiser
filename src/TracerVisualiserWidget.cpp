@@ -36,7 +36,7 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
     this->sibling = _sibling;
 
     // Default values for paraters
-    this->scale = (data->maxZ - data->minZ) * 2;
+    this->scale = (data->maxZ - data->minZ) * 5;
 
     // Initialise Arcball
     Ball_Init(&theBall);
@@ -236,23 +236,19 @@ TracerVisualiserWidget::drawScene()
     // gluSphere(sphere, 2, 3, 3);
 
     // Data Center
-    //glTranslatef((-1.0 * (this->data->xdim - 1)) / 2.0, 0, 0);
-    //glTranslatef(0, 0, ((this->data->ydim) - 1) / 2.0);
-    //glTranslatef(0, -1.0 * (this->data->zdim - 1) / 2.0, 0);
-
     glTranslatef(-1.0 * (this->data->maxX + this->data->minX) / 2.0, 0, 0);
     glTranslatef(0, 0, (this->data->maxY + this->data->minY) / 2.0);
     glTranslatef(0, -1.0 * (this->data->maxZ + this->data->minZ) / 2.0, 0);
 
-    // Data center
-    //glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0] , 0, 0);
-    //glTranslatef(0, 0, this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][1]);
-    //glTranslatef(0, -1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][2], 0);
-
+    // Don't remember why I need this
     glRotatef(-90., 1., 0., 0.);
 
     //this->drawAxis(1000., 1.0 * (this->data->maxX - this->data->minX) / 1800.0);
 
+
+    //
+    // Data bounding box
+    //
     GLfloat vertices[8][3] = {
         {this->data->minX, this->data->minY, this->data->minZ},
         {this->data->minX, this->data->minY, this->data->maxZ},
@@ -446,7 +442,7 @@ TracerVisualiserWidget::paintGL()
 void
 TracerVisualiserWidget::wheelEvent(QWheelEvent* event)
 {
-    this->scale -= event->angleDelta().y() / 10.0;
+    this->scale -= event->angleDelta().y() / 1.0;
 
     if (scale <= 0) {
         scale = 0;
