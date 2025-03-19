@@ -59,6 +59,7 @@ class Data
     std::vector<FaceFiberPoint> faceFibers;
 
     void computeTetExitPoints(const float, const float, const std::vector<float> = {1,1,1});
+    void computeTetExitPointsNew(const float, const float, const std::vector<float> = {1,1,1});
 
 
     void readData(std::string);
@@ -107,6 +108,10 @@ class Data
 
     // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
     std::map<int, int> sheetToColour;
+
+    // Data structure to query the arrangement
+    // Given a point, which face is it in?
+    std::unique_ptr<Point_location> pl;  // nullptr by default
 
 
     //

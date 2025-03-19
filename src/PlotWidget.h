@@ -44,6 +44,9 @@ class PlotWidget : public QWidget
     QTransform painterCombinedTransform;
 
 
+    bool recomputeFiber = false;
+
+
     Data* data;
     float varianceScale = 0;
     float resolution = 300;

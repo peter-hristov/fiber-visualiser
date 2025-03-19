@@ -255,7 +255,7 @@ TracerVisualiserWidget::drawScene()
         {this->data->maxX, this->data->maxY, this->data->maxY},
     };
 
-    drawWiredCube(vertices);
+    //drawWiredCube(vertices);
 
     // Data center
     //glTranslatef(-1.0 * this->data->vertexDomainCoordinates[this->data->vertexDomainCoordinates.size() - 1][0] , 0, 0);

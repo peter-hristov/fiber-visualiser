@@ -27,6 +27,8 @@
 
 #include "PlotWidget.h"
 #include "src/Data.h"
+#include "./Timer.h"
+
 
 using namespace std;
 
@@ -171,46 +173,55 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
     auto &mousePoints = this->data->mousePoints;
 
     // Find out whether we're hovering on a vertex of the polygon and highlight it
-    if (event->button() == Qt::NoButton) {
+    if (event->button() == Qt::NoButton) 
+    {
 
-        if (this->data->vertexCoordinatesF.size() > 0) {
+        //
+        // Old code for moving data points around
+        //
+        //if (this->data->vertexCoordinatesF.size() > 0) 
+        //{
 
-            // Are we close to any of the vertices of the data?
-            for (int i = 0; i < this->data->vertexCoordinatesF.size(); i++) {
-                QPointF point;
-                point.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF));
-                point.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG));
+            //// Are we close to any of the vertices of the data?
+            //for (int i = 0; i < this->data->vertexCoordinatesF.size(); i++) {
+                //QPointF point;
+                //point.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF));
+                //point.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG));
 
-                QPointF bestPoint;
-                bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
-                bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
+                //QPointF bestPoint;
+                //bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
+                //bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
 
-                if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, point) <
-                        tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
-                {
-                    // Set the closest vertex point
-                    closestVertexPoint = i;
-                }
-            }
+                //if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, point) <
+                        //tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
+                //{
+                    //// Set the closest vertex point
+                    //closestVertexPoint = i;
+                //}
+            //}
 
-            QPointF bestPoint;
-            bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
-            bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
+            //QPointF bestPoint;
+            //bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
+            //bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
 
-            if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint) < sphereRadius * 4) {
-                this->closePointData = closestVertexPoint;
-            } else {
-                this->closePointData = -1;
-            }
-        }
-        else
+            //if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint) < sphereRadius * 4) {
+                //this->closePointData = closestVertexPoint;
+            //} else {
+                //this->closePointData = -1;
+            //}
+        //}
+        //else
+        //{
+            //this->closePointData = -1;
+        //}
+
+
+        // Have you clicked on a mouse point - the fiber point? Drag it.
+        if (mousePoints.size() > 0 && this->closePointData == -1) 
         {
-            this->closePointData = -1;
-        }
-
-        // Have you clicked on a mouse point? Drag it.
-        if (mousePoints.size() > 0 && this->closePointData == -1) {
-            for (int i = 0; i < mousePoints.size(); i++) {
+            // Find the closest mouse point
+            for (int i = 0; i < mousePoints.size(); i++) 
+            {
                 if (tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[i]) <
                         tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m])) {
                     m = i;
@@ -227,23 +238,26 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
         }
     }
 
-    if (event->buttons() == Qt::LeftButton) {
+    if (event->buttons() == Qt::LeftButton) 
+    {
 
         // Dragging a data point
-        if (MouseDragMode::DataPoint == dragMode) {
-            assert(movePoint >= 0 && movePoint < this->data->vertexCoordinatesF.size());
+        if (MouseDragMode::DataPoint == dragMode) 
+        {
+            //assert(movePoint >= 0 && movePoint < this->data->vertexCoordinatesF.size());
 
-            float fValue = this->data->minF + (mouseTransformedPoint.x() / resolution) * (this->data->maxF - this->data->minF);
-            float gValue = this->data->minG + (mouseTransformedPoint.y() / resolution) * (this->data->maxG - this->data->minG);
+            //float fValue = this->data->minF + (mouseTransformedPoint.x() / resolution) * (this->data->maxF - this->data->minF);
+            //float gValue = this->data->minG + (mouseTransformedPoint.y() / resolution) * (this->data->maxG - this->data->minG);
 
-            this->data->vertexCoordinatesF[movePoint] = fValue;
-            this->data->vertexCoordinatesG[movePoint] = gValue;
+            //this->data->vertexCoordinatesF[movePoint] = fValue;
+            //this->data->vertexCoordinatesG[movePoint] = gValue;
         }
 
         // Draggin a vertex
         if (MouseDragMode::Vertex == dragMode) {
             assert(movePoint >= 0 && movePoint < mousePoints.size());
             mousePoints[movePoint] = clickPoint;
+            this->recomputeFiber = true;
         }
 
     }
@@ -334,6 +348,7 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
         } else {
             mousePoints.clear();
             mousePoints.insert(mousePoints.begin() + closestEdge + 1, clickPoint);
+            this->recomputeFiber = true;
             this->polygonLocked = false;
             this->update();
         }
@@ -342,9 +357,10 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
     this->update();
 }
 
-    void
-PlotWidget::paintEvent(QPaintEvent*)
+void PlotWidget::paintEvent(QPaintEvent*)
 {
+
+
     QPainter p(this);
     p.setWindow(QRect(0, 0, resolution, resolution));
     // p.setViewport(QRect(0, 0, resolution, resolution));
@@ -355,9 +371,54 @@ PlotWidget::paintEvent(QPaintEvent*)
 
     this->painterCombinedTransform = p.combinedTransform();
 
+    //
+    // Draw the polygons of the Reeb space
+    //
+    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) 
+    {
+        // Set the random color for filling the polygon
+        p.setBrush(this->arrangementPolygonColours[i]);
+        p.setPen(Qt::NoPen);
+
+        // Draw the filled polygon with the random color
+        p.drawPolygon(this->arrangementPolygons[i]);
+
+        //qDebug() << "New polygon --- ";
+        //for (const QPoint& point : this->arrangementPolygons[i]) {
+            //qDebug() << "(" << point.x() << ", " << point.y() << ")";
+        //}
+    }
+
+    //
+    // Draw the Jacobi set
+    //
+    for (const auto &[edge, type] : data->jacobiType)
+    {
+        if (type != 1)
+        {
+            if (type == 0)
+            {
+                p.setPen(QPen(Qt::black, 0.5, Qt::DashLine));
+            }
+            else
+            {
+                p.setPen(QPen(Qt::black, 1));
+            }
+
+            float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
+            float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.first] - data->minG);
+
+            float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
+            float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
+
+            p.drawLine(x1, y1, x2, y2);
+
+        }
+
+    }
+
     // Draw Fiber Surface Control Polygon
     drawAndRecomputeFS(p);
-
 
     p.restore();
 
@@ -518,22 +579,6 @@ PlotWidget::drawAxisLabels(QPainter& p)
 PlotWidget::drawAndRecomputeFS(QPainter& p)
 {
 
-    // Draw each polygon with a random color
-    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) 
-    {
-        // Set the random color for filling the polygon
-        p.setBrush(this->arrangementPolygonColours[i]);
-        p.setPen(Qt::NoPen);
-
-        // Draw the filled polygon with the random color
-        p.drawPolygon(this->arrangementPolygons[i]);
-
-        //qDebug() << "New polygon --- ";
-        //for (const QPoint& point : this->arrangementPolygons[i]) {
-            //qDebug() << "(" << point.x() << ", " << point.y() << ")";
-        //}
-    }
-
     auto &mousePoints = this->data->mousePoints;
 
     // Only recompute the polygon if we have a new point
@@ -589,90 +634,6 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         p.drawLine(a.x() - resolution, a.y(), a.x() + resolution, a.y());
     }
 
-
-
-    // Draw all the vertex coordinates
-    //for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
-    //{
-
-        //float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF);
-        //float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG);
-
-        //if (this->closePointData == i)
-        //{
-            //p.setPen(Qt::blue);
-        //}
-        //else
-        //{
-            //if (i == 13)
-            //{
-                ////p.setPen(Qt::red);
-                //p.setPen(Qt::black);
-            //}
-            //else
-            //{
-                //p.setPen(Qt::black);
-            //}
-        //}
-
-        //p.drawEllipse(QPointF(x1, y1), 3, 3);
-        //// @TODO Figure out how to rotate the vertex numbers
-        ////p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
-        //p.drawText(x1, y1, QString::number(i));
-    //}
-
-    //auto penGrey = QPen(QColor(0, 0, 0, 225));
-    //penGrey.setWidthF(0.8);
-    //p.setPen(penGrey);
-
-
-
-    // Draw the Jacobi edges
-    for (const auto &[edge, type] : data->jacobiType)
-    {
-        if (type != 1)
-        {
-            if (type == 0)
-            {
-                p.setPen(QPen(Qt::black, 0.5, Qt::DashLine));
-            }
-            else
-            {
-                p.setPen(QPen(Qt::black, 1));
-            }
-
-            float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
-            float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.first] - data->minG);
-
-            float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
-            float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
-
-            p.drawLine(x1, y1, x2, y2);
-
-        }
-
-    }
-
-    //// Draw all edges from the tets
-    //for(size_t tetId = 0 ; tetId < this->data->tetrahedra.size(); tetId++)
-    //{
-        //const auto tet = this->data->tetrahedra[tetId];
-
-        //for(int i = 0 ; i < 4 ; i++)
-        //{
-            //for(int j = i + 1 ; j < 4 ; j++)
-            //{
-                //float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[tet[i]] - data->minF);
-                //float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[tet[i]] - data->minG);
-
-                //float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[tet[j]] - data->minF);
-                //float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[tet[j]] - data->minG);
-
-                //p.drawLine(x1, y1, x2, y2);
-            //}
-        //}
-    //}
-
     // Leave a trail of fibers or not
     if (dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers == true)
     {
@@ -680,15 +641,28 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     }
 
     // If we have selected a point in the scatterplot, compute the fiber surface
-    if (polyPoints.size() == 1)
+    if (this->recomputeFiber == true && polyPoints.size() == 1)
     {
+        this->recomputeFiber = false;
+
         // Reside to the original range data dimensions
         float u = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
         float v = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
 
         const int currentFiberColour = 0;
         // Compute all tet exit points
+
+        qDebug() << "Computing fiber ...";
+
+        Timer::start();
         this->data->computeTetExitPoints(u, v, data->fiberColours[currentFiberColour]);
+        Timer::stop("Computed fiber                         :");
+
+        Timer::start();
+        this->data->computeTetExitPointsNew(u, v, data->fiberColours[currentFiberColour]);
+        Timer::stop("Computed fiber new                     :");
+
+        qDebug() << "......";
 
         // Display fibers
         const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;

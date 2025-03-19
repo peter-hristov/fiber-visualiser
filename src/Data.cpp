@@ -1,6 +1,8 @@
 #include "Data.h"
+#include "./Timer.h"
 
 #include <CGAL/enum.h>
+#include <cassert>
 #include <fstream>
 #include <sstream>
 #include <utility>
@@ -13,12 +15,15 @@
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <random>
+#include <ranges>
 
-
+//
+// Used for computing Barycentric coordinates for fibers
+//
 #include <CGAL/Simple_cartesian.h>
-#include <CGAL/Bbox_2.h>
 #include <CGAL/Barycentric_coordinates_2/triangle_coordinates_2.h>
-#include <CGAL/Polygon_2_algorithms.h>
+typedef CGAL::Simple_cartesian<double> CartesianKernel;
+typedef CartesianKernel::Point_2 CartesianPoint;
 
 //typedef CGAL::Simple_cartesian<double> KernelCartesian;
 //typedef KernelCartesian::Point_2 PointCartesian;
@@ -32,22 +37,159 @@ double randomPerturbation(double epsilon) {
     return dist(gen);
 }
 
-void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vector<float> color)
+
+void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
+    this->faceFibers.clear();
     this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
 
     //
     // Get the ID of the face we are intersecting
     //
 
-    // Create the point-location query structure
-    Point_location pl(arr);
+    Timer::start();
 
     // The query point (u, v)
     Point_2 query_point(u, v);
 
     // Locate the point in the arrangement
-    CGAL::Object result = pl.locate(query_point);
+    CGAL::Object result = this->pl->locate(query_point);
+
+    // Try to assign to a face, edge or a vertex
+    Arrangement_2::Face_const_handle face;
+    Arrangement_2::Halfedge_const_handle edge;
+    Arrangement_2::Vertex_const_handle vertex;
+
+    int currentFaceID = 0;
+
+    if (CGAL::assign(face, result)) 
+    {
+        currentFaceID = this->arrangementFacesIdices[face];
+    } 
+    // If we are on an edge, just grad an adjacent face
+    else if (CGAL::assign(edge, result)) 
+    {
+        face = edge->face();
+        currentFaceID = this->arrangementFacesIdices[face];
+    } 
+    // If we are on a vertex grab an indicent edge and get its face
+    else if (CGAL::assign(vertex, result)) 
+    {
+        edge = vertex->incident_halfedges();
+        face = edge->face();
+        currentFaceID = this->arrangementFacesIdices[face];
+    } else 
+    {
+        assert(false);
+    }
+    Timer::stop("Computed active arrangement face       :");
+
+
+
+
+    cout << "The size of the fiber is " << this->preimageGraphs[currentFaceID].data.size() << endl;
+
+    int i = -1;
+    for (const auto &[triangle, triangleId] : this->preimageGraphs[currentFaceID].data)
+    {
+        i++;
+        int j = -1;
+        for (const auto&[triangle2, triangleId2] : this->preimageGraphs[currentFaceID].data)
+        {
+            j++;
+            if (j <= i) { continue; }
+
+            if (this->connectedTriangles.contains({triangle, triangle2}))
+            {
+                const int componentID = this->preimageGraphs[currentFaceID].find(triangleId);
+                const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
+                const int sheetColourID = this->sheetToColour[sheetID];
+                const vector<float> sheetColour = this->fiberColours[sheetColourID];
+
+                //
+                // Get the IDs and barycentri coordinates for the first point
+                //
+                vector<int> vertexIds;
+
+                for(const int &vertexId : triangle)
+                {
+                    vertexIds.push_back(vertexId);
+                }
+
+                CartesianPoint A(this->vertexCoordinatesF[vertexIds[0]], this->vertexCoordinatesG[vertexIds[0]]);
+                CartesianPoint B(this->vertexCoordinatesF[vertexIds[1]], this->vertexCoordinatesG[vertexIds[1]]);
+                CartesianPoint C(this->vertexCoordinatesF[vertexIds[2]], this->vertexCoordinatesG[vertexIds[2]]);
+
+                // Define query point
+                CartesianPoint P(u, v);
+
+                std::array<double, 3> coordinates;
+                CGAL::Barycentric_coordinates::triangle_coordinates_2(A, B, C, P, coordinates.begin());
+
+                assert(coordinates[0] >= 0 && coordinates[1] >= 0 && coordinates[2] >= 0);
+
+                FaceFiberPoint fb(coordinates[0], coordinates[1], {
+                        this->vertexDomainCoordinates[vertexIds[0]],
+                        this->vertexDomainCoordinates[vertexIds[1]],
+                        this->vertexDomainCoordinates[vertexIds[2]],
+                        },
+                        sheetColour);
+                this->faceFibers.push_back(fb);
+
+
+
+
+                // Get the IDs and barycentri coordinates for the second point
+                vector<int> vertexIds2;
+
+                for(const int &vertexId : triangle2)
+                {
+                    vertexIds2.push_back(vertexId);
+                }
+
+
+                // Define triangle vertices
+                CartesianPoint A2(this->vertexCoordinatesF[vertexIds2[0]], this->vertexCoordinatesG[vertexIds2[0]]);
+                CartesianPoint B2(this->vertexCoordinatesF[vertexIds2[1]], this->vertexCoordinatesG[vertexIds2[1]]);
+                CartesianPoint C2(this->vertexCoordinatesF[vertexIds2[2]], this->vertexCoordinatesG[vertexIds2[2]]);
+
+                std::array<double, 3> coordinates2;
+                CGAL::Barycentric_coordinates::triangle_coordinates_2(A2, B2, C2, P, coordinates2.begin());
+                assert(coordinates2[0] >= 0 && coordinates2[1] >= 0 && coordinates2[2] >= 0);
+
+                FaceFiberPoint fb2(coordinates2[0], coordinates2[1], {
+                        this->vertexDomainCoordinates[vertexIds2[0]],
+                        this->vertexDomainCoordinates[vertexIds2[1]],
+                        this->vertexDomainCoordinates[vertexIds2[2]],
+                        },
+                        sheetColour);
+
+                this->faceFibers.push_back(fb2);
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vector<float> color)
+{
+    this->faceFibers.clear();
+    this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
+
+    //
+    // Get the ID of the face we are intersecting
+    //
+
+    // The query point (u, v)
+    Point_2 query_point(u, v);
+
+    // Locate the point in the arrangement
+    CGAL::Object result = this->pl->locate(query_point);
 
     // Try to assign to a face, edge or a vertex
     Arrangement_2::Face_const_handle face;

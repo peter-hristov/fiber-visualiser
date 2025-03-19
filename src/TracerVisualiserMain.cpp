@@ -74,8 +74,14 @@ int main(int argc, char* argv[])
 
 
     // Compute the Reeb space (connected components of preimage graph components)
+    Timer::start();
     ReebSpace::computeReebSpace(data);
     Timer::stop("Computed H and RS                      :");
+
+    //data->pl = Point_location(data->arr);
+    Timer::start();
+    data->pl = std::make_unique<Point_location>(data->arr);
+    Timer::stop("Arrangement search structure           :");
 
     // Set up QT Application
     QApplication app(argc, argv);
