@@ -36,7 +36,7 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
     this->sibling = _sibling;
 
     // Default values for paraters
-    this->scale = (data->maxZ - data->minZ) * 5;
+    this->scale = (data->maxZ - data->minZ) * 2;
 
     // Initialise Arcball
     Ball_Init(&theBall);
@@ -442,7 +442,7 @@ TracerVisualiserWidget::paintGL()
 void
 TracerVisualiserWidget::wheelEvent(QWheelEvent* event)
 {
-    this->scale -= event->angleDelta().y() / 1.0;
+    this->scale -= event->angleDelta().y() / this->scaleFactor;
 
     if (scale <= 0) {
         scale = 0;

@@ -113,6 +113,10 @@ class Data
     // Given a point, which face is it in?
     std::unique_ptr<Point_location> pl;  // nullptr by default
 
+    void sortVertices();
+
+    void printMesh();
+
 
     //
     // </Reeb space related stuff>

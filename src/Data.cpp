@@ -379,6 +379,101 @@ Data::computeMinMaxRangeDomainCoordinates()
     this->maxG += 0.2 * (this->maxG - this->minG);
 }
 
+void Data::sortVertices()
+{
+    vector<pair<CartesianPoint, int>> pointWithIndices(this->vertexCoordinatesG.size());
+
+    for (int i = 0 ; i < pointWithIndices.size() ; i++)
+    {
+        pointWithIndices[i] = {CartesianPoint(this->vertexCoordinatesF[i], this->vertexCoordinatesG[i]), i};
+    }
+
+    //cout << "Before sorting" << endl;
+    //this->printMesh();
+
+    std::sort(pointWithIndices.begin(), pointWithIndices.end(),
+            [](const pair<CartesianPoint, int> &a, const pair<CartesianPoint, int>& b) {
+            return CGAL::compare_xy(a.first, b.first) == CGAL::SMALLER;
+            });
+
+    //cout << "Printing points... " << endl;
+    //for (int i = 0 ; i < pointWithIndices.size() ; i++)
+    //{
+        //printf("%d - (%f, %f) - %d\n", i, pointWithIndices[i].first.x(), pointWithIndices[i].first.y(), pointWithIndices[i].second);
+    //}
+
+
+    // Set up the inverse index search
+    vector<int> meshIDtoSortIndex(pointWithIndices.size());
+    for (int i = 0 ; i < pointWithIndices.size() ; i++)
+    {
+        meshIDtoSortIndex[pointWithIndices[i].second] = i;
+    }
+
+    //cout << "Swapping..." << endl;
+    //for (int i = 0 ; i < pointWithIndices.size() ; i++)
+    //{
+        //printf("%d -> %d\n", i, meshIDtoSortIndex[i]);
+
+    //}
+
+    //
+    // Now we can swap things around
+    //
+
+    // Set up copies of the originals for the swap, otherwise editin in place causes errors
+    std::vector<std::vector<GLfloat>> vertexDomainCoordinatesOriginal = this->vertexDomainCoordinates;
+    std::vector<GLfloat> vertexCoordinatesFOriginal = this->vertexCoordinatesF;
+    std::vector<GLfloat> vertexCoordinatesGOriginal = this->vertexCoordinatesG;
+
+    // Swap tet indices
+    for (int i = 0 ; i < this->tetrahedra.size() ; i++)
+    {
+        for (int j = 0 ; j < this->tetrahedra[i].size() ; j++)
+        {
+            this->tetrahedra[i][j] = meshIDtoSortIndex[this->tetrahedra[i][j]];
+        }
+    }
+
+    // Swap domain positions
+    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
+    {
+        this->vertexDomainCoordinates[i] = vertexDomainCoordinatesOriginal[pointWithIndices[i].second];
+    }
+    
+    // Swap range positions
+    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
+    {
+        this->vertexCoordinatesF[i] = vertexCoordinatesFOriginal[pointWithIndices[i].second];
+        this->vertexCoordinatesG[i] = vertexCoordinatesGOriginal[pointWithIndices[i].second];
+    }
+    //cout << "After sorting..." << endl;
+    //this->printMesh();
+
+}
+
+void Data::printMesh()
+{
+    // Print vertex domain coordinates
+    cout << "Vertex domain coordinates: " << endl;
+    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
+    {
+        printf("%d - (%f, %f, %f)\n", i, this->vertexDomainCoordinates[i][0], this->vertexDomainCoordinates[i][1], this->vertexDomainCoordinates[i][2]);
+    }
+    // Print vertex range coordinates
+    cout << "Vertex range coordinates: " << endl;
+    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
+    {
+        printf("%d - (%f, %f)\n", i, this->vertexCoordinatesF[i], this->vertexCoordinatesG[i]);
+    }
+
+    // Print tetrahedra
+    cout << "Tetrahedra: " << endl;
+    for (int i = 0 ; i < this->tetrahedra.size() ; i++)
+    {
+        printf("%d - (%ld, %ld, %ld, %ld)\n", i, this->tetrahedra[i][0], this->tetrahedra[i][1], this->tetrahedra[i][2], this->tetrahedra[i][3]);
+    }
+}
 void Data::readDataVTK(string filename)
 {
     // Read the VTU file
@@ -439,8 +534,8 @@ void Data::readDataVTK(string filename)
 
     assert(pointData->GetNumberOfArrays() >= 2);
 
-    vtkDataArray* fDataArray = pointData->GetArray(1);
-    vtkDataArray* gDataArray = pointData->GetArray(0);
+    vtkDataArray* fDataArray = pointData->GetArray(0);
+    vtkDataArray* gDataArray = pointData->GetArray(1);
 
     assert(fDataArray->GetNumberOfTuples() == numVertices);
     assert(gDataArray->GetNumberOfTuples() == numVertices);
@@ -454,6 +549,9 @@ void Data::readDataVTK(string filename)
     {
         this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-3);
     }
+
+    // Now we can sort
+    this->sortVertices();
 
     // Compute the ranges for a bounding box in the range.
     this->computeMinMaxRangeDomainCoordinates();
@@ -523,4 +621,6 @@ Data::readData(string filename)
     }
 
     this->computeMinMaxRangeDomainCoordinates();
+
+    this->sortVertices();
 }

@@ -27,9 +27,10 @@ class TracerVisualiserWidget : public QOpenGLWidget
     //bool drawFaces = false;
     //bool drawVertices = false;
 
-    bool drawEdges = 0;
-    bool drawFaces = 0;
-    bool drawVertices = 0;
+    float scaleFactor = 1000.0;
+    bool drawEdges = 1;
+    bool drawFaces = 1;
+    bool drawVertices = 1;
 
     bool showUIsosurface = false;
     bool showVIsosurface = false;

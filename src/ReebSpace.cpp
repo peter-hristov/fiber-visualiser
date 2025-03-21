@@ -382,22 +382,22 @@ void ReebSpace::computeArrangement(Data *data)
 
 
 
-    Timer::start();
-    int intersections = 0;
-    for (int i = 0 ; i < segments.size(); i++)
-    {
-        for (int j = i+1 ; j < segments.size(); j++)
-        {
-            // Check for intersection
-            if (CGAL::do_intersect(segments[i], segments[j])) 
-            {
-                intersections++;
-            }
-        }
-    }
+    //Timer::start();
+    //int intersections = 0;
+    //for (int i = 0 ; i < segments.size(); i++)
+    //{
+        //for (int j = i+1 ; j < segments.size(); j++)
+        //{
+            //// Check for intersection
+            //if (CGAL::do_intersect(segments[i], segments[j])) 
+            //{
+                //intersections++;
+            //}
+        //}
+    //}
 
-    std::cout << "There are " << intersections << " out of " << segments.size() << " segments." << std::endl;
-    Timer::stop("Checking intersections                 :");
+    //std::cout << "There are " << intersections << " out of " << segments.size() << " segments." << std::endl;
+    //Timer::stop("Checking intersections                 :");
 
 
     Timer::start();

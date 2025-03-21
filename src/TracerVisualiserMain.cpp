@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
 
+
     // Compute the upper and lower links of each edge
     Timer::start();
     ReebSpace::computeUpperLowerLink(data);
