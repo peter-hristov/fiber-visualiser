@@ -94,6 +94,11 @@ class Data
     // Tell us which triangles (as sets of IDs) are connected (part of a tetrahedron)
     std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
 
+
+    //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
+    std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
+
+
     // The number of fiber components for each preimage graph, more of a utility thing
     std::vector<int> arrangementFiberComponents;
     // The connected components of the preimage graph for each face in the arrangement

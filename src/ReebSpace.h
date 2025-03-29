@@ -53,4 +53,8 @@ namespace ReebSpace
 
         // Get the upper/lower link with the orientation of the half edge with respect to the original edge.
         std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data);
+
+        void testTraverseArrangement(Data *data);
+
+
 };

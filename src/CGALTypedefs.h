@@ -1,14 +1,16 @@
 #pragma once
 
+#include <CGAL/Real_timer.h>
+
 // Correct and slow
-//#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
-//typedef CGAL::Exact_predicates_exact_constructions_kernel K;
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 
 
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Lazy_exact_nt.h>
-typedef CGAL::Lazy_exact_nt<double> NT;
-typedef CGAL::Simple_cartesian<NT> K;
+//#include <CGAL/Simple_cartesian.h>
+//#include <CGAL/Lazy_exact_nt.h>
+//typedef CGAL::Lazy_exact_nt<double> NT;
+//typedef CGAL::Simple_cartesian<NT> K;
 
 //#include <CGAL/Simple_cartesian.h>
 //typedef CGAL::Simple_cartesian<double> K;

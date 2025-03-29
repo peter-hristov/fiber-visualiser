@@ -12,6 +12,7 @@
 
 #include "CGALTypedefs.h"
 
+#include <CGAL/Union_find.h>
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -19,6 +20,22 @@ namespace fs = std::filesystem;
 
 int main(int argc, char* argv[])
 {
+
+// Initialize the union-find structure
+    //CGAL::Union_find<set<int>> uf;
+
+    //// Create elements
+    //CGAL::Union_find<set<int>>::handle a = uf.push_back({1, 2});  // Adds 11 and returns the index
+    //CGAL::Union_find<set<int>>::handle b = uf.push_back({2, 3});  // Adds 12 and returns the index
+
+    //cout << "Number of sets before unification: " << uf.number_of_sets() << endl;
+
+    //uf.unify_sets(a, b);  // Use the indices returned by push_back
+
+    //cout << "Number of sets after unification: " << uf.number_of_sets() << endl;
+
+    //return 0;
+
     if (argc != 2)
     {
         cout << "The usage is ./tv9k <input_file>." << endl;
@@ -67,6 +84,9 @@ int main(int argc, char* argv[])
     ReebSpace::computeTriangleAdjacency(data);
     Timer::stop("Computed triangle adjacency            :");
 
+    Timer::start();
+    ReebSpace::testTraverseArrangement(data);
+    Timer::stop("Computed empty traversal               :");
 
     // Compute the preimageGraphs of each face in the arrangement
     Timer::start();

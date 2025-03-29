@@ -326,6 +326,9 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
 
                 // Insert the pair into the set
                 data->connectedTriangles.insert(pairOfTriangles);
+
+                data->adjacentTriangles[t1].push_back(t2);
+                data->adjacentTriangles[t2].push_back(t1);
             }
         }
     }
@@ -480,6 +483,87 @@ void ReebSpace::computeArrangement(Data *data)
     //}
 }
 
+void ReebSpace::testTraverseArrangement(Data *data)
+{
+    // Find the unbounded face (hold the boundary of the arrangement)
+    Face_const_handle outerFace;
+
+    // Iterate over all faces and find the unbounded one
+    for (Face_const_iterator fit = data->arr.faces_begin(); fit != data->arr.faces_end(); ++fit) 
+    {
+        if (fit->is_unbounded()) 
+        {
+            // If this has already been set, we have two outerFace, this should never happen.
+            assert(outerFace == Face_const_handle());
+            outerFace = fit;
+            break;
+        }
+    }
+
+    // Sanity check, make sure the outer face is simple
+    assert(outerFace->number_of_inner_ccbs() == 1);
+    assert(outerFace->number_of_outer_ccbs() == 0);
+    assert(outerFace->number_of_holes() == 1);
+    assert(outerFace->number_of_isolated_vertices() == 0);
+
+    // Get the the first half edge of the outerFace (could be any edge, this is a matter of convention)
+    Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
+
+    // Make sure there is only one originating curve, something has gone wrong otherwise (edge overlap)
+    assert(std::distance(data->arr.originating_curves_begin(outerHalfEdge), data->arr.originating_curves_end(outerHalfEdge)) == 1);
+
+    // Starting from an outer half edge
+    std::queue<Arrangement_2::Halfedge_const_handle> traversalQueue;
+    traversalQueue.push(outerHalfEdge);
+
+    // Which faces are visited
+    std::set<Arrangement_2::Face_const_handle> visited;
+    visited.insert(outerHalfEdge->face());
+
+    while (false == traversalQueue.empty())
+    {
+        // Pop an half edge out
+        Arrangement_2::Halfedge_const_handle currentHalfEdge = traversalQueue.front();
+        traversalQueue.pop();
+        Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
+
+        // Get the twin
+        Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
+        Arrangement_2::Face_const_handle twinFace = twin->face();
+
+        // Get ids of the current face and the twin face
+        int currentFaceID = data->arrangementFacesIdices[currentFace];
+        int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+        // If we have never visited this face, then we have never visited any of the half edges.
+        if (visited.find(twinFace) == visited.end())
+        {
+            //printf("NEW FACE ------------------------------------------ %d -> %d \n", data->arrangementFacesIdices[currentFace], data->arrangementFacesIdices[twinFace]);
+            visited.insert(twinFace);
+
+            // Sanity check we should only have onbounded face, the outside face.
+            assert(false == twinFace->is_unbounded());
+
+
+            Arrangement_2::Ccb_halfedge_const_circulator start = twinFace->outer_ccb();
+            Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+
+            do {
+                traversalQueue.push(curr);
+
+                // Make sure there is only one originating curve (sanity check)
+                //const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
+                //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
+                //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+                //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+                //printf("\n\n");
+
+                ++curr;
+            } while (curr != start);
+        }
+    }
+}
+
 void ReebSpace::computePreimageGraphs(Data *data)
 {
     // Find the unbounded face (hold the boundary of the arrangement)
@@ -493,6 +577,7 @@ void ReebSpace::computePreimageGraphs(Data *data)
             // If this has already been set, we have two outerFace, this should never happen.
             assert(outerFace == Face_const_handle());
             outerFace = fit;
+            break;
         }
     }
 
@@ -549,6 +634,10 @@ void ReebSpace::computePreimageGraphs(Data *data)
     // The number of connected components for each preimage graph (computed from the disjoint set)
     data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
 
+    CGAL::Real_timer timer;
+    CGAL::Real_timer timerPMTriangles;
+    CGAL::Real_timer timer2;
+
     while (false == traversalQueue.empty())
     {
         // Pop an half edge out
@@ -570,9 +659,19 @@ void ReebSpace::computePreimageGraphs(Data *data)
             //printf("NEW FACE ------------------------------------------ %d -> %d \n", data->arrangementFacesIdices[currentFace], data->arrangementFacesIdices[twinFace]);
             visited.insert(twinFace);
 
+
+
+
+            //
+            // Get plus/minus triangles and edit the triangle soup
+            //
+
+
+
             // Sanity check we should only have onbounded face, the outside face.
             assert(false == twinFace->is_unbounded());
 
+            timerPMTriangles.start();
             // Type is [std::vector<std::set<int>>, std::vector<std::set<int>>]
             auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTriangles(currentHalfEdge, data);
 
@@ -595,6 +694,14 @@ void ReebSpace::computePreimageGraphs(Data *data)
                 preimageGraph.insert(triangle);
             }
 
+            timerPMTriangles.stop();
+
+
+
+
+
+
+
 
             //
             // Step 3. Compute disjointSets[twinFaceID]
@@ -602,46 +709,77 @@ void ReebSpace::computePreimageGraphs(Data *data)
 
             data->preimageGraphs[twinFaceID].initialize(preimageGraph);
 
-            // @TODO very inefficient squared running time in the size of the contour
+            timer.start();  
             for (const auto &[t1, id1] : data->preimageGraphs[twinFaceID].data)
             {
-                for (const auto &[t2, id2] : data->preimageGraphs[twinFaceID].data)
+                for (const auto &t2 : data->adjacentTriangles[t1])
                 {
-                    if (t1 == t2)
+                    if (data->preimageGraphs[twinFaceID].data.contains(t2))
                     {
-                        continue;
-                    }
-
-                    //printf("First triangle: ");
-                    //for (const auto v: t1)
-                    //{
-                        //printf("%d ", v);
-                    //}
-
-                    //printf("\nSecond triangle: ");
-                    //for (const auto v: t2)
-                    //{
-                        //printf("%d ", v);
-                    //}
-
-
-                    std::pair<std::set<int>, std::set<int>> trianglePair({t1, t2});
-
-                    if (data->connectedTriangles.find(trianglePair) != data->connectedTriangles.end()) 
-                    {
-                        //printf("Unioning\n");
                         data->preimageGraphs[twinFaceID].union_setsTriangle(t1, t2);
                     }
-
-                    //printf("-----------\n");
                 }
             }
-            
+
             // Finaly make sure everyon points to their root
             data->preimageGraphs[twinFaceID].update();
 
-            //printf("That preimage graph has %d connected components.\n", data->faceDisjointSets[twinFaceID].countConnectedComponents());
+            // Used when drawing the arrangement
             data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
+
+            timer.stop();
+
+
+
+
+
+
+
+            //timer2.start();
+            //DisjointSet<std::set<int>> testDS;
+            //testDS.initialize(preimageGraph);
+
+            //// @TODO very inefficient squared running time in the size of the contour
+            //for (const auto &[t1, id1] : testDS.data)
+            //{
+                //for (const auto &[t2, id2] : testDS.data)
+                //{
+                    //if (t1 == t2)
+                    //{
+                        //continue;
+                    //}
+
+                    ////printf("First triangle: ");
+                    ////for (const auto v: t1)
+                    ////{
+                        ////printf("%d ", v);
+                    ////}
+
+                    ////printf("\nSecond triangle: ");
+                    ////for (const auto v: t2)
+                    ////{
+                        ////printf("%d ", v);
+                    ////}
+
+
+                    //std::pair<std::set<int>, std::set<int>> trianglePair({t1, t2});
+
+                    //if (data->connectedTriangles.find(trianglePair) != data->connectedTriangles.end()) 
+                    //{
+                        ////printf("Unioning\n");
+                        //testDS.union_setsTriangle(t1, t2);
+                    //}
+
+                    ////printf("-----------\n");
+                //}
+            //}
+            //timer2.stop();
+            
+            // Finaly make sure everyon points to their root
+            //data->preimageGraphs[twinFaceID].update();
+
+            ////printf("That preimage graph has %d connected components.\n", data->faceDisjointSets[twinFaceID].countConnectedComponents());
+            //data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
 
             //printf("------------------------------------------------------------------------ \n");
 
@@ -668,6 +806,10 @@ void ReebSpace::computePreimageGraphs(Data *data)
             } while (curr != start);
         }
     }
+
+    std::cout << "Total time after resume: " << timer.time() << " seconds.\n";
+    std::cout << "Total time after resume2: " << timer2.time() << " seconds.\n";
+    std::cout << "Total time after resumePM: " << timerPMTriangles.time() << " seconds.\n";
 }
 
 
