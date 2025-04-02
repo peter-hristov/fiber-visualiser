@@ -784,8 +784,8 @@ void ReebSpace::computePreimageGraphs(Data *data)
         //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
 
         // After this we will never need the current face again, we can clear it's graph
-        //data->preimageGraphs[currentFaceID].clear();
-        //graphsInMemory--;
+        data->preimageGraphs[currentFaceID].clear();
+        graphsInMemory--;
     }
 
     printf("There is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
