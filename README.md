@@ -17,5 +17,7 @@ make
 
 # Test
 
-make && ./fv99 ../data/vertex-neighbourhood-7-vertices.vtu
 make && ./fv99 ../data/three-sheet-toy.txt
+make && ./fv99 ~/Projects/data/reeb-space-test-data/data.vtu
+make && ./fv99 ~/Projects/data/reeb-space-test-data/torus/torus-factor-50-tets-320.vtu
+make && /usr/bin/time -v ./fv99 ~/Projects/data/reeb-space-test-data/ttk/downsample-20-300.vtu

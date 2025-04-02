@@ -564,6 +564,68 @@ void ReebSpace::testTraverseArrangement(Data *data)
     }
 }
 
+void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge_const_handle &currentHalfEdge)
+{
+        // Get the face
+        Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
+
+        // Get the twin
+        Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
+        Arrangement_2::Face_const_handle twinFace = twin->face();
+
+        // Get ids of the current face and the twin face
+        int currentFaceID = data->arrangementFacesIdices[currentFace];
+        int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+
+
+    // Type is [std::vector<std::set<int>>, std::vector<std::set<int>>]
+    auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTriangles(currentHalfEdge, data);
+
+    // Set the current preimage graph to be the preimage graph of the parent
+    std::set<std::set<int>> preimageGraph;
+    for (const auto &[t, id] : data->preimageGraphs[currentFaceID].data)
+    {
+        preimageGraph.insert(t);
+    }
+
+
+    // Add and remove triangles of the upper/lower link of the crossed edge
+    for (const auto triangle: minusTriangles)
+    {
+        preimageGraph.erase(triangle);
+    }
+
+    for (const auto triangle: plusTriangles)
+    {
+        preimageGraph.insert(triangle);
+    }
+
+
+    //
+    // Step 3. Compute disjointSets[twinFaceID]
+    //
+
+    data->preimageGraphs[twinFaceID].initialize(preimageGraph);
+
+    for (const auto &[t1, id1] : data->preimageGraphs[twinFaceID].data)
+    {
+        for (const auto &t2 : data->adjacentTriangles[t1])
+        {
+            if (data->preimageGraphs[twinFaceID].data.contains(t2))
+            {
+                data->preimageGraphs[twinFaceID].union_setsTriangle(t1, t2);
+            }
+        }
+    }
+
+    // Finaly make sure everyon points to their root
+    data->preimageGraphs[twinFaceID].update();
+
+    // Used when drawing the arrangement
+    data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
+}
+
 void ReebSpace::computePreimageGraphs(Data *data)
 {
     // Find the unbounded face (hold the boundary of the arrangement)
@@ -606,10 +668,10 @@ void ReebSpace::computePreimageGraphs(Data *data)
     //printf("\n\n");
 
     // Get the the first half edge of the outerFace (could be any edge, this is a matter of convention)
-    Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
+    //Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
 
     // Make sure there is only one originating curve, something has gone wrong otherwise (edge overlap)
-    assert(std::distance(data->arr.originating_curves_begin(outerHalfEdge), data->arr.originating_curves_end(outerHalfEdge)) == 1);
+    //assert(std::distance(data->arr.originating_curves_begin(outerHalfEdge), data->arr.originating_curves_end(outerHalfEdge)) == 1);
 
     // Extract the original curve
     //const Segment_2& segment = *data->arr.originating_curves_begin(outerHalfEdge);
@@ -620,13 +682,23 @@ void ReebSpace::computePreimageGraphs(Data *data)
     //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
     //printf("\n\n");
 
-    // Starting from an outer half edge
-    std::queue<Arrangement_2::Halfedge_const_handle> traversalQueue;
-    traversalQueue.push(outerHalfEdge);
 
-    // Which faces are visited
-    std::set<Arrangement_2::Face_const_handle> visited;
-    visited.insert(outerHalfEdge->face());
+
+
+
+
+    // Starting from an outer half edge
+    std::queue<Face_const_handle> traversalQueue;
+    std::set<Face_const_handle> visited;
+    std::map<Face_const_handle, int> order;
+
+    traversalQueue.push(outerFace);
+    visited.insert(outerFace);
+
+    // This is the order in which a face has been processed, note this is different than level
+    // This is used as an index for faces, so that we don't do double work when checking edges for correspondence
+    int orderIndex = 0;
+    order[outerFace] = orderIndex;
 
     // The disjoint set to track the connected components of the preimage graph
     data->preimageGraphs.resize(data->arrangementFacesIdices.size());
@@ -634,182 +706,90 @@ void ReebSpace::computePreimageGraphs(Data *data)
     // The number of connected components for each preimage graph (computed from the disjoint set)
     data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
 
-    CGAL::Real_timer timer;
-    CGAL::Real_timer timerPMTriangles;
-    CGAL::Real_timer timer2;
+    int graphsInMemory = 0;
+    float averageAraphsInMemory = 0;
 
     while (false == traversalQueue.empty())
     {
         // Pop an half edge out
-        Arrangement_2::Halfedge_const_handle currentHalfEdge = traversalQueue.front();
+        Face_const_handle currentFace = traversalQueue.front();
         traversalQueue.pop();
-        Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
-
-        // Get the twin
-        Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
-        Arrangement_2::Face_const_handle twinFace = twin->face();
 
         // Get ids of the current face and the twin face
         int currentFaceID = data->arrangementFacesIdices[currentFace];
-        int twinFaceID = data->arrangementFacesIdices[twinFace];
 
-        // If we have never visited this face, then we have never visited any of the half edges.
-        if (visited.find(twinFace) == visited.end())
+        assert(false == data->preimageGraphs[currentFaceID].isEmpty());
+
+        // Sanity check, this should always be true
+        if (false == currentFace->is_unbounded()) 
         {
-            //printf("NEW FACE ------------------------------------------ %d -> %d \n", data->arrangementFacesIdices[currentFace], data->arrangementFacesIdices[twinFace]);
-            visited.insert(twinFace);
-
-
-
-
-            //
-            // Get plus/minus triangles and edit the triangle soup
-            //
-
-
-
-            // Sanity check we should only have onbounded face, the outside face.
-            assert(false == twinFace->is_unbounded());
-
-            timerPMTriangles.start();
-            // Type is [std::vector<std::set<int>>, std::vector<std::set<int>>]
-            auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTriangles(currentHalfEdge, data);
-
-            // Set the current preimage graph to be the preimage graph of the parent
-            std::set<std::set<int>> preimageGraph;
-            for (const auto &[t, id] : data->preimageGraphs[currentFaceID].data)
-            {
-                preimageGraph.insert(t);
-            }
-
-
-            // Add and remove triangles of the upper/lower link of the crossed edge
-            for (const auto triangle: minusTriangles)
-            {
-                preimageGraph.erase(triangle);
-            }
-
-            for (const auto triangle: plusTriangles)
-            {
-                preimageGraph.insert(triangle);
-            }
-
-            timerPMTriangles.stop();
-
-
-
-
-
-
-
-
-            //
-            // Step 3. Compute disjointSets[twinFaceID]
-            //
-
-            data->preimageGraphs[twinFaceID].initialize(preimageGraph);
-
-            timer.start();  
-            for (const auto &[t1, id1] : data->preimageGraphs[twinFaceID].data)
-            {
-                for (const auto &t2 : data->adjacentTriangles[t1])
-                {
-                    if (data->preimageGraphs[twinFaceID].data.contains(t2))
-                    {
-                        data->preimageGraphs[twinFaceID].union_setsTriangle(t1, t2);
-                    }
-                }
-            }
-
-            // Finaly make sure everyon points to their root
-            data->preimageGraphs[twinFaceID].update();
-
-            // Used when drawing the arrangement
-            data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
-
-            timer.stop();
-
-
-
-
-
-
-
-            //timer2.start();
-            //DisjointSet<std::set<int>> testDS;
-            //testDS.initialize(preimageGraph);
-
-            //// @TODO very inefficient squared running time in the size of the contour
-            //for (const auto &[t1, id1] : testDS.data)
-            //{
-                //for (const auto &[t2, id2] : testDS.data)
-                //{
-                    //if (t1 == t2)
-                    //{
-                        //continue;
-                    //}
-
-                    ////printf("First triangle: ");
-                    ////for (const auto v: t1)
-                    ////{
-                        ////printf("%d ", v);
-                    ////}
-
-                    ////printf("\nSecond triangle: ");
-                    ////for (const auto v: t2)
-                    ////{
-                        ////printf("%d ", v);
-                    ////}
-
-
-                    //std::pair<std::set<int>, std::set<int>> trianglePair({t1, t2});
-
-                    //if (data->connectedTriangles.find(trianglePair) != data->connectedTriangles.end()) 
-                    //{
-                        ////printf("Unioning\n");
-                        //testDS.union_setsTriangle(t1, t2);
-                    //}
-
-                    ////printf("-----------\n");
-                //}
-            //}
-            //timer2.stop();
-            
-            // Finaly make sure everyon points to their root
-            //data->preimageGraphs[twinFaceID].update();
-
-            ////printf("That preimage graph has %d connected components.\n", data->faceDisjointSets[twinFaceID].countConnectedComponents());
-            //data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
-
-            //printf("------------------------------------------------------------------------ \n");
-
-
-
-            //
-            // Push all the half edge around the twinFace, that lead to other faces
-            //
-
-            Arrangement_2::Ccb_halfedge_const_circulator start = twinFace->outer_ccb();
-            Arrangement_2::Ccb_halfedge_const_circulator curr = start;
-
-            do {
-                traversalQueue.push(curr);
-
-                // Make sure there is only one originating curve (sanity check)
-                //const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
-                //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
-                //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-                //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-                //printf("\n\n");
-
-                ++curr;
-            } while (curr != start);
+            assert(false == data->preimageGraphs[currentFaceID].isEmpty());
         }
+
+        //
+        // For each neighbouring face
+        //
+
+        // Unbounded face (the starting one) has a different way of addressing its neighbours
+        Halfedge_const_handle start;
+        if (currentFace->is_unbounded()) 
+        {  
+            start = *currentFace->holes_begin();
+        }
+        else
+        {
+            start = *currentFace->outer_ccbs_begin();
+        }
+
+        Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+        do {
+            Face_const_handle twinFace = curr->twin()->face();
+            int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+            // If the neighbour has not been visited, we enqueue it and also compute its preimage graph
+            if (false == visited.contains(twinFace))
+            {
+                traversalQueue.push(twinFace);
+                visited.insert(twinFace);
+                order[twinFace] = ++orderIndex;
+
+                // Compute the preimage graph of this unvisited face
+                ReebSpace::computeTwinFacePreimageGraph(data, curr);
+
+                // Initialize the vertices of H with the connected components of the current graph
+                for (const int &r : data->preimageGraphs[twinFaceID].getUniqueRoots())
+                {
+                    //data->verticesH.insert({currentFaceID, r});
+                    data->reebSpace.addElements({twinFaceID, r});
+                }
+
+
+                graphsInMemory++;
+            }
+
+            // Sanity check, all graphs should have either been computed before or now
+            assert(false == data->preimageGraphs[twinFaceID].isEmpty());
+
+            // Compute the correspondence with the neighbours, but only if they are at a higher level, or we are at the same level, currentFaceID < twinFaceID is used to avoid double work, we only need it once
+            if (order[currentFace] < order[twinFace])
+            {
+                ReebSpace::determineCorrespondence(data, curr);
+            }
+
+            ++curr;
+        } while (curr != start);
+
+        averageAraphsInMemory = averageAraphsInMemory + ((float)graphsInMemory - (float)averageAraphsInMemory) / (float)orderIndex;
+
+        //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
+
+        // After this we will never need the current face again, we can clear it's graph
+        //data->preimageGraphs[currentFaceID].clear();
+        //graphsInMemory--;
     }
 
-    std::cout << "Total time after resume: " << timer.time() << " seconds.\n";
-    std::cout << "Total time after resume2: " << timer2.time() << " seconds.\n";
-    std::cout << "Total time after resumePM: " << timerPMTriangles.time() << " seconds.\n";
+    printf("There is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
+    //printf("The correspondence graphs has %ld nodes and %ld edges.\n", data->verticesH.size(), data->edgesH.size());
 }
 
 
@@ -879,10 +859,14 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
             for (const int &rTwinFace :activeRootsTwinFace)
             {
                 //connectedFacesAndRoots.insert(reebSpaceConnection);
-                data->edgesH.insert({
-                        {faceID, rFace},
-                        {twinFaceID, rTwinFace}
-                        });
+                //data->edgesH.push_back({
+                        //{faceID, rFace},
+                        //{twinFaceID, rTwinFace}
+                        //});
+
+
+                data->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
+
             }
         }
     }
@@ -902,10 +886,11 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
         const int triangleRootTwinFace = data->preimageGraphs[twinFaceID].findTriangle(t);
 
         //connectedFacesAndRoots.insert(reebSpaceConnection);
-        data->edgesH.insert({
-                {faceID, triangleRootFace}, 
-                {twinFaceID, triangleRootTwinFace}
-                });
+        //data->edgesH.push_back({
+                //{faceID, triangleRootFace}, 
+                //{twinFaceID, triangleRootTwinFace}
+                //});
+        data->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
     }
 }
 
@@ -914,21 +899,6 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
 
 void ReebSpace::computeCorrespondenceGraph(Data *data)
 {
-    // Assemble all faces and their roots, the face is given as an int ID and same for the root (in it's respective DS)
-    for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
-    {
-        // Skip the outer face
-        if (face->is_unbounded()) { continue; }
-
-        const int faceID = data->arrangementFacesIdices[face];
-
-        // Make ure everyone is pointing to their root
-        data->preimageGraphs[faceID].update();
-        for (const int &r : data->preimageGraphs[faceID].getUniqueRoots())
-        {
-            data->verticesH.insert({faceID, r});
-        }
-    }
 
     // For evey face
     for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
@@ -957,11 +927,12 @@ void ReebSpace::computeReebSpace(Data *data)
     //
     // Compute the Reeb space
     //
-    data->reebSpace.initialize(data->verticesH);
-    for (const auto &[faceRoot1, faceRoot2] : data->edgesH)
-    {
-        data->reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
-    }
+    //data->reebSpace.initialize(data->verticesH);
+
+    //for (const auto &[faceRoot1, faceRoot2] : data->edgesH)
+    //{
+        //data->reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
+    //}
 
     // Path compression to make sure everyone is poiting to their root
     data->reebSpace.update();

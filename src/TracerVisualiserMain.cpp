@@ -87,11 +87,11 @@ int main(int argc, char* argv[])
 
     Timer::start();
     ReebSpace::computePreimageGraphs(data);
-    Timer::stop("Computed preimage graph                :");
+    Timer::stop("Computed {G_F} and H                   :");
 
-    Timer::start();
-    ReebSpace::computeCorrespondenceGraph(data);
-    Timer::stop("Computed H                             :");
+    //Timer::start();
+    //ReebSpace::computeCorrespondenceGraph(data);
+    //Timer::stop("Computed H                             :");
 
     Timer::start();
     ReebSpace::computeReebSpace(data);
@@ -101,6 +101,8 @@ int main(int argc, char* argv[])
     Timer::start();
     data->pl = std::make_unique<Point_location>(data->arr);
     Timer::stop("Arrangement search structure           :");
+
+    //return 0;
 
     // Set up QT Application
     QApplication app(argc, argv);

@@ -28,6 +28,18 @@ class DisjointSet {
             initialize(preimageGraph);
         }
 
+        bool isEmpty()
+        {
+            return this->parent.size() == 0;
+        }
+
+        void clear()
+        {
+            this->parent.clear();
+            this->rank.clear();
+            this->data.clear();
+        }
+
         // Make sure everyone is poiting to the root
         void update()
         {
@@ -83,6 +95,14 @@ class DisjointSet {
             return roots.size();
         }
 
+        void addElements(const DataType triangle1)
+        {
+            const int newElementId = parent.size();
+
+            this->parent.push_back(newElementId);
+            this->rank.push_back(0);
+            this->data[triangle1] = newElementId;
+        }
 
         // Interface for triangles
         int findTriangle(DataType triangle)

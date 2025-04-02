@@ -104,15 +104,24 @@ class Data
     // The number of fiber components for each preimage graph, more of a utility thing
     std::vector<int> arrangementFiberComponents;
 
+
+
+    // Big memory usage is here
+
+
     // The connected components of the preimage graph for each face in the arrangement
     std::vector<DisjointSet<std::set<int>>> preimageGraphs;
 
     // The vertices and edge of the corresponde graph H
-    std::set<std::pair<int, int>> verticesH;
-    std::set<std::pair<std::pair<int, int>, std::pair<int, int>>> edgesH;
+    //std::set<std::pair<int, int>> verticesH;
+    //std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> edgesH;
 
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
     DisjointSet<std::pair<int, int>> reebSpace;
+
+
+
+
 
     // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
     std::map<int, int> sheetToColour;
