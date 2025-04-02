@@ -73,13 +73,10 @@ int main(int argc, char* argv[])
     ReebSpace::computeArrangement(data);
 
 
-    // Compute the upper and lower links of each edge
     Timer::start();
     ReebSpace::computeUpperLowerLink(data);
     Timer::stop("Computed upper and lower link          :");
 
-
-    // Compute the adjacency of triangles in the mesh
     Timer::start();
     ReebSpace::computeTriangleAdjacency(data);
     Timer::stop("Computed triangle adjacency            :");
@@ -88,16 +85,17 @@ int main(int argc, char* argv[])
     ReebSpace::testTraverseArrangement(data);
     Timer::stop("Computed empty traversal               :");
 
-    // Compute the preimageGraphs of each face in the arrangement
     Timer::start();
     ReebSpace::computePreimageGraphs(data);
     Timer::stop("Computed preimage graph                :");
 
+    Timer::start();
+    ReebSpace::computeCorrespondenceGraph(data);
+    Timer::stop("Computed H                             :");
 
-    // Compute the Reeb space (connected components of preimage graph components)
     Timer::start();
     ReebSpace::computeReebSpace(data);
-    Timer::stop("Computed H and RS                      :");
+    Timer::stop("Computed RS(f)                         :");
 
     //data->pl = Point_location(data->arr);
     Timer::start();

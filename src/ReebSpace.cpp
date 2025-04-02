@@ -813,10 +813,108 @@ void ReebSpace::computePreimageGraphs(Data *data)
 }
 
 
-void ReebSpace::computeReebSpace(Data *data)
+void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_const_handle &halfEdge)
+{
+    // Get the face IDs of the current face and its twin
+    Face_const_handle face = halfEdge->face();
+    Face_const_handle twinFace = halfEdge->twin()->face();
+
+    const int faceID = data->arrangementFacesIdices[face];
+    const int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+    // Get the originating edge
+    const Segment_2 &segment = *data->arr.originating_curves_begin(halfEdge);
+    const std::pair<int, int> originatingEdge = {data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]};
+
+    // The triangls that are added/removd from face -> twinFace
+    const auto& [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTriangles(halfEdge, data);
+
+
+    // See which of the roots (connected components) are active (contain an active triangle)
+    std::set<int> activeRootsFace;
+    for (std::set<int> triangle : minusTriangles)
+    {
+        activeRootsFace.insert(data->preimageGraphs[faceID].findTriangle(triangle));
+    }
+
+    std::set<int> activeRootsTwinFace;
+    for (std::set<int> triangle : plusTriangles)
+    {
+        activeRootsTwinFace.insert(data->preimageGraphs[twinFaceID].findTriangle(triangle));
+
+    }
+
+    // Definite edge
+    if (activeRootsFace.size() == 0 || activeRootsTwinFace.size() == 0)
+    {
+
+        data->jacobiType[originatingEdge] = 0;
+    }
+    // Reeb-regular
+    else if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
+    {
+
+        data->jacobiType[originatingEdge] = 1;
+    }
+    // Indefinite edge
+    else
+    {
+        data->jacobiType[originatingEdge] = 2;
+
+    }
+
+    // This is a regular edge then connect the two active components, for singular edge we skip this, they are considered new
+    if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
+    {
+        // Active roots point to each other
+        // Add edge [faceId, activeRootsFace.begin()->second()] -> [twinFaceId, activeRootsTwinFace.begin()->second()]
+        //connectedFacesAndRoots
+        //std::set<int> faceRoot({faceID, *activeRootsFace.begin()->second(});
+        //std::pair<std::set<int>, std::set<int>> reebSpaceConnection({t1, t2});
+
+
+        // @TODO Ulgy, but hard to get the first element out otherwise
+        for (const int &rFace :activeRootsFace)
+        {
+            for (const int &rTwinFace :activeRootsTwinFace)
+            {
+                //connectedFacesAndRoots.insert(reebSpaceConnection);
+                data->edgesH.insert({
+                        {faceID, rFace},
+                        {twinFaceID, rTwinFace}
+                        });
+            }
+        }
+    }
+
+    //
+    // Link together all other connected components
+    //
+    for (const auto &[t, id] : data->preimageGraphs[faceID].data)
+    {
+        // The root of the triangle in the face
+        const int triangleRootFace = data->preimageGraphs[faceID].findTriangle(t);
+
+        // We have already deal with the active fiber
+        if (activeRootsFace.contains(triangleRootFace)) { continue; }
+
+        // The root of the triangle in the twin face
+        const int triangleRootTwinFace = data->preimageGraphs[twinFaceID].findTriangle(t);
+
+        //connectedFacesAndRoots.insert(reebSpaceConnection);
+        data->edgesH.insert({
+                {faceID, triangleRootFace}, 
+                {twinFaceID, triangleRootTwinFace}
+                });
+    }
+}
+
+
+
+
+void ReebSpace::computeCorrespondenceGraph(Data *data)
 {
     // Assemble all faces and their roots, the face is given as an int ID and same for the root (in it's respective DS)
-    std::set<std::pair<int, int>> facesAndRoots;
     for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
     {
         // Skip the outer face
@@ -828,14 +926,9 @@ void ReebSpace::computeReebSpace(Data *data)
         data->preimageGraphs[faceID].update();
         for (const int &r : data->preimageGraphs[faceID].getUniqueRoots())
         {
-            facesAndRoots.insert({faceID, r});
+            data->verticesH.insert({faceID, r});
         }
     }
-
-    // Talls us which faces, root pairs are connected to each other
-    std::set<std::pair<std::pair<int, int>, std::pair<int, int>>> connectedFacesAndRoots;
-
-
 
     // For evey face
     for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
@@ -843,147 +936,29 @@ void ReebSpace::computeReebSpace(Data *data)
         // Skip the outer face
         if (face->is_unbounded()) { continue; }
 
-        //
-        // Traverse the neighbouring faces to collect them and the minusPlusTriangles
-        //
-
-        // List of adjacent faces
-        std::vector<Face_const_handle> adjacentFaces;
-
-        //std::vector<std::pair<int, int>> adjacentEdges;
-        std::map<Face_const_handle, std::pair<int, int>> adjacentEdges;
-
-        // Map from a face to it's plus and minus triangles as we go from face -> twinFace
-        std::map<Face_const_handle, std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>>> minusPlusTriangles;
 
         // Walk around the boundary of the face
         Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
         Arrangement_2::Ccb_halfedge_const_circulator curr = start;
-
         do {
-            // Only for debug purposes
-            //const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
-            //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << std::endl;
-            //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-            //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
 
-
-            //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-            //printf("\n\n");
-
-            // Pull out the face and the minusPlusTriangles
-            Arrangement_2::Halfedge_const_handle twinHalfEdge = curr->twin();
-            Arrangement_2::Face_const_handle twinFace = twinHalfEdge->face();
-            minusPlusTriangles[twinFace] = ReebSpace::getMinusPlusTriangles(curr, data);
-
-            // Which edge leeds to that adjacent face
-            const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
-            adjacentEdges[twinFace] = {data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]};
-
-
+            ReebSpace::determineCorrespondence(data, curr);
             ++curr;
         } while (curr != start);
 
-
-        //
-        // Go over all adjacent twinFaces
-        //
-        for (const auto& [twinFace, mpt] : minusPlusTriangles) 
-        { 
-            // Get the plusMinus triangles for the current face
-            const auto& [minusTriangles, plusTriangles] = mpt;
-
-            // Face Graph - minusTriangles + plusTriangles = twinFace Graph
-            const int faceID = data->arrangementFacesIdices[face];
-            const int twinFaceID = data->arrangementFacesIdices[twinFace];
-
-            // See which of the roots (connected components) are active (contain an active triangle)
-            std::set<int> activeRootsFace;
-            for (std::set<int> triangle : minusTriangles)
-            {
-                activeRootsFace.insert(data->preimageGraphs[faceID].findTriangle(triangle));
-            }
-
-            std::set<int> activeRootsTwinFace;
-            for (std::set<int> triangle : plusTriangles)
-            {
-                activeRootsTwinFace.insert(data->preimageGraphs[twinFaceID].findTriangle(triangle));
-
-            }
-
-            // Definite edge
-            if (activeRootsFace.size() == 0 || activeRootsTwinFace.size() == 0)
-            {
-
-                data->jacobiType[adjacentEdges[twinFace]] = 0;
-            }
-            // Reeb-regular
-            else if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
-            {
-
-                data->jacobiType[adjacentEdges[twinFace]] = 1;
-            }
-            // Indefinite edge
-            else
-            {
-                data->jacobiType[adjacentEdges[twinFace]] = 2;
-
-            }
-
-            // This is a regular edge then connect the two active components, for singular edge we skip this, they are considered new
-            if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
-            {
-                // Active roots point to each other
-                // Add edge [faceId, activeRootsFace.begin()->second()] -> [twinFaceId, activeRootsTwinFace.begin()->second()]
-                //connectedFacesAndRoots
-                //std::set<int> faceRoot({faceID, *activeRootsFace.begin()->second(});
-                //std::pair<std::set<int>, std::set<int>> reebSpaceConnection({t1, t2});
-
-
-                // @TODO Ulgy, but hard to get the first element out otherwise
-                for (const int &rFace :activeRootsFace)
-                {
-                    for (const int &rTwinFace :activeRootsTwinFace)
-                    {
-                        //connectedFacesAndRoots.insert(reebSpaceConnection);
-                        connectedFacesAndRoots.insert({
-                                {faceID, rFace},
-                                {twinFaceID, rTwinFace}
-                                });
-                    }
-                }
-            }
-
-            //
-            // Link together all other connected components
-            //
-            for (const auto &[t, id] : data->preimageGraphs[faceID].data)
-            {
-                // The root of the triangle in the face
-                const int triangleRootFace = data->preimageGraphs[faceID].findTriangle(t);
-
-                // We have already deal with the active fiber
-                if (activeRootsFace.contains(triangleRootFace)) { continue; }
-
-                // The root of the triangle in the twin face
-                const int triangleRootTwinFace = data->preimageGraphs[twinFaceID].findTriangle(t);
-
-                //connectedFacesAndRoots.insert(reebSpaceConnection);
-                connectedFacesAndRoots.insert({
-                        {faceID, triangleRootFace}, 
-                        {twinFaceID, triangleRootTwinFace}
-                        });
-            }
-
-        }
     }
+}
 
+
+
+void ReebSpace::computeReebSpace(Data *data)
+{
 
     //
     // Compute the Reeb space
     //
-    data->reebSpace.initialize(facesAndRoots);
-    for (const auto &[faceRoot1, faceRoot2] : connectedFacesAndRoots)
+    data->reebSpace.initialize(data->verticesH);
+    for (const auto &[faceRoot1, faceRoot2] : data->edgesH)
     {
         data->reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
     }

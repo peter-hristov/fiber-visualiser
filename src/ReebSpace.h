@@ -36,8 +36,14 @@ namespace ReebSpace
         // We only add data->arr, the rest of data is unchanged
         void computeArrangement(Data *data);
 
-        // Compute the preimage graphs for each cell in the arrangement
+        // Compute the preimage graphs Gi for each cell in the arrangement
         void computePreimageGraphs(Data *);
+
+        // Computes the correspondence between two faces given a half edge between them
+        void determineCorrespondence(Data *data, Arrangement_2::Halfedge_const_handle &);
+
+        // Computing corresponded graph H
+        void computeCorrespondenceGraph(Data *);
 
         // Compute the Reeb space from all the preimage graphs
         void computeReebSpace(Data *);
@@ -55,6 +61,7 @@ namespace ReebSpace
         std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data);
 
         void testTraverseArrangement(Data *data);
+
 
 
 };

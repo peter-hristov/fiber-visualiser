@@ -98,15 +98,18 @@ class Data
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
     std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
 
-
-    // The number of fiber components for each preimage graph, more of a utility thing
-    std::vector<int> arrangementFiberComponents;
-    // The connected components of the preimage graph for each face in the arrangement
-    std::vector<DisjointSet<std::set<int>>> preimageGraphs;
-
     // The jacobi type of each edge 0 for definite, 1 for regular and n > 1 for indefinite of type n
     std::map<std::pair<int, int>, int> jacobiType;
 
+    // The number of fiber components for each preimage graph, more of a utility thing
+    std::vector<int> arrangementFiberComponents;
+
+    // The connected components of the preimage graph for each face in the arrangement
+    std::vector<DisjointSet<std::set<int>>> preimageGraphs;
+
+    // The vertices and edge of the corresponde graph H
+    std::set<std::pair<int, int>> verticesH;
+    std::set<std::pair<std::pair<int, int>, std::pair<int, int>>> edgesH;
 
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
     DisjointSet<std::pair<int, int>> reebSpace;
