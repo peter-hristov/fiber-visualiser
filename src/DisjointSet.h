@@ -35,9 +35,9 @@ class DisjointSet {
 
         void clear()
         {
-            this->parent.clear();
-            this->rank.clear();
-            this->data.clear();
+            this->parent = std::vector<int>();
+            this->rank = std::vector<int>();
+            this->data = std::map<DataType, int>(); 
         }
 
         // Make sure everyone is poiting to the root

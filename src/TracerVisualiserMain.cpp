@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     data->pl = std::make_unique<Point_location>(data->arr);
     Timer::stop("Arrangement search structure           :");
 
-    //return 0;
+    return 0;
 
     // Set up QT Application
     QApplication app(argc, argv);
