@@ -96,7 +96,22 @@ class Data
 
 
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
-    std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
+    //std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
+
+
+
+
+
+    // Triangle to index
+    std::vector<std::set<int>> indexToTriangle;
+
+    // Index to triangle
+    std::map<std::set<int>, int> triangleToIndex;
+
+
+
+    std::vector<std::vector<int>> adjacentTrianglesIndex;
+
 
     // The jacobi type of each edge 0 for definite, 1 for regular and n > 1 for indefinite of type n
     std::map<std::pair<int, int>, int> jacobiType;
@@ -110,7 +125,7 @@ class Data
 
 
     // The connected components of the preimage graph for each face in the arrangement
-    std::vector<DisjointSet<std::set<int>>> preimageGraphs;
+    std::vector<DisjointSet<int>> preimageGraphs;
 
     // The vertices and edge of the corresponde graph H
     //std::set<std::pair<int, int>> verticesH;

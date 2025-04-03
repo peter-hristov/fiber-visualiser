@@ -1,3 +1,6 @@
+#include "src/DisjointSet.h"
+#include <unordered_map>
+#include <set>
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -21,7 +24,24 @@ namespace fs = std::filesystem;
 int main(int argc, char* argv[])
 {
 
-// Initialize the union-find structure
+    //std::unordered_map<set<int>, int, MyHash<set<int>> test;
+
+    //std::unordered_map<set<int>, int, MyHash<set<int>>> testDta;
+
+    //set<int> a = {1,2,3};
+    //set<int> b = {4,2,3};
+
+    //testDta[a] = 2;
+    //testDta[b] = 3;
+
+    //assert(testDta[a] == testDta[b]);
+
+    //cout << testDta[a] << " " << testDta[b];
+
+
+    //return 0;
+
+    // Initialize the union-find structure
     //CGAL::Union_find<set<int>> uf;
 
     //// Create elements
@@ -81,6 +101,33 @@ int main(int argc, char* argv[])
     ReebSpace::computeTriangleAdjacency(data);
     Timer::stop("Computed triangle adjacency            :");
 
+
+    //cout << "Triangles to Index " << endl;
+    //for (const auto &[triangle, triangleId] : data->triangleToIndex)
+    //{
+        //cout << "Triangle = ";
+        //for (const auto v : triangle)
+        //{
+            //cout << v << " ";
+        //}
+        //cout << "  ID = " << triangleId << endl;
+    //}
+
+    //cout << "\n\nIndex to triangle" << endl;
+    //for (int i = 0 ; i < data->indexToTriangle.size() ; i++)
+    //{
+        //cout << "  ID = " << i << " ";
+
+        //cout << "Triangle = ";
+        //for (const auto v : data->indexToTriangle[i])
+        //{
+            //cout << v << " ";
+        //}
+
+        //cout << endl;
+    //}
+
+
     Timer::start();
     ReebSpace::testTraverseArrangement(data);
     Timer::stop("Computed empty traversal               :");
@@ -102,7 +149,7 @@ int main(int argc, char* argv[])
     data->pl = std::make_unique<Point_location>(data->arr);
     Timer::stop("Arrangement search structure           :");
 
-    return 0;
+    //return 0;
 
     // Set up QT Application
     QApplication app(argc, argv);

@@ -9,12 +9,11 @@
 #include <set>
 #include <iterator>
 
-
-std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
+std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
 {
     // Step 1. Initialize lists
-    std::vector<std::set<int>> plusTriangles;
-    std::vector<std::set<int>> minusTriangles;
+    std::set<int> plusTriangles;
+    std::set<int> minusTriangles;
 
     // Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
     const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
@@ -44,7 +43,10 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::get
         //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            minusTriangles.push_back({aIndex, bIndex, v});
+            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            //minusTriangles.push_back({aIndex, bIndex, v});
+            minusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
+
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
             //printf("%d ", v);
         }
@@ -53,7 +55,9 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::get
         //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            plusTriangles.push_back({aIndex, bIndex, v});
+            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            //plusTriangles.push_back({aIndex, bIndex, v});
+            plusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
             //printf("%d ", v);
         }
@@ -66,7 +70,9 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::get
         //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            plusTriangles.push_back({aIndex, bIndex, v});
+            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            //plusTriangles.push_back({aIndex, bIndex, v});
+            plusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
             //printf("%d ", v);
         }
@@ -75,8 +81,10 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::get
         //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
         for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
+            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            //minusTriangles.push_back({aIndex, bIndex, v});
+            minusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-            minusTriangles.push_back({aIndex, bIndex, v});
             //printf("%d ", v);
         }
         //printf("\n");
@@ -84,6 +92,82 @@ std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::get
 
     return {minusTriangles, plusTriangles};
 }
+
+//std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
+//{
+    //// Step 1. Initialize lists
+    //std::vector<std::set<int>> plusTriangles;
+    //std::vector<std::set<int>> minusTriangles;
+
+    //// Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
+    //const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
+    ////std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
+    ////std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+
+    //// These will always be sorted, it's how we created the segments
+    //const int aIndex = data->arrangementPointsIdices[segment.source()];
+    //const int bIndex = data->arrangementPointsIdices[segment.target()];
+
+    //// Sanity check
+    //assert(aIndex < bIndex);
+
+    ////printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+    ////printf("\n");
+
+
+    //// Check to see if the segment and half edge have the same orientation
+    //const bool isSegmentLeftToRight = segment.source() < segment.target(); 
+    //const bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
+
+    //// The half edge has the same direction as the original edge
+    //if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
+    //{
+        ////std::cout << "Upper link becomes lower link." << std::endl;
+
+        ////printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+        //for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        //{
+            //minusTriangles.push_back({aIndex, bIndex, v});
+
+            ////preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
+            ////printf("%d ", v);
+        //}
+        ////printf("\n");
+
+        ////printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+        //for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        //{
+            //plusTriangles.push_back({aIndex, bIndex, v});
+            ////preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
+            ////printf("%d ", v);
+        //}
+        ////printf("\n");
+    //}
+    //else
+    //{
+        ////std::cout << "Lower link becomes upper link." << std::endl;
+
+        ////printf("The upper link of (%d, %d) : ", aIndex, bIndex);
+        //for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        //{
+            //plusTriangles.push_back({aIndex, bIndex, v});
+            ////preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
+            ////printf("%d ", v);
+        //}
+        ////printf("\n");
+
+        ////printf("The lower link of (%d, %d) : ", aIndex, bIndex);
+        //for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        //{
+            ////preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
+            //minusTriangles.push_back({aIndex, bIndex, v});
+            ////printf("%d ", v);
+        //}
+        ////printf("\n");
+    //}
+
+    //return {minusTriangles, plusTriangles};
+//}
 
 bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data)
 {
@@ -295,6 +379,45 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
 void ReebSpace::computeTriangleAdjacency(Data *data)
 {
+
+    std::set<std::set<int>> allTriangles;
+
+    for (const std::vector<size_t> tet : data->tetrahedra)
+    {
+        // The triangles of the tet
+        std::set<std::set<int>> triangles;
+
+        // All pairs give you all six edges
+        for (int a = 0 ; a < 4 ; a++)
+        {
+            for (int b = a + 1 ; b < 4 ; b++)
+            {
+                for (int c = b + 1 ; c < 4 ; c++)
+                {
+                    int aIndex = tet[a];
+                    int bIndex = tet[b];
+                    int cIndex = tet[c];
+                    allTriangles.insert({aIndex, bIndex, cIndex});
+                }
+            }
+        }
+    }
+
+
+
+    //
+    // Set up the indices for all triangles
+    //
+
+    for (const std::set<int> triangle : allTriangles)
+    {
+        data->indexToTriangle.push_back(triangle);
+        data->triangleToIndex[triangle] = data->indexToTriangle.size() - 1;
+    }
+
+    data->adjacentTrianglesIndex.resize(allTriangles.size());
+
+
     // Compute the adjacency of triangles in the mesh, two triangles are adjacent when they are the faces of the same tet
     for (const std::vector<size_t> tet : data->tetrahedra)
     {
@@ -327,8 +450,14 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
                 // Insert the pair into the set
                 data->connectedTriangles.insert(pairOfTriangles);
 
-                data->adjacentTriangles[t1].push_back(t2);
-                data->adjacentTriangles[t2].push_back(t1);
+                //data->adjacentTriangles[t1].push_back(t2);
+                //data->adjacentTriangles[t2].push_back(t1);
+                
+                int t1Index = data->triangleToIndex[t1];
+                int t2Index = data->triangleToIndex[t2];
+
+                data->adjacentTrianglesIndex[t1Index].push_back(t2Index);
+                data->adjacentTrianglesIndex[t2Index].push_back(t1Index);
             }
         }
     }
@@ -566,41 +695,50 @@ void ReebSpace::testTraverseArrangement(Data *data)
 
 void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge_const_handle &currentHalfEdge)
 {
-        // Get the face
-        Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
+    // Get the face
+    Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
 
-        // Get the twin
-        Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
-        Arrangement_2::Face_const_handle twinFace = twin->face();
+    // Get the twin
+    Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
+    Arrangement_2::Face_const_handle twinFace = twin->face();
 
-        // Get ids of the current face and the twin face
-        int currentFaceID = data->arrangementFacesIdices[currentFace];
-        int twinFaceID = data->arrangementFacesIdices[twinFace];
+    // Get ids of the current face and the twin face
+    int currentFaceID = data->arrangementFacesIdices[currentFace];
+    int twinFaceID = data->arrangementFacesIdices[twinFace];
 
+    auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(currentHalfEdge, data);
 
-
-    // Type is [std::vector<std::set<int>>, std::vector<std::set<int>>]
-    auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTriangles(currentHalfEdge, data);
+    //std::cout << "Computed minus/plus triangles..." << std::endl;
+    //printf("The current preimage graph has %d triangles...\n", data->preimageGraphs[currentFaceID].data.size());
 
     // Set the current preimage graph to be the preimage graph of the parent
-    std::set<std::set<int>> preimageGraph;
+    std::set<int> preimageGraph;
     for (const auto &[t, id] : data->preimageGraphs[currentFaceID].data)
     {
         preimageGraph.insert(t);
     }
 
+    //printf("Minus triangles...\n");
 
     // Add and remove triangles of the upper/lower link of the crossed edge
-    for (const auto triangle: minusTriangles)
+    for (const auto &triangle: minusTriangles)
     {
         preimageGraph.erase(triangle);
+        //std::cout << triangle << std::endl;
     }
 
-    for (const auto triangle: plusTriangles)
+    //printf("Plus triangles...\n");
+    for (const auto &triangle: plusTriangles)
     {
         preimageGraph.insert(triangle);
+        //std::cout << triangle << std::endl;
     }
 
+    //std::cout << "Computed preimage graph soup..." << std::endl;
+    //for (const auto &triangle: preimageGraph)
+    //{
+        //std::cout << triangle << std::endl;
+    //}
 
     //
     // Step 3. Compute disjointSets[twinFaceID]
@@ -610,7 +748,7 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
 
     for (const auto &[t1, id1] : data->preimageGraphs[twinFaceID].data)
     {
-        for (const auto &t2 : data->adjacentTriangles[t1])
+        for (const auto &t2 : data->adjacentTrianglesIndex[t1])
         {
             if (data->preimageGraphs[twinFaceID].data.contains(t2))
             {
@@ -618,6 +756,8 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
             }
         }
     }
+
+    //std::cout << "Unioned sets..." << std::endl;
 
     // Finaly make sure everyon points to their root
     data->preimageGraphs[twinFaceID].update();
@@ -718,6 +858,8 @@ void ReebSpace::computePreimageGraphs(Data *data)
         // Get ids of the current face and the twin face
         int currentFaceID = data->arrangementFacesIdices[currentFace];
 
+        //std::cout << "Current face " << currentFaceID << std::endl;
+
         assert(false == data->preimageGraphs[currentFaceID].isEmpty());
 
         // Sanity check, this should always be true
@@ -753,6 +895,8 @@ void ReebSpace::computePreimageGraphs(Data *data)
                 visited.insert(twinFace);
                 order[twinFace] = ++orderIndex;
 
+                //std::cout << "Computing for neighbour " << twinFaceID << std::endl;
+
                 // Compute the preimage graph of this unvisited face
                 ReebSpace::computeTwinFacePreimageGraph(data, curr);
 
@@ -773,6 +917,7 @@ void ReebSpace::computePreimageGraphs(Data *data)
             // Compute the correspondence with the neighbours, but only if they are at a higher level, or we are at the same level, currentFaceID < twinFaceID is used to avoid double work, we only need it once
             if (order[currentFace] < order[twinFace])
             {
+                //std::cout << "Determining correspondence with neighbour " << twinFaceID << std::endl;
                 ReebSpace::determineCorrespondence(data, curr);
             }
 
@@ -783,9 +928,10 @@ void ReebSpace::computePreimageGraphs(Data *data)
 
         //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
 
+
         // After this we will never need the current face again, we can clear it's graph
-        data->preimageGraphs[currentFaceID].clear();
-        graphsInMemory--;
+        //data->preimageGraphs[currentFaceID].clear();
+        //graphsInMemory--;
     }
 
     printf("There is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
@@ -807,18 +953,18 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
     const std::pair<int, int> originatingEdge = {data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]};
 
     // The triangls that are added/removd from face -> twinFace
-    const auto& [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTriangles(halfEdge, data);
+    const auto& [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(halfEdge, data);
 
 
     // See which of the roots (connected components) are active (contain an active triangle)
     std::set<int> activeRootsFace;
-    for (std::set<int> triangle : minusTriangles)
+    for (int triangle : minusTriangles)
     {
         activeRootsFace.insert(data->preimageGraphs[faceID].findTriangle(triangle));
     }
 
     std::set<int> activeRootsTwinFace;
-    for (std::set<int> triangle : plusTriangles)
+    for (int triangle : plusTriangles)
     {
         activeRootsTwinFace.insert(data->preimageGraphs[twinFaceID].findTriangle(triangle));
 

@@ -98,7 +98,10 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
             j++;
             if (j <= i) { continue; }
 
-            if (this->connectedTriangles.contains({triangle, triangle2}))
+            const set<int> triangleUnpacked = this->indexToTriangle[triangle];
+            const set<int> triangle2Unpacked = this->indexToTriangle[triangle2];
+
+            if (this->connectedTriangles.contains({triangleUnpacked, triangle2Unpacked}))
             {
                 const int componentID = this->preimageGraphs[currentFaceID].find(triangleId);
                 const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
@@ -110,7 +113,7 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
                 //
                 vector<int> vertexIds;
 
-                for(const int &vertexId : triangle)
+                for(const int &vertexId : triangleUnpacked)
                 {
                     vertexIds.push_back(vertexId);
                 }
@@ -141,7 +144,7 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
                 // Get the IDs and barycentri coordinates for the second point
                 vector<int> vertexIds2;
 
-                for(const int &vertexId : triangle2)
+                for(const int &vertexId : triangle2Unpacked)
                 {
                     vertexIds2.push_back(vertexId);
                 }
@@ -295,7 +298,8 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
                         // Which sheets does this fiber belong to?
                         // 1. Triangle -> Face ComponentID
-                        const int componentID = this->preimageGraphs[currentFaceID].findTriangle(std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC}));
+                        const int triangleID = this->triangleToIndex[std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC})];
+                        const int componentID = this->preimageGraphs[currentFaceID].findTriangle(triangleID);
                         //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
 
                         // 2. Fac ComponentID -> Reeb Space Sheet
