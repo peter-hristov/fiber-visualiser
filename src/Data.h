@@ -2,6 +2,7 @@
 
 #include "src/CGALTypedefs.h"
 #include <GL/gl.h>
+#include <unordered_map>
 #ifdef __APPLE__
 #include <OpenGL/glu.h>
 #include <OpenGL/gl.h>
@@ -102,13 +103,14 @@ class Data
     std::vector<std::set<int>> indexToTriangle;
 
     // Index to triangle
-    std::map<std::set<int>, int> triangleToIndex;
+    //std::map<std::set<int>, int> triangleToIndex;
+    std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleToIndex;
 
     std::vector<std::vector<int>> adjacentTrianglesIndex;
 
 
     // The jacobi type of each edge 0 for definite, 1 for regular and n > 1 for indefinite of type n
-    std::map<std::pair<int, int>, int> jacobiType;
+    std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> jacobiType;
 
     // The number of fiber components for each preimage graph, more of a utility thing
     std::vector<int> arrangementFiberComponents;
@@ -128,24 +130,19 @@ class Data
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
     DisjointSet<int> reebSpace;
 
-    // Triangle to index
+    // The vertices of the correspondence graph H are pairs of int <faceID, fiber component ID>
+    // I'd like to map between them and int indices for the disjoint set
     std::vector<std::pair<int, int>> indexToVertexH;
-
-    // Index to triangle
-    std::map<std::pair<int, int>, int> vertexHtoIndex;
-
-
-
+    std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> vertexHtoIndex;
 
     // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
-    std::map<int, int> sheetToColour;
+    std::unordered_map<int, int> sheetToColour;
 
     // Data structure to query the arrangement
     // Given a point, which face is it in?
     std::unique_ptr<Point_location> pl;  // nullptr by default
 
     void sortVertices();
-
     void printMesh();
 
 
@@ -173,5 +170,3 @@ class Data
         {0.6f, 0.6f, 0.0f, 0.392f}     // Olive
     };
 };
-
-

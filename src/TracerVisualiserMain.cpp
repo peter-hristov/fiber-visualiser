@@ -17,6 +17,10 @@
 
 #include <CGAL/Union_find.h>
 
+
+#include "./utility/CLI11.hpp"
+
+
 using namespace std;
 namespace fs = std::filesystem;
 
@@ -56,15 +60,31 @@ int main(int argc, char* argv[])
 
     //return 0;
 
-    if (argc != 2)
+
+    // Parse the command line arguments
+    CLI::App cliApp("Fiber Visualiser");
+
+    string filename = "a";
+    cliApp.add_option("--file, -f", filename, "Input data filename. Has to be either .txt of .vti.")->required();
+
+    bool performanceRun = false;
+    cliApp.add_flag("--performanceRun, -p", performanceRun, "Only compute the Reeb space, no graphics..");
+
+    bool discardPreimageGraphs = false;
+    cliApp.add_flag("--discardPreimageGraphs, -d", discardPreimageGraphs, "Only compute the Reeb space, no graphics..");
+
+    CLI11_PARSE(cliApp, argc, argv);
+
+    // For convenience
+    if (performanceRun == true)
     {
-        cout << "The usage is ./tv9k <input_file>." << endl;
-        return 0;
+        discardPreimageGraphs = true;
     }
 
-    std::string filename = argv[1];
 
-    fs::path filePath(argv[1]);
+
+
+    fs::path filePath(filename);
     
     if (!fs::exists(filePath)) 
     {
@@ -133,7 +153,7 @@ int main(int argc, char* argv[])
     Timer::stop("Computed empty traversal               :");
 
     Timer::start();
-    ReebSpace::computePreimageGraphs(data);
+    ReebSpace::computePreimageGraphs(data, discardPreimageGraphs);
     Timer::stop("Computed {G_F} and H                   :");
 
     //Timer::start();
@@ -148,6 +168,11 @@ int main(int argc, char* argv[])
     Timer::start();
     data->pl = std::make_unique<Point_location>(data->arr);
     Timer::stop("Arrangement search structure           :");
+
+    if (performanceRun == true)
+    {
+        return 0;
+    }
 
     //return 0;
 

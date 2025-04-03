@@ -74,8 +74,9 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
         } while (++curr != circ);
 
-        // I need them sorted by sheetID
-        //
+
+
+        // We need to sort the colours by the sheetID, this way we get a nice colour blending
         const int faceId = data->arrangementFacesIdices[f];
         const vector<int> uniqueRoots = data->preimageGraphs[data->arrangementFacesIdices[f]].getUniqueRoots();
 
@@ -100,9 +101,6 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
             this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
         }
-
-
-
 
         // Add the polygon with a multiplicty
         //for (const int &fiberComponentID : data->preimageGraphs[data->arrangementFacesIdices[f]].getUniqueRoots())

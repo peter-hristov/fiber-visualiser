@@ -2,6 +2,7 @@
 #include "./DisjointSet.h"
 #include "./CGALTypedefs.h"
 #include "./Timer.h"
+#include "./utility/indicators.hpp"
 
 #include <cstddef>
 #include <map>
@@ -766,8 +767,33 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
     data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
 }
 
-void ReebSpace::computePreimageGraphs(Data *data)
+void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGraphs)
 {
+
+    using namespace indicators;
+    show_console_cursor(false);
+    ProgressBar bar{
+        option::BarWidth{50},
+            option::Start{"["},
+            option::Fill{"■"},
+            option::Lead{"■"},
+            option::Remainder{"-"},
+            option::End{" ]"},
+            option::PostfixText{"Computing Reeb space."},
+            option::ShowPercentage{true},  // Show percentage on the bar
+            option::ShowElapsedTime{true},
+            //option::ForegroundColor{Color::cyan},
+            //option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
+    };
+
+
+
+
+
+
+
+
+
     // Find the unbounded face (hold the boundary of the arrangement)
     Face_const_handle outerFace;
 
@@ -935,10 +961,17 @@ void ReebSpace::computePreimageGraphs(Data *data)
 
         //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
 
+        float progress = 100.0 * (float)orderIndex / (float)data->preimageGraphs.size();
+
+        // Update bar state
+        bar.set_progress(progress);
 
         // After this we will never need the current face again, we can clear it's graph
-        //data->preimageGraphs[currentFaceID].clear();
-        //graphsInMemory--;
+        if (true == discardPreimageGraphs)
+        {
+            data->preimageGraphs[currentFaceID].clear();
+            graphsInMemory--;
+        }
     }
 
     printf("There is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());

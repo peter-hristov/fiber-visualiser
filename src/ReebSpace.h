@@ -40,7 +40,7 @@ namespace ReebSpace
         void computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge_const_handle &);
 
         // Compute the preimage graphs Gi for each cell in the arrangement
-        void computePreimageGraphs(Data *);
+        void computePreimageGraphs(Data *, const bool);
 
         // Computes the correspondence between two faces given a half edge between them
         void determineCorrespondence(Data *data, Arrangement_2::Halfedge_const_handle &);
