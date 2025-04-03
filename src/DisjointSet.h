@@ -29,25 +29,6 @@ struct MyHash<std::pair<int, int>>
     }
 };
 
-template <>
-struct MyHash<std::set<int>>
-{
-    std::size_t operator()(const std::set<int> &s) const
-    {
-        std::size_t hash_value = 0; // Start with a base hash value
-
-        for (int num : s)
-        {
-            hash_value ^= std::hash<int>{}(num) + 0x9e3779b9 + (hash_value << 6) + (hash_value >> 2);
-        }
-
-        return hash_value;
-        return 1;
-    }
-};
-
-
-
 
 template<typename DataType>
 class DisjointSet {

@@ -74,11 +74,48 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
         } while (++curr != circ);
 
-        // Add the polygon with a multiplicty
-        for (int i = 0 ; i < data->arrangementFiberComponents[data->arrangementFacesIdices[f]]; i++)
+        // I need them sorted by sheetID
+        //
+        const int faceId = data->arrangementFacesIdices[f];
+        const vector<int> uniqueRoots = data->preimageGraphs[data->arrangementFacesIdices[f]].getUniqueRoots();
+
+        vector<int> sheetIds;
+
+        for (const int &fiberComponentID : uniqueRoots)
+        {
+            int vertexHIndex = data->vertexHtoIndex[{data->arrangementFacesIdices[f], fiberComponentID}];
+            int sheetID = data->reebSpace.findTriangle(vertexHIndex);
+
+            sheetIds.push_back(sheetID);
+        }
+
+        // Sort by the last element of each subvector
+        std::sort(sheetIds.begin(), sheetIds.end());
+
+        for (const int &sheetId : sheetIds)
         {
             this->arrangementPolygons << QPolygon(points);
+
+            int colourID = data->sheetToColour[sheetId];
+            vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+            this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
         }
+
+
+
+
+        // Add the polygon with a multiplicty
+        //for (const int &fiberComponentID : data->preimageGraphs[data->arrangementFacesIdices[f]].getUniqueRoots())
+        //{
+            //// Get the colour
+            //this->arrangementPolygons << QPolygon(points);
+
+            //int reebSpaceIndex = data->vertexHtoIndex[{data->arrangementFacesIdices[f], fiberComponentID}];
+            //int colourID = data->sheetToColour[data->reebSpace.findTriangle(reebSpaceIndex)];
+            //vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+            ////this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 1.0);
+            //this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
+        //}
     }
 
     //QColor colours[] = {
@@ -92,18 +129,20 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
     //};
 
 
-    for (const auto &[key, value] : data->reebSpace.data)
-    {
-        //cout << "FACE ID = " << key.first << ", CC ID = " << key.second << endl;
+    //for (const auto &[key, value] : data->reebSpace.data)
+    //for (const auto &[key, value] : data->reebSpace.data)
+    //{
+        ////cout << "FACE ID = " << key.first << ", CC ID = " << key.second << endl;
 
-        // Paint with the sheet ID of this guy
-        //
-        int colourID = data->sheetToColour[data->reebSpace.findTriangle(std::pair<int, int>({key.first, key.second}))];
+        //// Paint with the sheet ID of this guy
+        ////
+        ////int colourID = data->sheetToColour[data->reebSpace.findTriangle(std::pair<int, int>({key.first, key.second}))];
+        //int colourID = data->sheetToColour[data->reebSpace.findTriangle(key)];
 
-        vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+        //vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
 
-        this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
-    }
+        //this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 1.0);
+    //}
 
 
     //for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 

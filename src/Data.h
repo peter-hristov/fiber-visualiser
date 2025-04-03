@@ -98,17 +98,11 @@ class Data
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
     //std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
 
-
-
-
-
     // Triangle to index
     std::vector<std::set<int>> indexToTriangle;
 
     // Index to triangle
     std::map<std::set<int>, int> triangleToIndex;
-
-
 
     std::vector<std::vector<int>> adjacentTrianglesIndex;
 
@@ -132,8 +126,13 @@ class Data
     //std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> edgesH;
 
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
-    DisjointSet<std::pair<int, int>> reebSpace;
+    DisjointSet<int> reebSpace;
 
+    // Triangle to index
+    std::vector<std::pair<int, int>> indexToVertexH;
+
+    // Index to triangle
+    std::map<std::pair<int, int>, int> vertexHtoIndex;
 
 
 

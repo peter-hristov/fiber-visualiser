@@ -904,7 +904,14 @@ void ReebSpace::computePreimageGraphs(Data *data)
                 for (const int &r : data->preimageGraphs[twinFaceID].getUniqueRoots())
                 {
                     //data->verticesH.insert({currentFaceID, r});
-                    data->reebSpace.addElements({twinFaceID, r});
+
+                    std::pair<int, int> vertexH = {twinFaceID, r};
+                    int verexHIndex = data->indexToVertexH.size();
+
+                    data->indexToVertexH.push_back(vertexH);
+                    data->vertexHtoIndex[vertexH] = verexHIndex;
+
+                    data->reebSpace.addElements(verexHIndex);
                 }
 
 
@@ -1011,7 +1018,16 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
                         //});
 
 
-                data->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
+
+                int faceVertexHindex = data->vertexHtoIndex[{faceID, rFace}];
+                int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, rTwinFace}];
+
+                    //data->indexToVertexH.push_back(vertexH);
+                    //data->vertexHtoIndex[vertexH] = verexHIndex;
+
+
+                //data->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
+                data->reebSpace.union_setsTriangle(faceVertexHindex, twinFaceVertexHindex);
 
             }
         }
@@ -1036,7 +1052,12 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
                 //{faceID, triangleRootFace}, 
                 //{twinFaceID, triangleRootTwinFace}
                 //});
-        data->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
+
+        int faceVertexHindex = data->vertexHtoIndex[{faceID, triangleRootFace}];
+        int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, triangleRootTwinFace}];
+
+        data->reebSpace.union_setsTriangle(faceVertexHindex, twinFaceVertexHindex);
+        //data->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
     }
 }
 
