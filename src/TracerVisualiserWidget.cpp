@@ -37,6 +37,7 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
 
     // Default values for paraters
     this->scale = (data->maxZ - data->minZ) * 2;
+    this->scaleFactor = abs(data->maxZ - data->minZ) / 100;
 
     // Initialise Arcball
     Ball_Init(&theBall);
@@ -243,7 +244,7 @@ TracerVisualiserWidget::drawScene()
     // Don't remember why I need this
     glRotatef(-90., 1., 0., 0.);
 
-    //this->drawAxis(1000., 1.0 * (this->data->maxX - this->data->minX) / 1800.0);
+    this->drawAxis(1000., 1.0 * (this->data->maxX - this->data->minX) / 1800.0);
 
 
     //

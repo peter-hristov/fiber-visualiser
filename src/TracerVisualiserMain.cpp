@@ -164,17 +164,15 @@ int main(int argc, char* argv[])
     ReebSpace::computeReebSpace(data);
     Timer::stop("Computed RS(f)                         :");
 
-    //data->pl = Point_location(data->arr);
-    Timer::start();
-    data->pl = std::make_unique<Point_location>(data->arr);
-    Timer::stop("Arrangement search structure           :");
-
     if (performanceRun == true)
     {
         return 0;
     }
 
-    //return 0;
+    //data->pl = Point_location(data->arr);
+    //Timer::start();
+    //data->pl = std::make_unique<Point_location>(data->arr);
+    //Timer::stop("Arrangement search structure           :");
 
     // Set up QT Application
     QApplication app(argc, argv);

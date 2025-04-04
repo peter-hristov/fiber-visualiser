@@ -28,9 +28,9 @@ class TracerVisualiserWidget : public QOpenGLWidget
     //bool drawVertices = false;
 
     float scaleFactor = 1000.0;
-    bool drawEdges = 1;
-    bool drawFaces = 1;
-    bool drawVertices = 1;
+    bool drawEdges = 0;
+    bool drawFaces = 0;
+    bool drawVertices = 0;
 
     bool showUIsosurface = false;
     bool showVIsosurface = false;
@@ -40,6 +40,7 @@ class TracerVisualiserWidget : public QOpenGLWidget
     float vertexOpacity = 0.8;
 
     int fiberColour = 0;
+
     //std::vector<std::vector<float>> fiberColours = {
         //{1, 0, 0},
         //{0, 1, 0},

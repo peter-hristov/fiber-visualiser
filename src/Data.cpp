@@ -51,6 +51,8 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
     // The query point (u, v)
     Point_2 query_point(u, v);
 
+    return;
+
     // Locate the point in the arrangement
     CGAL::Object result = this->pl->locate(query_point);
 
@@ -190,6 +192,8 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
     // The query point (u, v)
     Point_2 query_point(u, v);
+
+    return;
 
     // Locate the point in the arrangement
     CGAL::Object result = this->pl->locate(query_point);
