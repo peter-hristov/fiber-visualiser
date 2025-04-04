@@ -974,6 +974,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
         {
             // Update bar state
             bar.tick();
+            bar.tick();
         }
 
 
