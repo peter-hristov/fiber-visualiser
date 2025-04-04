@@ -541,20 +541,30 @@ void Data::readDataVTK(string filename)
 
     assert(pointData->GetNumberOfArrays() >= 2);
 
-    vtkDataArray* fDataArray = pointData->GetArray(0);
-    vtkDataArray* gDataArray = pointData->GetArray(1);
+    vtkDataArray* fDataArray = pointData->GetArray(1);
+    vtkDataArray* gDataArray = pointData->GetArray(0);
 
     assert(fDataArray->GetNumberOfTuples() == numVertices);
     assert(gDataArray->GetNumberOfTuples() == numVertices);
 
     for (vtkIdType i = 0; i < fDataArray->GetNumberOfTuples(); i++) 
     {
-        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i) + randomPerturbation(1e-3);
+        this->vertexCoordinatesF[i] = fDataArray->GetTuple1(i);
     }
 
     for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
     {
-        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i) + randomPerturbation(1e-3);
+        this->vertexCoordinatesG[i] = gDataArray->GetTuple1(i);
+    }
+
+    // Add numerical perturbation, taken from Tierny 2027 Jacobi Fiber Surfaces
+    for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
+    {
+        const float e = randomPerturbation(1e-8);
+        const float iFloat = static_cast<float>(i);
+
+        this->vertexCoordinatesF[i] += iFloat * e;
+        this->vertexCoordinatesG[i] += iFloat * e * iFloat * e;
     }
 
     // Now we can sort
