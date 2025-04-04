@@ -129,12 +129,12 @@ class Data
     //std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> edgesH;
 
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
-    DisjointSet<int> reebSpace;
+    DisjointSet<std::pair<int, int>> reebSpace;
 
     // The vertices of the correspondence graph H are pairs of int <faceID, fiber component ID>
     // I'd like to map between them and int indices for the disjoint set
-    std::vector<std::pair<int, int>> indexToVertexH;
-    std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> vertexHtoIndex;
+    //std::vector<std::pair<int, int>> indexToVertexH;
+    //std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> vertexHtoIndex;
 
     // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
     std::unordered_map<int, int> sheetToColour;

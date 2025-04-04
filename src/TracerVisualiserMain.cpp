@@ -112,6 +112,8 @@ int main(int argc, char* argv[])
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
 
+    //std::cout << "Press Enter to continue...";
+    //std::cin.get();  // waits for Enter key
 
     Timer::start();
     ReebSpace::computeUpperLowerLink(data);
@@ -163,6 +165,9 @@ int main(int argc, char* argv[])
     Timer::start();
     ReebSpace::computeReebSpace(data);
     Timer::stop("Computed RS(f)                         :");
+
+    //std::cout << "Press Enter to continue...";
+    //std::cin.get();  // waits for Enter key
 
     if (performanceRun == true)
     {

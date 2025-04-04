@@ -117,9 +117,9 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
     //
     // Used for lookup in the next loop
     //
-    for (const auto &[veretxHid, ufId] : data->reebSpace.data)
+    for (const auto &[vetexH, ufId] : data->reebSpace.data)
     {
-        const auto &[faceID, fiberComponentID] = data->indexToVertexH[veretxHid];
+        const auto &[faceID, fiberComponentID] = vetexH;
 
         Face_const_handle face = data->arrangementIndexToFace[faceID];
 
@@ -128,8 +128,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             continue;
         }
 
-        int vertexHId = data->vertexHtoIndex[{faceID, fiberComponentID}];
-        int sheetID = data->reebSpace.findTriangle(vertexHId);
+        int sheetID = data->reebSpace.findTriangle(vetexH);
 
         if (this->arrangementPolygons[faceID].size() == 0)
         {

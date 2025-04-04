@@ -934,18 +934,18 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
                 // Compute the preimage graph of this unvisited face
                 ReebSpace::computeTwinFacePreimageGraph(data, curr);
 
-                // Initialize the vertices of H with the connected components of the current graph
+                // Initialize the vertices of H with the connected components of the twin graph
                 for (const int &r : data->preimageGraphs[twinFaceID].getUniqueRoots())
                 {
                     //data->verticesH.insert({currentFaceID, r});
 
-                    std::pair<int, int> vertexH = {twinFaceID, r};
-                    int verexHIndex = data->indexToVertexH.size();
+                    //std::pair<int, int> vertexH = {twinFaceID, r};
+                    //int verexHIndex = data->indexToVertexH.size();
 
-                    data->indexToVertexH.push_back(vertexH);
-                    data->vertexHtoIndex[vertexH] = verexHIndex;
+                    //data->indexToVertexH.push_back(vertexH);
+                    //data->vertexHtoIndex[vertexH] = verexHIndex;
 
-                    data->reebSpace.addElements(verexHIndex);
+                    data->reebSpace.addElements({twinFaceID, r});
                 }
 
 
@@ -1063,16 +1063,18 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
                         //});
 
 
+                data->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
 
-                int faceVertexHindex = data->vertexHtoIndex[{faceID, rFace}];
-                int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, rTwinFace}];
+
+
+                //int faceVertexHindex = data->vertexHtoIndex[{faceID, rFace}];
+                //int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, rTwinFace}];
 
                     //data->indexToVertexH.push_back(vertexH);
                     //data->vertexHtoIndex[vertexH] = verexHIndex;
 
 
-                //data->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
-                data->reebSpace.union_setsTriangle(faceVertexHindex, twinFaceVertexHindex);
+                //data->reebSpace.union_setsTriangle(faceVertexHindex, twinFaceVertexHindex);
 
             }
         }
@@ -1097,12 +1099,11 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
                 //{faceID, triangleRootFace}, 
                 //{twinFaceID, triangleRootTwinFace}
                 //});
+        data->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
 
-        int faceVertexHindex = data->vertexHtoIndex[{faceID, triangleRootFace}];
-        int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, triangleRootTwinFace}];
-
-        data->reebSpace.union_setsTriangle(faceVertexHindex, twinFaceVertexHindex);
-        //data->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
+        //int faceVertexHindex = data->vertexHtoIndex[{faceID, triangleRootFace}];
+        //int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, triangleRootTwinFace}];
+        //data->reebSpace.union_setsTriangle(faceVertexHindex, twinFaceVertexHindex);
     }
 }
 

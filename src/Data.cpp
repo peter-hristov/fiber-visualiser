@@ -106,8 +106,8 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
             if (this->connectedTriangles.contains({triangleUnpacked, triangle2Unpacked}))
             {
                 const int componentID = this->preimageGraphs[currentFaceID].find(triangleId);
-                const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
-                const int sheetID = this->reebSpace.findTriangle(pairToHIndex);
+                //const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
+                const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
                 const int sheetColourID = this->sheetToColour[sheetID] % this->fiberColours.size();
                 const vector<float> sheetColour = this->fiberColours[sheetColourID];
 
@@ -308,9 +308,9 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
                         //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
 
                         // 2. Fac ComponentID -> Reeb Space Sheet
-                        const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
-                        const int sheetID = this->reebSpace.findTriangle(pairToHIndex);
-                        //const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
+                        //const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
+                        //const int sheetID = this->reebSpace.findTriangle(pairToHIndex);
+                        const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
 
                         //printf("The Sheet ID is = %d\n", sheetID);
 
