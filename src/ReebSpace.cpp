@@ -878,7 +878,13 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
     int graphsInMemory = 0;
     float averageAraphsInMemory = 0;
 
-    int barTickThreshold = data->arrangementFacesIdices.size() / 25;
+
+
+
+    int barTickThreshold = data->arrangementFacesIdices.size() / 50;
+    bar.tick();
+
+    std::cout  << barTickThreshold << std::endl;
 
     while (false == traversalQueue.empty())
     {
@@ -966,7 +972,8 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
 
         //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
 
-        if (orderIndex % barTickThreshold == 0)
+        // If the threshold is zero the ticks bugs out, so we don't do it
+        if (barTickThreshold > 0 && orderIndex % barTickThreshold == 0)
         {
             // Update bar state
             bar.tick();
