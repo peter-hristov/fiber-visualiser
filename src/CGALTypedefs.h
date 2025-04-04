@@ -42,5 +42,8 @@ typedef Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
 typedef Arrangement_2::Face_const_handle Face_const_handle;
 
 // Used to find which face a point is in 
-#include <CGAL/Arr_trapezoid_ric_point_location.h>
-typedef CGAL::Arr_trapezoid_ric_point_location<Arrangement_2> Point_location;
+//#include <CGAL/Arr_trapezoid_ric_point_location.h>
+//typedef CGAL::Arr_trapezoid_ric_point_location<Arrangement_2> Point_location;
+
+#include <CGAL/Arr_naive_point_location.h>
+typedef CGAL::Arr_naive_point_location<Arrangement_2> Point_location;

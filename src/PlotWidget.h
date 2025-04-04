@@ -43,15 +43,17 @@ class PlotWidget : public QWidget
 
     QTransform painterCombinedTransform;
 
+    std::unique_ptr<QPixmap> staticCache;
+    void generateStaticCache();
 
     bool recomputeFiber = false;
 
 
     Data* data;
     float varianceScale = 0;
-    float resolution = 300;
+    const float resolution = 1000;
     // This is the radius of the sphere around a vertex in the fscp
-    float sphereRadius = 3;
+    const float sphereRadius = this->resolution / 100.0;
     std::string interpolationType = "";
 
     QPointF drawLinesPoint;

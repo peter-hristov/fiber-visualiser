@@ -393,20 +393,14 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
     this->update();
 }
 
-void PlotWidget::paintEvent(QPaintEvent*)
+
+void PlotWidget::generateStaticCache()
 {
+    // Create new cache with current widget size
+    staticCache = std::make_unique<QPixmap>(size());
+    staticCache->fill(Qt::white);
 
-
-    QPainter p(this);
-    p.setWindow(QRect(0, 0, resolution, resolution));
-    // p.setViewport(QRect(0, 0, resolution, resolution));
-
-    p.save();
-    p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
-    p.setPen(Qt::gray);
-
-    this->painterCombinedTransform = p.combinedTransform();
-
+    QPainter p(staticCache.get());
 
     // For each face
     for (int i = 0 ; i < this->arrangementPolygonColours.size() ; i++) 
@@ -428,8 +422,6 @@ void PlotWidget::paintEvent(QPaintEvent*)
         }
 
     }
-
-
 
 
     //
@@ -478,12 +470,38 @@ void PlotWidget::paintEvent(QPaintEvent*)
 
     }
 
+}
+
+
+
+void PlotWidget::paintEvent(QPaintEvent*)
+{
+
+
+    QPainter p(this);
+    p.setWindow(QRect(0, 0, resolution, resolution));
+    // p.setViewport(QRect(0, 0, resolution, resolution));
+
+    p.save();
+    p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
+    p.setPen(Qt::gray);
+
+    this->painterCombinedTransform = p.combinedTransform();
+
+    if (!staticCache || staticCache->size() != size()) 
+    {
+        generateStaticCache();
+    }
+
+    p.drawPixmap(0, 0, *(this->staticCache));
+
+
     // Draw Fiber Surface Control Polygon
     drawAndRecomputeFS(p);
 
     p.restore();
 
-    drawAxisLabels(p);
+    //drawAxisLabels(p);
 }
 
 

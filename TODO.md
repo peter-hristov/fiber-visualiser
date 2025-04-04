@@ -1,3 +1,8 @@
+# Optomise memory:
+Remove the polygons and colours from PlotWidget
+
+
+
 # Tasks
 Done - Compute the arrangement of a number of line segments
 Done - Traverse the half-edge arrangement data struture (use ccb and twin)
