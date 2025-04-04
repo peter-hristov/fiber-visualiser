@@ -91,6 +91,7 @@ class Data
 
     // The integer ID of every face in the arrangement
     std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
+    std::vector<Arrangement_2::Face_const_handle> arrangementIndexToFace;
 
     // Tell us which triangles (as sets of IDs) are connected (part of a tetrahedron)
     std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;

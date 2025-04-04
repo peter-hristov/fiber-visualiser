@@ -44,103 +44,10 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
     this->setEnabled(true);
 
 
-    for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
-    {
-        if (f->is_unbounded()) 
-        {
-            //std::cout << "Unbounded face" << std::endl;
-            continue;
-        }
-
-        QVector<QPoint> points;
-
-        typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
-        typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
-        do {
-            typename Arrangement_2::Halfedge_const_handle e = curr;
-
-            // Get point from CGAL (and convert to double )
-            float u = CGAL::to_double(e->source()->point().x());
-            float v = CGAL::to_double(e->source()->point().y());
-
-            // Translate to the window frame
-            float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
-            float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
-
-
-            // Add to the polygon
-            points << QPoint(u1, v1);
-
-            //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
-        } while (++curr != circ);
 
 
 
-        // We need to sort the colours by the sheetID, this way we get a nice colour blending
-        const int faceId = data->arrangementFacesIdices[f];
-        const vector<int> uniqueRoots = data->preimageGraphs[data->arrangementFacesIdices[f]].getUniqueRoots();
 
-        vector<int> sheetIds;
-
-        for (const int &fiberComponentID : uniqueRoots)
-        {
-            int vertexHIndex = data->vertexHtoIndex[{data->arrangementFacesIdices[f], fiberComponentID}];
-            int sheetID = data->reebSpace.findTriangle(vertexHIndex);
-
-            sheetIds.push_back(sheetID);
-        }
-
-        // Sort by the last element of each subvector
-        std::sort(sheetIds.begin(), sheetIds.end());
-
-        for (const int &sheetId : sheetIds)
-        {
-            this->arrangementPolygons << QPolygon(points);
-
-            int colourID = data->sheetToColour[sheetId];
-            vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
-            this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
-        }
-
-        // Add the polygon with a multiplicty
-        //for (const int &fiberComponentID : data->preimageGraphs[data->arrangementFacesIdices[f]].getUniqueRoots())
-        //{
-            //// Get the colour
-            //this->arrangementPolygons << QPolygon(points);
-
-            //int reebSpaceIndex = data->vertexHtoIndex[{data->arrangementFacesIdices[f], fiberComponentID}];
-            //int colourID = data->sheetToColour[data->reebSpace.findTriangle(reebSpaceIndex)];
-            //vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
-            ////this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 1.0);
-            //this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
-        //}
-    }
-
-    //QColor colours[] = {
-        //QColor::fromRgbF(1.0f, 0.0f, 0.0f, 0.392f),
-        //QColor::fromRgbF(0.0f, 1.0f, 0.0f, 0.392f),
-        //QColor::fromRgbF(0.0f, 0.0f, 1.0f, 0.392f),
-        //QColor::fromRgbF(1.0f, 1.0f, 0.0f, 0.392f),
-        //QColor::fromRgbF(0.0f, 1.0f, 1.0f, 0.392f),
-        //QColor::fromRgbF(1.0f, 0.0f, 1.0f, 0.392f),
-        //QColor::fromRgbF(0.588f, 0.0f, 1.0f, 0.392f),
-    //};
-
-
-    //for (const auto &[key, value] : data->reebSpace.data)
-    //for (const auto &[key, value] : data->reebSpace.data)
-    //{
-        ////cout << "FACE ID = " << key.first << ", CC ID = " << key.second << endl;
-
-        //// Paint with the sheet ID of this guy
-        ////
-        ////int colourID = data->sheetToColour[data->reebSpace.findTriangle(std::pair<int, int>({key.first, key.second}))];
-        //int colourID = data->sheetToColour[data->reebSpace.findTriangle(key)];
-
-        //vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
-
-        //this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 1.0);
-    //}
 
 
     //for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
@@ -151,20 +58,113 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             //continue;
         //}
 
-        //int red = rand() % 256;
-        //int green = rand() % 256;
-        //int blue = rand() % 256;
-        //this->arrangementPolygonColours << QColor(red, green, blue, 100);
+        //QVector<QPoint> points;
+
+        //typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+        //typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+        //do {
+            //typename Arrangement_2::Halfedge_const_handle e = curr;
+
+            //// Get point from CGAL (and convert to double )
+            //float u = CGAL::to_double(e->source()->point().x());
+            //float v = CGAL::to_double(e->source()->point().y());
+
+            //// Translate to the window frame
+            //float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
+            //float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
 
 
-        ////int maxFiberComponents = *std::max_element(data->arrangementFiberComponents.begin(), data->arrangementFiberComponents.end());
-        ////float grayscaleValue = 256.0 - 256.0 * static_cast<float>(data->arrangementFiberComponents[data->arrangementFacesIdices[f]]) / static_cast<float>(maxFiberComponents);
-        ////int currentCC = data->arrangementFiberComponents[data->arrangementFacesIdices[f]];
-        //////qDebug() << currentCC << " ";
-        //////this->arrangementPolygonColours << QColor(grayscaleValue, grayscaleValue, grayscaleValue, 100);
-        ////this->arrangementPolygonColours << colours[currentCC-1];
+            //// Add to the polygon
+            //points << QPoint(u1, v1);
+
+            ////std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
+        //} while (++curr != circ);
+
+
+
+        //// We need to sort the colours by the sheetID, this way we get a nice colour blending
+        //const int faceId = data->arrangementFacesIdices[f];
+        //const vector<int> uniqueRoots = data->preimageGraphs[data->arrangementFacesIdices[f]].getUniqueRoots();
+
+        //vector<int> sheetIds;
+
+        //for (const int &fiberComponentID : uniqueRoots)
+        //{
+            //int vertexHIndex = data->vertexHtoIndex[{data->arrangementFacesIdices[f], fiberComponentID}];
+            //int sheetID = data->reebSpace.findTriangle(vertexHIndex);
+
+            //sheetIds.push_back(sheetID);
+        //}
+
+        //// Sort by the last element of each subvector
+        //std::sort(sheetIds.begin(), sheetIds.end());
+
+        //for (const int &sheetId : sheetIds)
+        //{
+            //this->arrangementPolygons << QPolygon(points);
+
+            //int colourID = data->sheetToColour[sheetId];
+            //vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+            //this->arrangementPolygonColours << QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f);
+        //}
     //}
 
+
+
+    this->arrangementPolygons.resize(this->data->arrangementIndexToFace.size());
+    this->arrangementPolygonColours.resize(this->data->arrangementIndexToFace.size());
+
+    //
+    // Used for lookup in the next loop
+    //
+    for (const auto &[veretxHid, ufId] : data->reebSpace.data)
+    {
+        const auto &[faceID, fiberComponentID] = data->indexToVertexH[veretxHid];
+
+        Face_const_handle face = data->arrangementIndexToFace[faceID];
+
+        if (face->is_unbounded()) 
+        {
+            continue;
+        }
+
+        int vertexHId = data->vertexHtoIndex[{faceID, fiberComponentID}];
+        int sheetID = data->reebSpace.findTriangle(vertexHId);
+
+        if (this->arrangementPolygons[faceID].size() == 0)
+        {
+            QVector<QPoint> points;
+
+            typename Arrangement_2::Ccb_halfedge_const_circulator circ = face->outer_ccb();
+            typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+            do {
+                typename Arrangement_2::Halfedge_const_handle e = curr;
+
+                // Get point from CGAL (and convert to double )
+                float u = CGAL::to_double(e->source()->point().x());
+                float v = CGAL::to_double(e->source()->point().y());
+
+                // Translate to the window frame
+                float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
+                float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+
+
+                // Add to the polygon
+                points << QPoint(u1, v1);
+
+            } while (++curr != circ);
+
+            this->arrangementPolygons[faceID] = QPolygon(points);
+        }
+
+        this->arrangementPolygonColours[faceID].push_back(sheetID);
+    }
+
+    // Sort so that the colours blend in properly
+    for (int i = 0 ; i < this->arrangementPolygonColours.size() ; i++)
+    {
+        std::sort(this->arrangementPolygonColours[i].begin(), this->arrangementPolygonColours[i].end());
+    }
 }
 
     void
@@ -408,23 +408,48 @@ void PlotWidget::paintEvent(QPaintEvent*)
 
     this->painterCombinedTransform = p.combinedTransform();
 
+
+    // For each face
+    for (int i = 0 ; i < this->arrangementPolygonColours.size() ; i++) 
+    {
+        // For each fiber component
+        for (int j = 0 ; j < this->arrangementPolygonColours[i].size() ; j++) 
+        {
+            // Get the sheeID
+            const int sheetId = this->arrangementPolygonColours[i][j];
+            // Get the colour Id of the sheet ID
+            int colourID = data->sheetToColour[sheetId];
+            // The colour values
+            vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+
+            // Draw the polygon with the appropriate colour
+            p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
+            p.setPen(Qt::NoPen);
+            p.drawPolygon(this->arrangementPolygons[i]);
+        }
+
+    }
+
+
+
+
     //
     // Draw the polygons of the Reeb space
     //
-    for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) 
-    {
-        // Set the random color for filling the polygon
-        p.setBrush(this->arrangementPolygonColours[i]);
-        p.setPen(Qt::NoPen);
+    //for (int i = 0 ; i < this->arrangementPolygons.size() ; i++) 
+    //{
+        //// Set the random color for filling the polygon
+        //p.setBrush(this->arrangementPolygonColours[i]);
+        //p.setPen(Qt::NoPen);
 
-        // Draw the filled polygon with the random color
-        p.drawPolygon(this->arrangementPolygons[i]);
+        //// Draw the filled polygon with the random color
+        //p.drawPolygon(this->arrangementPolygons[i]);
 
-        //qDebug() << "New polygon --- ";
-        //for (const QPoint& point : this->arrangementPolygons[i]) {
-            //qDebug() << "(" << point.x() << ", " << point.y() << ")";
-        //}
-    }
+        ////qDebug() << "New polygon --- ";
+        ////for (const QPoint& point : this->arrangementPolygons[i]) {
+            ////qDebug() << "(" << point.x() << ", " << point.y() << ")";
+        ////}
+    //}
 
     //
     // Draw the Jacobi set

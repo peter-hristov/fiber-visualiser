@@ -562,11 +562,15 @@ void ReebSpace::computeArrangement(Data *data)
     //std::cout << "Faces in the arrangement:" << std::endl;
 
     int counter = 0;
+
+    data->arrangementIndexToFace.resize(data->arr.number_of_faces());
+
     for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
     {
 
         Arrangement_2::Face_const_handle a = f;
         data->arrangementFacesIdices[a] = counter;
+        data->arrangementIndexToFace[counter] = f;
         counter++;
 
         //std::cout << data->arrangementFacesIdices[a] << std::endl;
