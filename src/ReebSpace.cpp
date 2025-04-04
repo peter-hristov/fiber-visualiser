@@ -771,7 +771,6 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
 {
 
     using namespace indicators;
-    show_console_cursor(false);
     ProgressBar bar{
         option::BarWidth{50},
             option::Start{"["},
@@ -875,6 +874,8 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
     int graphsInMemory = 0;
     float averageAraphsInMemory = 0;
 
+    int barTickThreshold = data->arrangementFacesIdices.size() / 25;
+
     while (false == traversalQueue.empty())
     {
         // Pop an half edge out
@@ -961,10 +962,12 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
 
         //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
 
-        float progress = 100.0 * (float)orderIndex / (float)data->preimageGraphs.size();
+        if (orderIndex % barTickThreshold == 0)
+        {
+            // Update bar state
+            bar.tick();
+        }
 
-        // Update bar state
-        bar.set_progress(progress);
 
         // After this we will never need the current face again, we can clear it's graph
         if (true == discardPreimageGraphs)
