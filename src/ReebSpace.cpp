@@ -882,9 +882,6 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
 
 
     int barTickThreshold = data->arrangementFacesIdices.size() / 50;
-    bar.tick();
-
-    std::cout  << barTickThreshold << std::endl;
 
     while (false == traversalQueue.empty())
     {

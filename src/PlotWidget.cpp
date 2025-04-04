@@ -460,11 +460,11 @@ void PlotWidget::paintEvent(QPaintEvent*)
         {
             if (type == 0)
             {
-                p.setPen(QPen(Qt::black, 0.5, Qt::DashLine));
+                p.setPen(QPen(Qt::black, 0.1, Qt::DashLine));
             }
             else
             {
-                p.setPen(QPen(Qt::black, 1));
+                p.setPen(QPen(Qt::black, 0.1));
             }
 
             float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
