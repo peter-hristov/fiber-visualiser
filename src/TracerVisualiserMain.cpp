@@ -163,11 +163,12 @@ int main(int argc, char* argv[])
     //Timer::stop("Computed H                             :");
 
     Timer::start();
-    ReebSpace::computeReebSpace(data);
-    Timer::stop("Computed RS(f)                         :");
+    ReebSpace::computeReebSpacePostprocess(data);
+    Timer::stop("Computed RS(f) Postprocess             :");
+    //Timer::stop("Computed RS(f)                         :");
 
-    std::cout << "Press Enter to continue...";
-    std::cin.get();  // waits for Enter key
+    //std::cout << "Press Enter to continue...";
+    //std::cin.get();  // waits for Enter key
 
     if (performanceRun == true)
     {

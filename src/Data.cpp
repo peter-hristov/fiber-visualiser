@@ -20,17 +20,6 @@
 #include <random>
 #include <ranges>
 
-//
-// Used for computing Barycentric coordinates for fibers
-//
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Barycentric_coordinates_2/triangle_coordinates_2.h>
-#include <CGAL/Kernel/global_functions_2.h>  // For bounded_side_2
-
-typedef CGAL::Simple_cartesian<double> CartesianKernel;
-typedef CartesianKernel::Point_2 CartesianPoint;
-
-
 
 using namespace std;
 
@@ -100,14 +89,15 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     // Cache barycentric coordintes, they are expensive to compute
     std::unordered_map<int, std::array<double, 3>> triangleBarycentricCoordinates;
 
-    std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with sheet IDs: ";
+    std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with (sheet IDs, sorted IDs): ";
     for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
     {
         bfsQueue.push(triangleId);
         const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
         triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
 
-        std::cout << sheetId << " ";
+        printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
+        //std::cout << sheetId << " ";
     }
 
     std::cout << std::endl;

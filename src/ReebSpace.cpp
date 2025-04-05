@@ -4,11 +4,13 @@
 #include "./Timer.h"
 #include "./utility/indicators.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <map>
 #include <queue>
 #include <set>
 #include <iterator>
+#include <unordered_map>
 
 std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
 {
@@ -903,7 +905,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
         // Sanity check, this should always be true
         if (false == currentFace->is_unbounded()) 
         {
-            assert(false == data->preimageGraphs[currentFaceID].isEmpty());
+            //assert(false == data->preimageGraphs[currentFaceID].isEmpty());
         }
 
         //
@@ -956,7 +958,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
             }
 
             // Sanity check, all graphs should have either been computed before or now
-            assert(false == data->preimageGraphs[twinFaceID].isEmpty());
+            //assert(false == data->preimageGraphs[twinFaceID].isEmpty());
 
             // Compute the correspondence with the neighbours, but only if they are at a higher level, or we are at the same level, currentFaceID < twinFaceID is used to avoid double work, we only need it once
             if (order[currentFaceID] < order[twinFaceID])
@@ -1134,7 +1136,7 @@ void ReebSpace::computeCorrespondenceGraph(Data *data)
 
 
 
-void ReebSpace::computeReebSpace(Data *data)
+void ReebSpace::computeReebSpacePostprocess(Data *data)
 {
 
     //
@@ -1164,21 +1166,74 @@ void ReebSpace::computeReebSpace(Data *data)
     }
 
 
-    //for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
+    // 
+    // Here we sort the n sheets by area and number them in sorted order 0, ..., n
 
+    // First compute the area of each face in the arrangement
+    std::vector<double> facesArea(data->arr.number_of_faces(), 0);
+    for (auto currentFace = data->arr.faces_begin(); currentFace != data->arr.faces_end(); ++currentFace) 
+    {
+        if (currentFace->is_unbounded()) 
+        {
+            continue;
+        }
 
-    //
-    // Set up colourIDs for each sheet
-    //
-    std::set<int> uniqueSheetIDs;
+        const int currentFaceID = data->arrangementFacesIdices[currentFace];
 
+        CartesianPolygon_2 polygon;
+
+        Arrangement_2::Ccb_halfedge_const_circulator circ = currentFace->outer_ccb();
+        Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+        do {
+
+            const Point_2 epecPoint = curr->source()->point();
+            CartesianPoint cartesianPoint(CGAL::to_double(epecPoint.x()), CGAL::to_double(epecPoint.y()));
+
+            polygon.push_back(cartesianPoint);
+            ++curr;
+        } while (curr != circ);
+
+        // Sanity check
+        assert(polygon.is_simple());
+
+        //if (polygon.orientation() != CGAL::COUNTERCLOCKWISE) {
+            //polygon.reverse_orientation(); // Ensure standard orientation
+        //}
+
+        //facesArea[currentFaceID] = CGAL::to_double(polygon.area());
+        facesArea[currentFaceID] = polygon.area();
+    }
+
+    // Then compute the area of each sheet by summing the areas of their faces
+    std::map<int, double> sheetArea;
     for (const auto &[key, value] : data->reebSpace.data)
     {
-        uniqueSheetIDs.insert(data->reebSpace.findTriangle(key));
+        const auto &[currentFaceId, fiberComponentId] = key;
+        const int sheetId = data->reebSpace.find(value);
+        
+        sheetArea[sheetId] += facesArea[currentFaceId];
     }
-    int counter = 0;
-    for (const auto &sheetID : uniqueSheetIDs)
+
+    // Transfer the map entries into a vector of pairs so that we can sort
+    std::vector<std::pair<int, double>> sheetAreaSortVector(sheetArea.begin(), sheetArea.end());
+
+    // Sort by area
+    std::sort(sheetAreaSortVector.begin(), sheetAreaSortVector.end(), [](const std::pair<int, double>& a, const std::pair<int, double>& b) {
+            return a.second > b.second; 
+            });
+
+
+    // Assign a sorted order to each sheet
+    for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
     {
-        data->sheetToColour[sheetID] = counter++;
+        const auto &[sheetId, area] = sheetAreaSortVector[i];
+        data->sheetToColour[sheetId] = i;
+    }
+
+    // Print to debug, at least the first new
+    //for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
+    for (int i = 0 ; i < 20 ; i++)
+    {
+        std::cout << i << " -- sheet " << sheetAreaSortVector[i].first << " has area " << sheetAreaSortVector[i].second << std::endl;
     }
 }

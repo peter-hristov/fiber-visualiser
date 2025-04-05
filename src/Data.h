@@ -98,6 +98,7 @@ class Data
     std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
 
 
+
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
     //std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
 

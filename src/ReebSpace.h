@@ -49,7 +49,7 @@ namespace ReebSpace
         void computeCorrespondenceGraph(Data *);
 
         // Compute the Reeb space from all the preimage graphs
-        void computeReebSpace(Data *);
+        void computeReebSpacePostprocess(Data *);
 
 
         //

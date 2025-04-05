@@ -51,3 +51,19 @@ typedef Arrangement_2::Face_const_handle Face_const_handle;
 #include <CGAL/Arr_walk_along_line_point_location.h>
 typedef CGAL::Arr_walk_along_line_point_location<Arrangement_2> Point_location;
 
+
+
+
+
+//
+// Used for computing Barycentric coordinates for fibers
+//
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Barycentric_coordinates_2/triangle_coordinates_2.h>
+#include <CGAL/Kernel/global_functions_2.h>  // For bounded_side_2
+#include <CGAL/Polygon_2.h>
+
+typedef CGAL::Simple_cartesian<double> CartesianKernel;
+typedef CartesianKernel::Point_2 CartesianPoint;
+typedef CGAL::Polygon_2<CartesianKernel> CartesianPolygon_2;
+
