@@ -763,8 +763,12 @@ void Data::readDataVTK(string filename)
         const float e = randomPerturbation(1e-8);
         const float iFloat = static_cast<float>(i);
 
-        this->vertexCoordinatesF[i] += iFloat * e;
-        this->vertexCoordinatesG[i] += iFloat * e * iFloat * e;
+        // Tierny 2017 - Jacobi Fiber Surfaces Version - not that useful
+        //this->vertexCoordinatesF[i] += iFloat * e;
+        //this->vertexCoordinatesG[i] += iFloat * e * iFloat * e;
+
+        this->vertexCoordinatesF[i] += randomPerturbation(1e-5);
+        this->vertexCoordinatesG[i] += randomPerturbation(1e-5);
     }
 
     // Now we can sort
