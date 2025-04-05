@@ -125,15 +125,15 @@ class Data
     // The connected components of the preimage graph for each face in the arrangement
     std::vector<DisjointSet<int>> preimageGraphs;
 
-    // The vertices and edge of the corresponde graph H
-    //std::set<std::pair<int, int>> verticesH;
-    //std::vector<std::pair<std::pair<int, int>, std::pair<int, int>>> edgesH;
-
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
     DisjointSet<std::pair<int, int>> reebSpace;
 
     // For each faceID we ahve a number of triangle seeds
     std::vector<std::vector<std::pair<int, int>>> fiberSeeds;
+
+    // There's also this vector in plotwidget
+    //std::vector<QPolygon> arrangementPolygons;
+    
 
     // The vertices of the correspondence graph H are pairs of int <faceID, fiber component ID>
     // I'd like to map between them and int indices for the disjoint set

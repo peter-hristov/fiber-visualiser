@@ -49,7 +49,6 @@ class PlotWidget : public QWidget
 
     bool recomputeFiber = false;
 
-
     Data* data;
     float varianceScale = 0;
     const float resolution = 1000;
@@ -106,7 +105,6 @@ class PlotWidget : public QWidget
     void resizeEvent(QResizeEvent* event);
 
     std::vector<QPolygon> arrangementPolygons;
-    std::vector<std::vector<int>> arrangementPolygonColours;
 
   protected:
     void mouseMoveEvent(QMouseEvent* event);
