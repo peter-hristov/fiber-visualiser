@@ -93,6 +93,52 @@ class DisjointSet {
             }
         }
 
+        std::vector<std::pair<DataType, int>> getUniqueRepresentativesAndRoots()
+        {
+
+            std::set<int> uniqueRoots;
+            std::vector<std::pair<DataType, int>> representativesAndRoots;
+
+            for (const auto &[key, ufId] : this->data)
+            {
+                const int root = this->find(ufId);
+
+                if (false == uniqueRoots.contains(root))
+                {
+                    representativesAndRoots.push_back({key, root});
+                    uniqueRoots.insert(root);
+                }
+            }
+
+            return representativesAndRoots;
+        }
+
+        std::vector<int> getUniqueRepresentatives()
+        {
+
+            std::set<int> uniqueRoots;
+            std::vector<DataType> representatives;
+
+            for (const auto &[key, value] : this->data)
+            {
+                const int root = this->findTriangle(key);
+
+                if (false == uniqueRoots.contains(root))
+                {
+                    representatives.push_back(key);
+                    uniqueRoots.insert(root);
+                }
+            }
+
+            //for(int i  = 0 ; i < parent.size() ; i++)
+            //{
+                //if (uniqueRoots.contains())
+                //uniqueRoots.insert(find(i));
+            //}
+
+            return representatives;
+        }
+
         std::vector<int> getUniqueRoots()
         {
             std::set<int> uniqueRoots;

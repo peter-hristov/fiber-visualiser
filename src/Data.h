@@ -61,6 +61,7 @@ class Data
 
     void computeTetExitPoints(const float, const float, const std::vector<float> = {1,1,1});
     void computeTetExitPointsNew(const float, const float, const std::vector<float> = {1,1,1});
+    void computeTetExitPointsNewNew(const float, const float, const std::vector<float> = {1,1,1});
 
 
     void readData(std::string);
@@ -130,6 +131,9 @@ class Data
 
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
     DisjointSet<std::pair<int, int>> reebSpace;
+
+    // For each faceID we ahve a number of triangle seeds
+    std::vector<std::vector<std::pair<int, int>>> fiberSeeds;
 
     // The vertices of the correspondence graph H are pairs of int <faceID, fiber component ID>
     // I'd like to map between them and int indices for the disjoint set

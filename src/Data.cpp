@@ -1,11 +1,14 @@
 #include "Data.h"
 #include "./Timer.h"
+#include "./DisjointSet.h"
 
 #include <CGAL/enum.h>
 #include <cassert>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
 #include <utility>
+#include <queue>
 
 #include <vtkSmartPointer.h>
 #include <vtkXMLUnstructuredGridReader.h>
@@ -22,11 +25,11 @@
 //
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Barycentric_coordinates_2/triangle_coordinates_2.h>
+#include <CGAL/Kernel/global_functions_2.h>  // For bounded_side_2
+
 typedef CGAL::Simple_cartesian<double> CartesianKernel;
 typedef CartesianKernel::Point_2 CartesianPoint;
 
-//typedef CGAL::Simple_cartesian<double> KernelCartesian;
-//typedef KernelCartesian::Point_2 PointCartesian;
 
 
 using namespace std;
@@ -38,7 +41,7 @@ double randomPerturbation(double epsilon) {
 }
 
 
-void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
+void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
     this->faceFibers.clear();
 
@@ -51,7 +54,6 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
     // The query point (u, v)
     Point_2 query_point(u, v);
 
-    return;
 
     // Locate the point in the arrangement
     CGAL::Object result = this->pl->locate(query_point);
@@ -87,8 +89,194 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
 
 
 
+    Timer::start();
 
-    cout << "The size of the fiber is " << this->preimageGraphs[currentFaceID].data.size() << endl;
+    std::queue<int> bfsQueue;
+    // This also acts as the visited array
+    std::unordered_map<int, int> triangleColour;
+    // Needed to close loops closed fibers, hack because we are not visiting tets, but triangles
+    std::unordered_set<pair<int, int>, MyHash<pair<int, int>>> activeAdjacentTrianglesConnected;
+    // Cache barycentric coordintes, they are expensive to compute
+    std::unordered_map<int, std::array<double, 3>> triangleBarycentricCoordinates;
+
+    for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
+    {
+        bfsQueue.push(triangleId);
+        const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+        triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
+    }
+
+
+    // Define query point
+    CartesianPoint P(u, v);
+
+    while (false == bfsQueue.empty())
+    {
+        const int currentTriangleId = bfsQueue.front();
+        const int currentColourId = triangleColour[currentTriangleId];
+        bfsQueue.pop();
+
+        const vector<float> sheetColour = this->fiberColours[currentColourId];
+
+        const set<int> triangleUnpacked = this->indexToTriangle[currentTriangleId];
+        const vector<int> triangleIndices = std::vector<int>(triangleUnpacked.begin(), triangleUnpacked.end());
+
+        std::array<double, 3> barycentricCoordinatesCurrent;
+
+        if (triangleBarycentricCoordinates.contains(currentTriangleId))
+        {
+            barycentricCoordinatesCurrent = triangleBarycentricCoordinates[currentTriangleId];
+        }
+        else
+        {
+            const CartesianPoint A(this->vertexCoordinatesF[triangleIndices[0]], this->vertexCoordinatesG[triangleIndices[0]]);
+            const CartesianPoint B(this->vertexCoordinatesF[triangleIndices[1]], this->vertexCoordinatesG[triangleIndices[1]]);
+            const CartesianPoint C(this->vertexCoordinatesF[triangleIndices[2]], this->vertexCoordinatesG[triangleIndices[2]]);
+            CGAL::Barycentric_coordinates::triangle_coordinates_2(A, B, C, P, barycentricCoordinatesCurrent.begin());
+            triangleBarycentricCoordinates[currentTriangleId] = barycentricCoordinatesCurrent;
+        }
+
+        // Sanity check
+        assert(barycentricCoordinatesCurrent[0] > 0 && barycentricCoordinatesCurrent[1] > 0 && barycentricCoordinatesCurrent[2] > 0);
+
+        // Look at the neighbours
+        for (const int &neighbourTriagleId : this->adjacentTrianglesIndex[currentTriangleId])
+        {
+            // We can't skip visited neighbours, because there may be a fiber between us (completing a circle)
+            //if (triangleColour.contains(neighbourTriagle)) { continue; }
+
+            const set<int> triangle2Unpacked = this->indexToTriangle[neighbourTriagleId];
+            const vector<int> triangle2Indices = std::vector<int>(triangle2Unpacked.begin(), triangle2Unpacked.end());
+
+
+            std::array<double, 3> barycentricCoordinatesNeighbour;
+            if (triangleBarycentricCoordinates.contains(neighbourTriagleId))
+            {
+                barycentricCoordinatesNeighbour = triangleBarycentricCoordinates[neighbourTriagleId];
+            }
+            else
+            {
+                CartesianPoint A(this->vertexCoordinatesF[triangle2Indices[0]], this->vertexCoordinatesG[triangle2Indices[0]]);
+                CartesianPoint B(this->vertexCoordinatesF[triangle2Indices[1]], this->vertexCoordinatesG[triangle2Indices[1]]);
+                CartesianPoint C(this->vertexCoordinatesF[triangle2Indices[2]], this->vertexCoordinatesG[triangle2Indices[2]]);
+                CGAL::Barycentric_coordinates::triangle_coordinates_2(A, B, C, P, barycentricCoordinatesNeighbour.begin());
+                triangleBarycentricCoordinates[neighbourTriagleId] = barycentricCoordinatesNeighbour;
+            }
+
+            // Determine if the triangle is active
+            //std::vector<CartesianPoint> triangle = {A2, B2, C2};
+            //const auto result = CGAL::bounded_side_2(triangle.begin(), triangle.end(), P);
+    
+            if (barycentricCoordinatesNeighbour[0] > 0 && barycentricCoordinatesNeighbour[1] > 0 && barycentricCoordinatesNeighbour[2] > 0)
+            {
+                // Only add the neighbour if we have not already visited it
+                if (false == triangleColour.contains(neighbourTriagleId))
+                {
+                    // BFS things
+                    bfsQueue.push(neighbourTriagleId);
+                    triangleColour[neighbourTriagleId] = currentColourId;
+                }
+
+                // Even if we have aleady added a neighbour, maybe there still isn't a fiber between us (for finishing loops)
+
+                // At this point, we know that both us and we neighbour are active, is there already a fiber between us? Then skip
+                if (activeAdjacentTrianglesConnected.contains({currentTriangleId, neighbourTriagleId}))
+                {
+                    continue;
+                }
+                else
+                {
+                    activeAdjacentTrianglesConnected.insert({currentTriangleId, neighbourTriagleId});
+                    activeAdjacentTrianglesConnected.insert({neighbourTriagleId, currentTriangleId});
+                }
+
+                // Compute or used stored barycentric coordinates for the neighbour
+                //std::array<double, 3> coordinates2;
+                //if (false == triangleBarycentricCoordinates.contains(neighbourTriagleId))
+                //{
+                    //CGAL::Barycentric_coordinates::triangle_coordinates_2(A2, B2, C2, P, coordinates2.begin());
+                    //triangleBarycentricCoordinates[currentTriangleId] = coordinates2;
+                //}
+                //else
+                //{
+                    //coordinates2 = triangleBarycentricCoordinates[neighbourTriagleId];
+                //}
+                
+
+
+                //
+                // Add a fiber segment
+                //
+                FaceFiberPoint fb(barycentricCoordinatesCurrent[0], barycentricCoordinatesCurrent[1], {
+                        this->vertexDomainCoordinates[triangleIndices[0]],
+                        this->vertexDomainCoordinates[triangleIndices[1]],
+                        this->vertexDomainCoordinates[triangleIndices[2]],
+                        },
+                        sheetColour);
+                this->faceFibers.push_back(fb);
+
+                FaceFiberPoint fb2(barycentricCoordinatesNeighbour[0], barycentricCoordinatesNeighbour[1], {
+                        this->vertexDomainCoordinates[triangle2Indices[0]],
+                        this->vertexDomainCoordinates[triangle2Indices[1]],
+                        this->vertexDomainCoordinates[triangle2Indices[2]],
+                        },
+                        sheetColour);
+
+                this->faceFibers.push_back(fb2);
+            }
+        }
+    }
+
+    Timer::stop("Computed fiber in                      :");
+}
+
+void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
+{
+    this->faceFibers.clear();
+
+    //
+    // Get the ID of the face we are intersecting
+    //
+
+    //Timer::start();
+
+    // The query point (u, v)
+    Point_2 query_point(u, v);
+
+
+    // Locate the point in the arrangement
+    CGAL::Object result = this->pl->locate(query_point);
+
+    // Try to assign to a face, edge or a vertex
+    Arrangement_2::Face_const_handle face;
+    Arrangement_2::Halfedge_const_handle edge;
+    Arrangement_2::Vertex_const_handle vertex;
+
+    int currentFaceID = 0;
+
+    if (CGAL::assign(face, result)) 
+    {
+        currentFaceID = this->arrangementFacesIdices[face];
+    } 
+    // If we are on an edge, just grad an adjacent face
+    else if (CGAL::assign(edge, result)) 
+    {
+        face = edge->face();
+        currentFaceID = this->arrangementFacesIdices[face];
+    } 
+    // If we are on a vertex grab an indicent edge and get its face
+    else if (CGAL::assign(vertex, result)) 
+    {
+        edge = vertex->incident_halfedges();
+        face = edge->face();
+        currentFaceID = this->arrangementFacesIdices[face];
+    } else 
+    {
+        assert(false);
+    }
+    //Timer::stop("Computed active arrangement face       :");
+
+
 
     int i = -1;
     for (const auto &[triangle, triangleId] : this->preimageGraphs[currentFaceID].data)
@@ -192,8 +380,6 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
     // The query point (u, v)
     Point_2 query_point(u, v);
-
-    return;
 
     // Locate the point in the arrangement
     CGAL::Object result = this->pl->locate(query_point);

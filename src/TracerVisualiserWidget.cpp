@@ -37,7 +37,7 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
 
     // Default values for paraters
     this->scale = (data->maxZ - data->minZ) * 2;
-    this->scaleFactor = abs(data->maxZ - data->minZ) / 100;
+    this->scaleFactor = abs(data->maxZ + data->minZ) * 1;
 
     // Initialise Arcball
     Ball_Init(&theBall);

@@ -1,5 +1,6 @@
 # Optomise memory:
 Remove the polygons and colours from PlotWidget
+remove  - data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
 
 
 

@@ -874,6 +874,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
 
     // The number of connected components for each preimage graph (computed from the disjoint set)
     data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
+    data->fiberSeeds.resize(data->arrangementFacesIdices.size());
 
     int graphsInMemory = 0;
     float averageAraphsInMemory = 0;
@@ -934,20 +935,15 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
                 // Compute the preimage graph of this unvisited face
                 ReebSpace::computeTwinFacePreimageGraph(data, curr);
 
+                // Get all unique roots and a representative
+                data->fiberSeeds[twinFaceID] = data->preimageGraphs[twinFaceID].getUniqueRepresentativesAndRoots();
+
                 // Initialize the vertices of H with the connected components of the twin graph
-                for (const int &r : data->preimageGraphs[twinFaceID].getUniqueRoots())
+                //for (const int &root : data->preimageGraphs[twinFaceID].getUniqueRoots())
+                for (const auto &[representative, root] : data->fiberSeeds[twinFaceID])
                 {
-                    //data->verticesH.insert({currentFaceID, r});
-
-                    //std::pair<int, int> vertexH = {twinFaceID, r};
-                    //int verexHIndex = data->indexToVertexH.size();
-
-                    //data->indexToVertexH.push_back(vertexH);
-                    //data->vertexHtoIndex[vertexH] = verexHIndex;
-
-                    data->reebSpace.addElements({twinFaceID, r});
+                    data->reebSpace.addElements({twinFaceID, root});
                 }
-
 
                 graphsInMemory++;
             }
