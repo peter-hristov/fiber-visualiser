@@ -100,12 +100,17 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     // Cache barycentric coordintes, they are expensive to compute
     std::unordered_map<int, std::array<double, 3>> triangleBarycentricCoordinates;
 
+    std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with sheet IDs: ";
     for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
     {
         bfsQueue.push(triangleId);
         const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
         triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
+
+        std::cout << sheetId << " ";
     }
+
+    std::cout << std::endl;
 
 
     // Define query point
@@ -760,15 +765,15 @@ void Data::readDataVTK(string filename)
     // Add numerical perturbation, taken from Tierny 2027 Jacobi Fiber Surfaces
     for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
     {
-        const float e = randomPerturbation(1e-8);
-        const float iFloat = static_cast<float>(i);
+        //const float e = randomPerturbation(1e-8);
+        //const float iFloat = static_cast<float>(i);
 
         // Tierny 2017 - Jacobi Fiber Surfaces Version - not that useful
         //this->vertexCoordinatesF[i] += iFloat * e;
         //this->vertexCoordinatesG[i] += iFloat * e * iFloat * e;
 
-        this->vertexCoordinatesF[i] += randomPerturbation(1e-3);
-        this->vertexCoordinatesG[i] += randomPerturbation(1e-3);
+        this->vertexCoordinatesF[i] += randomPerturbation(1e-2);
+        this->vertexCoordinatesG[i] += randomPerturbation(1e-2);
     }
 
     // Now we can sort

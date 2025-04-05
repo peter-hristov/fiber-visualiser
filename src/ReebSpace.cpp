@@ -404,8 +404,6 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
         }
     }
 
-
-
     //
     // Set up the indices for all triangles
     //
@@ -417,6 +415,7 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
     }
 
     data->adjacentTrianglesIndex.resize(allTriangles.size());
+
 
 
     // Compute the adjacency of triangles in the mesh, two triangles are adjacent when they are the faces of the same tet
@@ -697,6 +696,10 @@ void ReebSpace::testTraverseArrangement(Data *data)
         }
     }
 }
+
+
+
+
 
 void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge_const_handle &currentHalfEdge)
 {
