@@ -767,8 +767,8 @@ void Data::readDataVTK(string filename)
         //this->vertexCoordinatesF[i] += iFloat * e;
         //this->vertexCoordinatesG[i] += iFloat * e * iFloat * e;
 
-        this->vertexCoordinatesF[i] += randomPerturbation(1e-8);
-        this->vertexCoordinatesG[i] += randomPerturbation(1e-8);
+        this->vertexCoordinatesF[i] += randomPerturbation(1e-3);
+        this->vertexCoordinatesG[i] += randomPerturbation(1e-3);
     }
 
     // Now we can sort

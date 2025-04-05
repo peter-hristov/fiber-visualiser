@@ -1,6 +1,8 @@
 # Optomise memory:
-Remove the polygons and colours from PlotWidget
-remove  - data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
+done - Remove the polygons and colours from PlotWidget
+done - remove  - data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
+
+Use direct pointers in uion find? Don't think it could work though
 
 
 

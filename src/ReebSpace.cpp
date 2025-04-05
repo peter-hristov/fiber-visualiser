@@ -984,7 +984,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
     }
 
     printf("There is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
-    //printf("The correspondence graphs has %ld nodes and %ld edges.\n", data->verticesH.size(), data->edgesH.size());
+    printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n", data->reebSpace.data.size(), data->reebSpace.getUniqueRepresentativesAndRoots().size());
 }
 
 
