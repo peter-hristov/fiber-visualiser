@@ -70,15 +70,15 @@ int main(int argc, char* argv[])
     bool performanceRun = false;
     cliApp.add_flag("--performanceRun, -p", performanceRun, "Only compute the Reeb space, no graphics..");
 
-    bool discardPreimageGraphs = false;
-    cliApp.add_flag("--discardPreimageGraphs, -d", discardPreimageGraphs, "Only compute the Reeb space, no graphics..");
+    bool discardFiberSeeds = false;
+    cliApp.add_flag("--discardPreimageGraphs, -d", discardFiberSeeds, "Only compute the Reeb space, no graphics..");
 
     CLI11_PARSE(cliApp, argc, argv);
 
     // For convenience
     if (performanceRun == true)
     {
-        discardPreimageGraphs = true;
+        discardFiberSeeds = true;
     }
 
 
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
     Timer::stop("Computed empty traversal               :");
 
     Timer::start();
-    ReebSpace::computePreimageGraphs(data, discardPreimageGraphs);
+    ReebSpace::computePreimageGraphs(data, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
 
     //Timer::start();

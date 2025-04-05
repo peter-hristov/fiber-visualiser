@@ -115,7 +115,7 @@ class Data
     std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> jacobiType;
 
     // The number of fiber components for each preimage graph, more of a utility thing
-    std::vector<int> arrangementFiberComponents;
+    //std::vector<int> arrangementFiberComponents;
 
 
 

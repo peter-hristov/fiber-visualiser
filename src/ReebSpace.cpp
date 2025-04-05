@@ -768,10 +768,10 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
     data->preimageGraphs[twinFaceID].update();
 
     // Used when drawing the arrangement
-    data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
+    //data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
 }
 
-void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGraphs)
+void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSets)
 {
 
     using namespace indicators;
@@ -856,32 +856,34 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
 
 
 
+
     // Starting from an outer half edge
     std::queue<Face_const_handle> traversalQueue;
-    std::set<Face_const_handle> visited;
-    std::map<Face_const_handle, int> order;
+    // This is the order in which faces are added, also servers as a visited flag
+    std::vector<int> order(data->arrangementFacesIdices.size(), -1);
+
 
     traversalQueue.push(outerFace);
-    visited.insert(outerFace);
 
     // This is the order in which a face has been processed, note this is different than level
     // This is used as an index for faces, so that we don't do double work when checking edges for correspondence
     int orderIndex = 0;
-    order[outerFace] = orderIndex;
+    order[data->arrangementFacesIdices[outerFace]] = orderIndex;
 
     // The disjoint set to track the connected components of the preimage graph
     data->preimageGraphs.resize(data->arrangementFacesIdices.size());
 
     // The number of connected components for each preimage graph (computed from the disjoint set)
-    data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
-    data->fiberSeeds.resize(data->arrangementFacesIdices.size());
+    //data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
+
+    // If we want the fiber seeds, initialize them
+    if (false == discardFiberSeedsSets)
+    {
+        data->fiberSeeds.resize(data->arrangementFacesIdices.size());
+    }
 
     int graphsInMemory = 0;
     float averageAraphsInMemory = 0;
-
-
-
-
     int barTickThreshold = data->arrangementFacesIdices.size() / 50;
 
     while (false == traversalQueue.empty())
@@ -894,8 +896,6 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
         int currentFaceID = data->arrangementFacesIdices[currentFace];
 
         //std::cout << "Current face " << currentFaceID << std::endl;
-
-        assert(false == data->preimageGraphs[currentFaceID].isEmpty());
 
         // Sanity check, this should always be true
         if (false == currentFace->is_unbounded()) 
@@ -920,39 +920,43 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
 
         Arrangement_2::Ccb_halfedge_const_circulator curr = start;
         do {
+
             Face_const_handle twinFace = curr->twin()->face();
-            int twinFaceID = data->arrangementFacesIdices[twinFace];
+            const int twinFaceID = data->arrangementFacesIdices[twinFace];
 
             // If the neighbour has not been visited, we enqueue it and also compute its preimage graph
-            if (false == visited.contains(twinFace))
+            if (-1 == order[twinFaceID])
             {
                 traversalQueue.push(twinFace);
-                visited.insert(twinFace);
-                order[twinFace] = ++orderIndex;
+                order[twinFaceID] = ++orderIndex;
 
                 //std::cout << "Computing for neighbour " << twinFaceID << std::endl;
 
                 // Compute the preimage graph of this unvisited face
                 ReebSpace::computeTwinFacePreimageGraph(data, curr);
+                graphsInMemory++;
 
                 // Get all unique roots and a representative
-                data->fiberSeeds[twinFaceID] = data->preimageGraphs[twinFaceID].getUniqueRepresentativesAndRoots();
+                const std::vector<std::pair<int, int>> representativesAndRoots = data->preimageGraphs[twinFaceID].getUniqueRepresentativesAndRoots();
 
                 // Initialize the vertices of H with the connected components of the twin graph
-                //for (const int &root : data->preimageGraphs[twinFaceID].getUniqueRoots())
-                for (const auto &[representative, root] : data->fiberSeeds[twinFaceID])
+                for (const auto &[representative, root] : representativesAndRoots)
                 {
                     data->reebSpace.addElements({twinFaceID, root});
                 }
 
-                graphsInMemory++;
+                // If we want fiber computation, cache the seeds for the fiber components
+                if (false == discardFiberSeedsSets)
+                {
+                    data->fiberSeeds[twinFaceID] = representativesAndRoots;
+                }
             }
 
             // Sanity check, all graphs should have either been computed before or now
             assert(false == data->preimageGraphs[twinFaceID].isEmpty());
 
             // Compute the correspondence with the neighbours, but only if they are at a higher level, or we are at the same level, currentFaceID < twinFaceID is used to avoid double work, we only need it once
-            if (order[currentFace] < order[twinFace])
+            if (order[currentFaceID] < order[twinFaceID])
             {
                 //std::cout << "Determining correspondence with neighbour " << twinFaceID << std::endl;
                 ReebSpace::determineCorrespondence(data, curr);
@@ -966,7 +970,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
         //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
 
         // If the threshold is zero the ticks bugs out, so we don't do it
-        if (barTickThreshold > 0 && order[currentFace] % barTickThreshold == 0)
+        if (barTickThreshold > 0 && order[currentFaceID] % barTickThreshold == 0)
         {
             // Update bar state
             bar.tick();
@@ -974,12 +978,9 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardPreimageGrap
         }
 
 
-        // After this we will never need the current face again, we can clear it's graph
-        if (true == discardPreimageGraphs)
-        {
-            data->preimageGraphs[currentFaceID].clear();
-            graphsInMemory--;
-        }
+        // Dispose of the preimage graph we will no longer need it
+        data->preimageGraphs[currentFaceID].clear();
+        graphsInMemory--;
     }
 
     printf("There is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());

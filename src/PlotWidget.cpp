@@ -462,12 +462,11 @@ void PlotWidget::drawBackground(QPainter &p)
         }
 
     }
-
-    drawAxisLabels(p);
 }
 
 void PlotWidget::generateStaticCache()
 {
+    qDebug() << "Redrawing REEB SPACE ...";
     staticCache = std::make_unique<QPixmap>(resolution, resolution);
     staticCache->fill(Qt::white);
 
@@ -477,6 +476,7 @@ void PlotWidget::generateStaticCache()
 
 void PlotWidget::resizeEvent(QResizeEvent* event)
 {
+    generateStaticCache();
     // If the widget size has changed, regenerate the static cache
     //if (!staticCache || staticCache->size() != size()) 
     //{
@@ -501,7 +501,7 @@ void PlotWidget::paintEvent(QPaintEvent*)
 
     this->painterCombinedTransform = p.combinedTransform();
 
-    if (!staticCache || staticCache->size() != size()) 
+    if (!staticCache) 
     {
         generateStaticCache();
     }
@@ -514,7 +514,7 @@ void PlotWidget::paintEvent(QPaintEvent*)
     drawAndRecomputeFS(p);
 
     p.restore();
-
+    drawAxisLabels(p);
 }
 
 

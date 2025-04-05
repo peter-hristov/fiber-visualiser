@@ -150,25 +150,26 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
             const vector<int> triangle2Indices = std::vector<int>(triangle2Unpacked.begin(), triangle2Unpacked.end());
 
 
-            std::array<double, 3> barycentricCoordinatesNeighbour;
-            if (triangleBarycentricCoordinates.contains(neighbourTriagleId))
-            {
-                barycentricCoordinatesNeighbour = triangleBarycentricCoordinates[neighbourTriagleId];
-            }
-            else
+
+            // The neighbour is active if we've already seen it
+            bool isActive = triangleColour.contains(neighbourTriagleId);
+
+            // Or if the image of the triangle contains the fiber points
+            // We use a fast test to avoid having to use barycentric coordinates all the time
+            if (false == isActive)
             {
                 CartesianPoint A(this->vertexCoordinatesF[triangle2Indices[0]], this->vertexCoordinatesG[triangle2Indices[0]]);
                 CartesianPoint B(this->vertexCoordinatesF[triangle2Indices[1]], this->vertexCoordinatesG[triangle2Indices[1]]);
                 CartesianPoint C(this->vertexCoordinatesF[triangle2Indices[2]], this->vertexCoordinatesG[triangle2Indices[2]]);
-                CGAL::Barycentric_coordinates::triangle_coordinates_2(A, B, C, P, barycentricCoordinatesNeighbour.begin());
-                triangleBarycentricCoordinates[neighbourTriagleId] = barycentricCoordinatesNeighbour;
+
+                std::vector<CartesianPoint> triangle = {A, B, C};
+                const auto result = CGAL::bounded_side_2(triangle.begin(), triangle.end(), P);
+
+                isActive = (result == CGAL::ON_BOUNDED_SIDE);
             }
 
             // Determine if the triangle is active
-            //std::vector<CartesianPoint> triangle = {A2, B2, C2};
-            //const auto result = CGAL::bounded_side_2(triangle.begin(), triangle.end(), P);
-    
-            if (barycentricCoordinatesNeighbour[0] > 0 && barycentricCoordinatesNeighbour[1] > 0 && barycentricCoordinatesNeighbour[2] > 0)
+            if (isActive)
             {
                 // Only add the neighbour if we have not already visited it
                 if (false == triangleColour.contains(neighbourTriagleId))
@@ -191,17 +192,25 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
                     activeAdjacentTrianglesConnected.insert({neighbourTriagleId, currentTriangleId});
                 }
 
-                // Compute or used stored barycentric coordinates for the neighbour
-                //std::array<double, 3> coordinates2;
-                //if (false == triangleBarycentricCoordinates.contains(neighbourTriagleId))
-                //{
-                    //CGAL::Barycentric_coordinates::triangle_coordinates_2(A2, B2, C2, P, coordinates2.begin());
-                    //triangleBarycentricCoordinates[currentTriangleId] = coordinates2;
-                //}
-                //else
-                //{
-                    //coordinates2 = triangleBarycentricCoordinates[neighbourTriagleId];
-                //}
+
+
+
+                // Compute barycentric coordinates for drawing
+                std::array<double, 3> barycentricCoordinatesNeighbour;
+                if (triangleBarycentricCoordinates.contains(neighbourTriagleId))
+                {
+                    barycentricCoordinatesNeighbour = triangleBarycentricCoordinates[neighbourTriagleId];
+                }
+                else
+                {
+                    CartesianPoint A(this->vertexCoordinatesF[triangle2Indices[0]], this->vertexCoordinatesG[triangle2Indices[0]]);
+                    CartesianPoint B(this->vertexCoordinatesF[triangle2Indices[1]], this->vertexCoordinatesG[triangle2Indices[1]]);
+                    CartesianPoint C(this->vertexCoordinatesF[triangle2Indices[2]], this->vertexCoordinatesG[triangle2Indices[2]]);
+
+                    CGAL::Barycentric_coordinates::triangle_coordinates_2(A, B, C, P, barycentricCoordinatesNeighbour.begin());
+                    triangleBarycentricCoordinates[neighbourTriagleId] = barycentricCoordinatesNeighbour;
+                }
+
                 
 
 

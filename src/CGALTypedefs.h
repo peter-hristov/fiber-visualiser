@@ -45,5 +45,9 @@ typedef Arrangement_2::Face_const_handle Face_const_handle;
 //#include <CGAL/Arr_trapezoid_ric_point_location.h>
 //typedef CGAL::Arr_trapezoid_ric_point_location<Arrangement_2> Point_location;
 
-#include <CGAL/Arr_naive_point_location.h>
-typedef CGAL::Arr_naive_point_location<Arrangement_2> Point_location;
+//#include <CGAL/Arr_naive_point_location.h>
+//typedef CGAL::Arr_naive_point_location<Arrangement_2> Point_location;
+
+#include <CGAL/Arr_walk_along_line_point_location.h>
+typedef CGAL::Arr_walk_along_line_point_location<Arrangement_2> Point_location;
+
