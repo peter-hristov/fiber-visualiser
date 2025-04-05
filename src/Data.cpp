@@ -91,6 +91,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
 
     Timer::start();
 
+    // The sizes of these data structures are linear in the size of the fiber, not an issue
     std::queue<int> bfsQueue;
     // This also acts as the visited array
     std::unordered_map<int, int> triangleColour;
