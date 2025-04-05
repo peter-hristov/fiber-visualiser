@@ -189,6 +189,7 @@ int main(int argc, char* argv[])
     // Make the window full screen by default
     window->showMaximized();
 
+
     // Show the label
     window->show();
 

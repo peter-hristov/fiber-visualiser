@@ -393,15 +393,8 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
     this->update();
 }
 
-
-void PlotWidget::generateStaticCache()
+void PlotWidget::drawBackground(QPainter &p)
 {
-    // Create new cache with current widget size
-    staticCache = std::make_unique<QPixmap>(size());
-    staticCache->fill(Qt::white);
-
-    QPainter p(staticCache.get());
-
     // For each face
     for (int i = 0 ; i < this->arrangementPolygonColours.size() ; i++) 
     {
@@ -470,9 +463,29 @@ void PlotWidget::generateStaticCache()
 
     }
 
+    drawAxisLabels(p);
 }
 
+void PlotWidget::generateStaticCache()
+{
+    staticCache = std::make_unique<QPixmap>(resolution, resolution);
+    staticCache->fill(Qt::white);
 
+    QPainter p(staticCache.get());
+    this->drawBackground(p);
+}
+
+void PlotWidget::resizeEvent(QResizeEvent* event)
+{
+    // If the widget size has changed, regenerate the static cache
+    //if (!staticCache || staticCache->size() != size()) 
+    //{
+        //generateStaticCache();
+    //}
+
+    // You can call the base resizeEvent if needed, but it's not strictly required.
+    // QWidget::resizeEvent(event); // Uncomment if needed
+}
 
 void PlotWidget::paintEvent(QPaintEvent*)
 {
@@ -492,8 +505,9 @@ void PlotWidget::paintEvent(QPaintEvent*)
     {
         generateStaticCache();
     }
-
     p.drawPixmap(0, 0, *(this->staticCache));
+
+    //this->drawBackground(p);
 
 
     // Draw Fiber Surface Control Polygon
@@ -501,7 +515,6 @@ void PlotWidget::paintEvent(QPaintEvent*)
 
     p.restore();
 
-    //drawAxisLabels(p);
 }
 
 

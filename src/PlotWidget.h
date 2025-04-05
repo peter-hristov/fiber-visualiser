@@ -45,6 +45,7 @@ class PlotWidget : public QWidget
 
     std::unique_ptr<QPixmap> staticCache;
     void generateStaticCache();
+    void drawBackground(QPainter &p);
 
     bool recomputeFiber = false;
 
@@ -102,6 +103,7 @@ class PlotWidget : public QWidget
     std::vector<float> horizontalLineNumbers;
 
     void paintEvent(QPaintEvent* event);
+    void resizeEvent(QResizeEvent* event);
 
     std::vector<QPolygon> arrangementPolygons;
     std::vector<std::vector<int>> arrangementPolygonColours;
