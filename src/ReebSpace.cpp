@@ -1147,6 +1147,22 @@ void ReebSpace::computeReebSpace(Data *data)
     // Path compression to make sure everyone is poiting to their root
     data->reebSpace.update();
 
+    // Sort the seeds by their corresponding sheetIndex so that we can get consistent colours later
+    for (int i = 0 ; i < data->fiberSeeds.size() ; i++)
+    {
+        std::sort(
+                data->fiberSeeds[i].begin(), 
+                data->fiberSeeds[i].end(), 
+                [faceId = i, &reebSpace = data->reebSpace]
+                (const std::pair<int, int>& a, const std::pair<int, int>& b) {
+                    return reebSpace.findTriangle({faceId, a.second}) < reebSpace.findTriangle({faceId, b.second});
+                });
+
+    }
+
+
+    //for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
+
 
     //
     // Set up colourIDs for each sheet
