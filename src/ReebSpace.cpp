@@ -547,10 +547,10 @@ void ReebSpace::computeArrangement(Data *data)
     //Timer::stop("Computed arrangement sequantially      :");
 
 
-    std::cout << std::endl << std::endl << "The arrangement size:\n"
+    std::cout << "The arrangement size:"
         << "   |V| = " << data->arr.number_of_vertices()
         << ",  |E| = " << data->arr.number_of_edges()
-        << ",  |F| = " << data->arr.number_of_faces() << std::endl;
+        << ",  |F| = " << data->arr.number_of_faces() << std::endl << std::endl;
 
     //std::cout << std::endl << std::endl << "The sequantial arrangement size:\n"
         //<< "   |V| = " << arr.number_of_vertices()
@@ -978,8 +978,8 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
         if (barTickThreshold > 0 && order[currentFaceID] % barTickThreshold == 0)
         {
             // Update bar state
-            bar.tick();
-            bar.tick();
+            if (false == bar.is_completed()) {  bar.tick(); }
+            if (false == bar.is_completed()) {  bar.tick(); }
         }
 
 
@@ -988,8 +988,9 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
         graphsInMemory--;
     }
 
-    printf("There is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
-    printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n", data->reebSpace.data.size(), data->reebSpace.getUniqueRepresentativesAndRoots().size());
+    bar.set_progress(100); // all done
+    printf("\n\nThere is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
+    printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n\n", data->reebSpace.data.size(), data->reebSpace.getUniqueRepresentativesAndRoots().size());
 }
 
 
@@ -1322,6 +1323,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     }
     Timer::stop("Sorting sheets and labeling them       :");
 
+    std::cout << "\nHere are the top 20 sheets sorted by range area.\n";
     // Print to debug, at least the first new
     //for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
     const int maxSheets = std::min((size_t)20, sheetAreaSortVector.size());
