@@ -104,7 +104,7 @@ class PlotWidget : public QWidget
     void paintEvent(QPaintEvent* event);
     void resizeEvent(QResizeEvent* event);
 
-    std::vector<QPolygon> arrangementPolygons;
+    //std::vector<QPolygon> arrangementPolygons;
 
   protected:
     void mouseMoveEvent(QMouseEvent* event);

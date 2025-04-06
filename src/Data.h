@@ -129,8 +129,10 @@ class Data
     // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
     DisjointSet<std::pair<int, int>> reebSpace;
 
-    // For each faceID we ahve a number of triangle seeds
+    // For each faceID we ahve a number of triangle seeds, which are given in fiberComponentId
     std::vector<std::vector<std::pair<int, int>>> fiberSeeds;
+
+    std::unordered_map<int, CartesianPolygon_2> sheetPolygon;
 
     // There's also this vector in plotwidget
     //std::vector<QPolygon> arrangementPolygons;

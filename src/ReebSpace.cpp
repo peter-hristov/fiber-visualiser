@@ -1139,89 +1139,180 @@ void ReebSpace::computeCorrespondenceGraph(Data *data)
 void ReebSpace::computeReebSpacePostprocess(Data *data)
 {
 
-    //
-    // Compute the Reeb space
-    //
-    //data->reebSpace.initialize(data->verticesH);
-
-    //for (const auto &[faceRoot1, faceRoot2] : data->edgesH)
-    //{
-        //data->reebSpace.union_setsTriangle(faceRoot1, faceRoot2);
-    //}
-
-    // Path compression to make sure everyone is poiting to their root
+    Timer::start();
+    // Path compression to make sure every element of H is poiting to its root
     data->reebSpace.update();
+    Timer::stop("Updating RS disjoint set               :");
 
-    // Sort the seeds by their corresponding sheetIndex so that we can get consistent colours later
+
+    // For faster lookups cache the sheetd IDs for each face
+    std::vector<std::unordered_set<int>> faceSheets(data->fiberSeeds.size());
     for (int i = 0 ; i < data->fiberSeeds.size() ; i++)
     {
-        std::sort(
-                data->fiberSeeds[i].begin(), 
-                data->fiberSeeds[i].end(), 
-                [faceId = i, &reebSpace = data->reebSpace]
-                (const std::pair<int, int>& a, const std::pair<int, int>& b) {
-                    return reebSpace.findTriangle({faceId, a.second}) < reebSpace.findTriangle({faceId, b.second});
-                });
-
-    }
-
-
-    // 
-    // Here we sort the n sheets by area and number them in sorted order 0, ..., n
-
-    // First compute the area of each face in the arrangement
-    std::vector<double> facesArea(data->arr.number_of_faces(), 0);
-    for (auto currentFace = data->arr.faces_begin(); currentFace != data->arr.faces_end(); ++currentFace) 
-    {
-        if (currentFace->is_unbounded()) 
+        for (const auto &[triangleId, fiberComponentId] : data->fiberSeeds[i])
         {
-            continue;
+            const int sheetId = data->reebSpace.findTriangle({i, fiberComponentId});
+            faceSheets[i].insert(sheetId);
         }
 
-        const int currentFaceID = data->arrangementFacesIdices[currentFace];
-
-        CartesianPolygon_2 polygon;
-
-        Arrangement_2::Ccb_halfedge_const_circulator circ = currentFace->outer_ccb();
-        Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
-        do {
-
-            const Point_2 epecPoint = curr->source()->point();
-            CartesianPoint cartesianPoint(CGAL::to_double(epecPoint.x()), CGAL::to_double(epecPoint.y()));
-
-            polygon.push_back(cartesianPoint);
-            ++curr;
-        } while (curr != circ);
-
-        // Sanity check
-        assert(polygon.is_simple());
-
-        //if (polygon.orientation() != CGAL::COUNTERCLOCKWISE) {
-            //polygon.reverse_orientation(); // Ensure standard orientation
-        //}
-
-        //facesArea[currentFaceID] = CGAL::to_double(polygon.area());
-        facesArea[currentFaceID] = polygon.area();
     }
 
-    // Then compute the area of each sheet by summing the areas of their faces
-    std::map<int, double> sheetArea;
-    for (const auto &[key, value] : data->reebSpace.data)
+    Timer::start();
+    //
+    // In order to compute the polygon of each sheet, first obtain a halfEdge of the arrangement that is on the boundary of the sheet
+    //
+    std::unordered_map<int, Arrangement_2::Halfedge_const_handle> sheetSeeds;
+    for (auto currentFaceIterator = data->arr.faces_begin(); currentFaceIterator != data->arr.faces_end(); ++currentFaceIterator) 
     {
-        const auto &[currentFaceId, fiberComponentId] = key;
-        const int sheetId = data->reebSpace.find(value);
-        
-        sheetArea[sheetId] += facesArea[currentFaceId];
-    }
+        Arrangement_2::Face_const_handle currentFace = currentFaceIterator;
+        if (currentFace->is_unbounded()) { continue; }
 
+        int currentFaceID = data->arrangementFacesIdices[currentFace];
+
+        //printf("\n\nFace %d has these sheets - ", currentFaceID);
+
+        // Which sheets contain the current face
+        std::unordered_set<int> currentFaceSheetIds = faceSheets[currentFaceID];
+        //for (const auto &[triangleId, fiberComponentId] : data->fiberSeeds[currentFaceID])
+        //{
+            //const int sheetId = data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+            //currentFaceSheetIds.push_back(sheetId);
+            ////printf("%d ", sheetId);
+        //}
+        //printf("\n");
+
+
+        Arrangement_2::Ccb_halfedge_const_circulator start = currentFace->outer_ccb();
+        Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+        do {
+            Face_const_handle twinFace = curr->twin()->face();
+            if (twinFace->is_unbounded()) { curr++; continue; }
+
+            const int twinFaceID = data->arrangementFacesIdices[twinFace];
+            std::unordered_set<int> twinFaceSheetIds = faceSheets[twinFaceID];
+
+            // Which sheets are in the currentFace, but NOT in the twin face
+            std::vector<int> diff;
+            for (const int &sheetId : currentFaceSheetIds) 
+            {
+                if (false == twinFaceSheetIds.contains(sheetId))
+                {
+                    diff.push_back(sheetId);
+                }
+            }
+
+            for (const int &sheetId : diff)
+            {
+                //std::cout << "Half-edge   from: " << curr->source()->point() << " to " << curr->target()->point() << " is a seed for sheet " << sheetId << std::endl;
+
+                if (false == sheetSeeds.contains(sheetId))
+                {
+                    sheetSeeds[sheetId] = curr;
+                }
+            }
+
+            ++curr;
+        } while (curr != start);
+    }
+    Timer::stop("Computing sheet seeds                  :");
+
+
+
+
+
+    //
+    // At this point we have a half edge seed for every sheet, we use it to traverse the boundary of the sheet to obtain its geometry
+    // We rely on the half edge data structure provided by the arrangement
+    // if ab is an edge between vertices a and b in A and, then we can get the next edge bc as the one of the neighours of b that has
+    // the sheet in its face and it doesn't have the sheet in the twin face
+    //
+
+
+    //printf("Done with sheet seeds\n");
+
+
+    Timer::start();
+    for (const auto &[sheetId, halfEdge]: sheetSeeds)
+    {
+        //printf("---------------------------------------------------------------------------------------------       At sheet %d \n", sheetId);
+
+        // Starting location, we don't make it visited on purpose, we want to discover it latex to finish the loop
+        Vertex_const_handle startVertex = halfEdge->source();
+        Vertex_const_handle currentVertex = startVertex;
+
+        do 
+        {
+            // Add the current vertex to the polygon
+            data->sheetPolygon[sheetId].push_back({
+                    CGAL::to_double(currentVertex->point().x()), 
+                    CGAL::to_double(currentVertex->point().y())
+                    });
+
+
+            //printf("-------------------------- The current vertex (%f, %f) \n ", CGAL::to_double(currentVertex->point().x()), CGAL::to_double(currentVertex->point().y()));
+
+
+
+            // Find the next vertex on the boundary of the sheet, it will be adjacent to the current vertex
+            const auto begin = currentVertex->incident_halfedges();
+            auto circ = begin;
+            do {
+
+                const auto twinHalfEdge = circ->twin();
+                const auto nextVertex = twinHalfEdge->target();
+                //printf("Looking at neighbour (%f, %f) \n ", CGAL::to_double(twinHalfEdge->target()->point().x()), CGAL::to_double(twinHalfEdge->target()->point().y()));
+
+                Face_const_handle faceA = circ->face();
+                const int faceAId = data->arrangementFacesIdices[faceA];
+                Face_const_handle faceB = twinHalfEdge->face();
+                const int faceBId = data->arrangementFacesIdices[faceB];
+
+                // If one of the face contains the sheet
+                const bool faceHalfEdgeContainsSheet = faceSheets[faceAId].contains(sheetId);
+                const bool faceTwinHalfEdgeContainsEdge = faceSheets[faceBId].contains(sheetId);
+
+                if (faceHalfEdgeContainsSheet == true && faceTwinHalfEdgeContainsEdge == false)
+                {
+                    currentVertex = nextVertex;
+                    break;
+                }
+
+                ++circ;
+            } while (circ != begin);
+
+
+        } while (currentVertex != startVertex);
+    }
+    Timer::stop("Computing sheet boundary polygons      :");
+
+
+
+
+
+
+
+    Timer::start();
+    std::map<int, double> sheetArea;
+    for (const auto &[sheetId, polygon] : data->sheetPolygon)
+    {
+        const double area = abs(polygon.area());
+        sheetArea[sheetId] = area;
+        //printf("The polygon of sheet %d has size %ld and area %f\n", sheetId, polygon.size(), area);
+        //printf("The area of sheet %d is %f \n", sheetId, area);
+    }
+    Timer::stop("Computing sheet areas                  :");
+    //Timer::stop("Computing sheet boundary polygons      :");
+
+    Timer::start();
     // Transfer the map entries into a vector of pairs so that we can sort
     std::vector<std::pair<int, double>> sheetAreaSortVector(sheetArea.begin(), sheetArea.end());
+
+    //printf("The sort vector has size %ld\n", sheetAreaSortVector.size());
 
     // Sort by area
     std::sort(sheetAreaSortVector.begin(), sheetAreaSortVector.end(), [](const std::pair<int, double>& a, const std::pair<int, double>& b) {
             return a.second > b.second; 
             });
-
 
     // Assign a sorted order to each sheet
     for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
@@ -1229,54 +1320,13 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
         const auto &[sheetId, area] = sheetAreaSortVector[i];
         data->sheetToColour[sheetId] = i;
     }
+    Timer::stop("Sorting sheets and labeling them       :");
 
     // Print to debug, at least the first new
     //for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
     const int maxSheets = std::min((size_t)20, sheetAreaSortVector.size());
-    for (int i = 0 ; i < 20 ; i++)
+    for (int i = 0 ; i < maxSheets ; i++)
     {
         std::cout << i << " -- sheet " << sheetAreaSortVector[i].first << " has area " << sheetAreaSortVector[i].second << std::endl;
     }
-
-
-    // Code for Mergeing polygons into sheets
-
-    //std::cout << "Breakpoint 1" << std::endl;
-
-
-
-
-    //// Collect the polygons of the faces per sheet
-    //std::unordered_map<int, Polygon_set_2> sheetPolygons;
-    //int computedSoFar = 0;
-    //for (const auto &[faceFiberPairIds, ufId] : data->reebSpace.data)
-    //{
-        //const auto &[faceId, fiberComponentId] = faceFiberPairIds;
-        //const int sheetId = data->reebSpace.find(ufId);
-
-        //printf("Currently at %d out of %ld.\n", ++computedSoFar, data->reebSpace.data.size());
-
-        //if (false == sheetPolygons.contains(sheetId))
-        //{
-            //sheetPolygons[sheetId].insert(facesPolygons[faceId]);
-        //}
-        //else
-        //{
-            //sheetPolygons[sheetId].join(facesPolygons[faceId]);
-        //}
-
-    //}
-
-    //std::cout << "Breakpoint 2" << std::endl;
-
-    //// Get the jointed polygon for each sheet
-    //for (auto &[sheetId, polygonSet] : sheetPolygons)
-    //{
-        //std::vector<Polygon_with_holes_2> result;
-        //polygonSet.polygons_with_holes(std::back_inserter(result));
-
-        //assert(result.size() == 1);
-
-        //data->sheetPolygonsMerged[sheetId] = result[0];
-    //}
 }

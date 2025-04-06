@@ -32,6 +32,7 @@ typedef CGAL::Arr_segment_2<K> Curve_2;
 
 typedef Arrangement_2::Halfedge_handle Halfedge_handle;
 typedef Arrangement_2::Face_handle Face_handle;
+typedef Arrangement_2::Vertex_const_handle Vertex_const_handle;
 typedef Arrangement_2::Vertex_iterator Vertex_iterator;
 
 // Const iterators and handles

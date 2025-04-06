@@ -162,9 +162,10 @@ int main(int argc, char* argv[])
     //ReebSpace::computeCorrespondenceGraph(data);
     //Timer::stop("Computed H                             :");
 
-    Timer::start();
+    std::cout << "Postprocessing..." << std::endl;
+    //Timer::start();
     ReebSpace::computeReebSpacePostprocess(data);
-    Timer::stop("Computed RS(f) Postprocess             :");
+    //Timer::stop("Computed RS(f) Postprocess             :");
     //Timer::stop("Computed RS(f)                         :");
 
     //std::cout << "Press Enter to continue...";

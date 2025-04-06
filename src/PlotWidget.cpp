@@ -26,6 +26,7 @@
 #include "./utility/Geometry.h"
 
 #include "PlotWidget.h"
+#include "src/CGALTypedefs.h"
 #include "src/Data.h"
 #include "./Timer.h"
 
@@ -44,39 +45,39 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
     this->setEnabled(true);
 
     // Set up polygons for drawing
-    this->arrangementPolygons.resize(this->data->arrangementIndexToFace.size());
-    for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
-    {
-        if (f->is_unbounded()) 
-        {
-            continue;
-        }
+    //this->arrangementPolygons.resize(this->data->arrangementIndexToFace.size());
+    //for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+    //{
+        //if (f->is_unbounded()) 
+        //{
+            //continue;
+        //}
 
-        QVector<QPoint> points;
+        //QVector<QPoint> points;
 
-        typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
-        typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
-        do {
-            typename Arrangement_2::Halfedge_const_handle e = curr;
+        //typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+        //typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+        //do {
+            //typename Arrangement_2::Halfedge_const_handle e = curr;
 
-            // Get point from CGAL (and convert to double )
-            const float u = CGAL::to_double(e->source()->point().x());
-            const float v = CGAL::to_double(e->source()->point().y());
+            //// Get point from CGAL (and convert to double )
+            //const float u = CGAL::to_double(e->source()->point().x());
+            //const float v = CGAL::to_double(e->source()->point().y());
 
-            // Translate to the window frame
-            const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
-            const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+            //// Translate to the window frame
+            //const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
+            //const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
 
 
-            // Add to the polygon
-            points << QPoint(u1, v1);
+            //// Add to the polygon
+            //points << QPoint(u1, v1);
 
-            //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
-        } while (++curr != circ);
+            ////std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
+        //} while (++curr != circ);
 
-        const int faceId = data->arrangementFacesIdices[f];
-        this->arrangementPolygons[faceId] = QPolygon(points);
-    }
+        //const int faceId = data->arrangementFacesIdices[f];
+        //this->arrangementPolygons[faceId] = QPolygon(points);
+    //}
 }
 
     void
@@ -308,25 +309,75 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
 
 void PlotWidget::drawBackground(QPainter &p)
 {
-    // We assume that the fiber seeds per face are sorted by their sheetId
-    for (int i = 0 ; i < this->data->fiberSeeds.size() ; i++) 
+
+    for (const auto &[sheetId, polygon] : data->sheetPolygon)
     {
-        const int currentFaceID = i;
 
-        // For each fiber component
-        for (int j = 0 ; j < this->data->fiberSeeds[i].size() ; j++) 
+        QVector<QPoint> points;
+
+        for (const CartesianPoint &point : polygon) 
         {
-            //const auto &[]
-            const auto &[triangleId, fiberComponentId] = this->data->fiberSeeds[i][j];
-            const int sheetId = this->data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
-            const int colourID = data->sheetToColour[sheetId];
-            const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+            // Get point from CGAL (and convert to double )
+            const float u = point.x();
+            const float v = point.y();
 
-            p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
-            p.setPen(Qt::NoPen);
-            p.drawPolygon(this->arrangementPolygons[i]);
+            // Translate to the window frame
+            const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
+            const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+
+
+            // Add to the polygon
+            points << QPoint(u1, v1);
         }
+
+        QPolygon qPolygon(points);
+
+        const int colourID = data->sheetToColour[sheetId];
+        const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+
+        p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
+        p.setPen(Qt::NoPen);
+        p.drawPolygon(qPolygon);
     }
+
+    //for (int i = 0 ; i < this->data->fiberSeeds.size() ; i++) 
+    //{
+        //const int currentFaceID = i;
+
+        //// For each fiber component
+        //for (int j = 0 ; j < this->data->fiberSeeds[i].size() ; j++) 
+        //{
+            ////const auto &[]
+            //const auto &[triangleId, fiberComponentId] = this->data->fiberSeeds[i][j];
+            //const int sheetId = this->data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+            //const int colourID = data->sheetToColour[sheetId];
+            //const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+
+            //p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
+            //p.setPen(Qt::NoPen);
+            //p.drawPolygon(this->arrangementPolygons[i]);
+        //}
+    //}
+
+    // We assume that the fiber seeds per face are sorted by their sheetId
+    //for (int i = 0 ; i < this->data->fiberSeeds.size() ; i++) 
+    //{
+        //const int currentFaceID = i;
+
+        //// For each fiber component
+        //for (int j = 0 ; j < this->data->fiberSeeds[i].size() ; j++) 
+        //{
+            ////const auto &[]
+            //const auto &[triangleId, fiberComponentId] = this->data->fiberSeeds[i][j];
+            //const int sheetId = this->data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+            //const int colourID = data->sheetToColour[sheetId];
+            //const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+
+            //p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
+            //p.setPen(Qt::NoPen);
+            //p.drawPolygon(this->arrangementPolygons[i]);
+        //}
+    //}
 
 
     //
