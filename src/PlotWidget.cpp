@@ -421,6 +421,7 @@ void PlotWidget::drawBackground(QPainter &p)
             float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
             float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
 
+            p.setRenderHint(QPainter::Antialiasing, true);
             p.drawLine(x1, y1, x2, y2);
 
         }
