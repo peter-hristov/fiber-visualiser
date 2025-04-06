@@ -55,7 +55,7 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
         this->tracerVisualiserWidget->update();
     }
 
-    if (event->key() == Qt::Key_O) {
+    if (event->key() == Qt::Key_C) {
         this->tracerVisualiserWidget->clearFibers = !this->tracerVisualiserWidget->clearFibers;
         this->tracerVisualiserWidget->update();
     }

@@ -408,11 +408,11 @@ void PlotWidget::drawBackground(QPainter &p)
             if (type == 0)
             {
                 //p.setPen(QPen(Qt::black, 1, Qt::DashLine));
-                p.setPen(QPen(Qt::black, 2));
+                p.setPen(QPen(Qt::black, 1));
             }
             else
             {
-                p.setPen(QPen(Qt::black, 2));
+                p.setPen(QPen(Qt::black, 1));
             }
 
             float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
@@ -431,12 +431,14 @@ void PlotWidget::drawBackground(QPainter &p)
 
 void PlotWidget::generateStaticCache()
 {
-    qDebug() << "Redrawing REEB SPACE ...";
-    staticCache = std::make_unique<QPixmap>(resolution, resolution);
-    staticCache->fill(Qt::white);
-
-    QPainter p(staticCache.get());
-    this->drawBackground(p);
+    if (!staticCache) 
+    {
+        staticCache = std::make_unique<QPixmap>(resolution, resolution);
+        staticCache->fill(Qt::white);
+        qDebug() << "Redrawing REEB SPACE ...";
+        QPainter p(staticCache.get());
+        this->drawBackground(p);
+    }
 }
 
 void PlotWidget::resizeEvent(QResizeEvent* event)

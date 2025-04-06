@@ -90,17 +90,33 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     std::unordered_map<int, std::array<double, 3>> triangleBarycentricCoordinates;
 
     std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with (sheet IDs, sorted IDs): ";
+    vector<int> sheetIds;
     for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
     {
         bfsQueue.push(triangleId);
         const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
         triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
 
+        sheetIds.push_back(sheetId);
+
         printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
         //std::cout << sheetId << " ";
     }
 
-    std::cout << std::endl;
+    std::cout << "The polygons for those sheets are :\n";
+    for (const int &sheetId : sheetIds)
+    {
+        std::cout << "Polygon " << sheetId << ":\n";
+
+        for (const CartesianPoint &point : this->sheetPolygon[sheetId]) 
+        {
+            printf("(%f, %f)\n", point.x(), point.y());
+        }
+
+        std::cout << std::endl;
+    }
+
+
 
 
     // Define query point
@@ -575,10 +591,10 @@ Data::computeMinMaxRangeDomainCoordinates()
     //this->minG -= .2;
     //this->maxG += .2;
 
-    this->minF -= 0.2 * (this->maxF - this->minF);
-    this->maxF += 0.2 * (this->maxF - this->minF);
-    this->minG -= 0.2 * (this->maxG - this->minG);
-    this->maxG += 0.2 * (this->maxG - this->minG);
+    this->minF -= 0.1 * (this->maxF - this->minF);
+    this->maxF += 0.1 * (this->maxF - this->minF);
+    this->minG -= 0.1 * (this->maxG - this->minG);
+    this->maxG += 0.1 * (this->maxG - this->minG);
 }
 
 void Data::sortVertices()
