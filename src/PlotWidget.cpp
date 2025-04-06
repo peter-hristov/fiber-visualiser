@@ -408,11 +408,11 @@ void PlotWidget::drawBackground(QPainter &p)
             if (type == 0)
             {
                 //p.setPen(QPen(Qt::black, 1, Qt::DashLine));
-                p.setPen(QPen(Qt::black, 1));
+                p.setPen(QPen(Qt::black, 0.2));
             }
             else
             {
-                p.setPen(QPen(Qt::black, 1));
+                p.setPen(QPen(Qt::black, 0.2));
             }
 
             float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
