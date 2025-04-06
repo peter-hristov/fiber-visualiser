@@ -178,7 +178,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
                 }
             }
 
-            if (tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m]) < sphereRadius * 4) {
+            if (tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m]) <= sphereRadius) {
                 closePoint = m;
             } else {
                 closePoint = -1;
@@ -407,7 +407,8 @@ void PlotWidget::drawBackground(QPainter &p)
         {
             if (type == 0)
             {
-                p.setPen(QPen(Qt::black, 1, Qt::DashLine));
+                //p.setPen(QPen(Qt::black, 1, Qt::DashLine));
+                p.setPen(QPen(Qt::black, 2));
             }
             else
             {

@@ -51,7 +51,7 @@ class PlotWidget : public QWidget
 
     Data* data;
     float varianceScale = 0;
-    const float resolution = 1000;
+    const float resolution = 2000;
     // This is the radius of the sphere around a vertex in the fscp
     const float sphereRadius = this->resolution / 100.0;
     std::string interpolationType = "";
