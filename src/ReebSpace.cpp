@@ -1232,8 +1232,51 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
     // Print to debug, at least the first new
     //for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
+    const int maxSheets = std::min((size_t)20, sheetAreaSortVector.size());
     for (int i = 0 ; i < 20 ; i++)
     {
         std::cout << i << " -- sheet " << sheetAreaSortVector[i].first << " has area " << sheetAreaSortVector[i].second << std::endl;
     }
+
+
+    // Code for Mergeing polygons into sheets
+
+    //std::cout << "Breakpoint 1" << std::endl;
+
+
+
+
+    //// Collect the polygons of the faces per sheet
+    //std::unordered_map<int, Polygon_set_2> sheetPolygons;
+    //int computedSoFar = 0;
+    //for (const auto &[faceFiberPairIds, ufId] : data->reebSpace.data)
+    //{
+        //const auto &[faceId, fiberComponentId] = faceFiberPairIds;
+        //const int sheetId = data->reebSpace.find(ufId);
+
+        //printf("Currently at %d out of %ld.\n", ++computedSoFar, data->reebSpace.data.size());
+
+        //if (false == sheetPolygons.contains(sheetId))
+        //{
+            //sheetPolygons[sheetId].insert(facesPolygons[faceId]);
+        //}
+        //else
+        //{
+            //sheetPolygons[sheetId].join(facesPolygons[faceId]);
+        //}
+
+    //}
+
+    //std::cout << "Breakpoint 2" << std::endl;
+
+    //// Get the jointed polygon for each sheet
+    //for (auto &[sheetId, polygonSet] : sheetPolygons)
+    //{
+        //std::vector<Polygon_with_holes_2> result;
+        //polygonSet.polygons_with_holes(std::back_inserter(result));
+
+        //assert(result.size() == 1);
+
+        //data->sheetPolygonsMerged[sheetId] = result[0];
+    //}
 }
