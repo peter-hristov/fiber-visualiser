@@ -30,16 +30,54 @@ double randomPerturbation(double epsilon) {
     return dist(gen);
 }
 
+void Data::printSheetHistogram()
+{
+    Timer::start();
+    if (this->currentFiberPoint.size() == 0)
+    {
+        return;
+    }
+
+    assert (this->currentFiberPoint.size() == 2);
+
+    set<int> intersectedSheets;
+    CartesianLine line(CartesianPoint(0, this->currentFiberPoint[0]), CartesianPoint(1, this->currentFiberPoint[1])); // Line through (0, 1) and (1, 0)
+    for (const auto &[sheetId, polygon] : this->sheetPolygon)
+    {
+        QVector<QPoint> points;
+
+        for (const CartesianSegment& segment : polygon.edges()) 
+        {
+            if (CGAL::do_intersect(segment, line)) 
+            {
+                intersectedSheets.insert(sheetId);
+            }
+        }
+    }
+
+    std::cout << "Intersected sheets: ";
+    for (const auto &sheetId : intersectedSheets)
+    {
+        std::cout << sheetId << " (a = )" << this->sheetArea[sheetId] << std::endl;
+
+    }
+    std::cout << "\n";
+    Timer::stop("Computed face intersected by the line  :");
+}
+
 
 void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
-    this->faceFibers.clear();
+    //this->faceFibers.clear();
 
     //
     // Get the ID of the face we are intersecting
     //
 
     Timer::start();
+
+    // Store the current fiber point
+    this->currentFiberPoint = {u, v};
 
     // The query point (u, v)
     Point_2 query_point(u, v);
@@ -91,42 +129,20 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     std::unordered_map<int, std::array<double, 3>> triangleBarycentricCoordinates;
 
     std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with (sheet IDs, sorted IDs): ";
-    vector<int> sheetIds;
+    //vector<int> sheetIds;
     for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
     {
         bfsQueue.push(triangleId);
         const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
         triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
 
-        sheetIds.push_back(sheetId);
+        //sheetIds.push_back(sheetId);
 
         printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
     }
     std::cout << std::endl;
 
 
-    set<int> intersectedSheets;
-    CartesianLine line(CartesianPoint(0, v), CartesianPoint(1, v)); // Line through (0, 1) and (1, 0)
-    for (const auto &[sheetId, polygon] : this->sheetPolygon)
-    {
-        QVector<QPoint> points;
-
-        for (const CartesianSegment& segment : polygon.edges()) 
-        {
-            if (CGAL::do_intersect(segment, line)) 
-            {
-                intersectedSheets.insert(sheetId);
-            }
-        }
-    }
-
-    std::cout << "Intersected sheets: ";
-    for (const auto &sheetId : intersectedSheets)
-    {
-        std::cout << sheetId << " (a = )" << this->sheetArea[sheetId] << std::endl;
-
-    }
-    std::cout << "\n";
 
 
     // Define query point

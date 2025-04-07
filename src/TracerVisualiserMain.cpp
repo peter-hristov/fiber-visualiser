@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     bool discardFiberSeeds = false;
     cliApp.add_flag("--discardPreimageGraphs, -d", discardFiberSeeds, "Discard the seeds for generating fibers based on sheets, discard to save a bit of memory (not too much).");
 
-    float perturbationEpsilon = 1e-7;
+    float perturbationEpsilon = 1e-4;
     cliApp.add_option("--epsilon, -e", perturbationEpsilon, "Strength of the numerial perturbation in the range [-e, e].");
 
     string outputSheetPolygonsFilename;
@@ -159,6 +159,9 @@ int main(int argc, char* argv[])
         {
             outFile << sheetId << std::endl;
 
+
+            CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
+
             // To make sure we don't write a comma at the end of the array
             int pointsWritten = 0;
 
@@ -166,8 +169,15 @@ int main(int argc, char* argv[])
             for (const CartesianPoint &point : polygon) 
             {
                 // Get point from CGAL (and convert to double )
-                const float u = point.x();
-                const float v = point.y();
+                float u = point.x();
+                float v = point.y();
+
+                // (Optinal) Shrink the polygon to the center point a tiny bit
+                float shrinkU = u - centroid.x();
+                float shrinkV = u - centroid.y();
+
+                u += 0.1 * shrinkU;
+                v += 0.1 * shrinkV;
 
                 outFile << u << ", " << v << ", " << 0;
 

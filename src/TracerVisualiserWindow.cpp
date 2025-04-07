@@ -58,7 +58,14 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_C) {
         this->tracerVisualiserWidget->clearFibers = !this->tracerVisualiserWidget->clearFibers;
         this->tracerVisualiserWidget->update();
+        this->data->faceFibers.clear();
     }
+
+    if (event->key() == Qt::Key_H) {
+        this->data->printSheetHistogram();
+
+    }
+
 }
 
 TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,

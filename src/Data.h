@@ -40,6 +40,9 @@ class Data
     GLfloat minY, maxY;
     GLfloat minZ, maxZ;
 
+    std::vector<float> currentFiberPoint;
+    void printSheetHistogram();
+
     // Compute the min/max F, G and X, Y, Z coordinates
     void computeMinMaxRangeDomainCoordinates();
 

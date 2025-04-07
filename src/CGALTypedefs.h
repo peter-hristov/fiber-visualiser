@@ -72,3 +72,4 @@ typedef CartesianKernel::Segment_2 CartesianSegment;
 typedef CartesianKernel::Line_2 CartesianLine;
 typedef CGAL::Polygon_2<CartesianKernel> CartesianPolygon_2;
 
+#include <CGAL/centroid.h>
