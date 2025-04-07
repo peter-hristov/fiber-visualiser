@@ -13,6 +13,9 @@ class FaceFiberPoint{
     // RGB colour value
     std::vector<float> colour;
 
+    int sheetId;
+    int triangleId;
+
     // The barycentric coordinates as well as the three triangle vertices
     FaceFiberPoint(const float alpha, const float beta, const std::vector<std::vector<float>> &vertices, const std::vector<float> _colour)
     {

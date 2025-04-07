@@ -63,7 +63,9 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 
     if (event->key() == Qt::Key_H) {
         this->data->printSheetHistogram();
-
+    }
+    if (event->key() == Qt::Key_S) {
+        this->data->saveFibers();
     }
 
 }

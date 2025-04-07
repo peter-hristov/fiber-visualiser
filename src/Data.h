@@ -59,12 +59,13 @@ class Data
     std::vector<GLfloat> vertexCoordinatesF;
     std::vector<GLfloat> vertexCoordinatesG;
 
-
+    std::string fibersFile = "./fibers.vtp";
     std::vector<FaceFiberPoint> faceFibers;
+    void saveFibers();
 
     void computeTetExitPoints(const float, const float, const std::vector<float> = {1,1,1});
     void computeTetExitPointsNew(const float, const float, const std::vector<float> = {1,1,1});
-    void computeTetExitPointsNewNew(const float, const float, const std::vector<float> = {1,1,1});
+    void computeTetExitPointsNewNew(const float, const float, const bool, const std::vector<float> = {1,1,1});
 
 
     void readData(const std::string&, const float&);

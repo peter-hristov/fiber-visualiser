@@ -2,6 +2,7 @@
 #include "./Timer.h"
 #include "./DisjointSet.h"
 #include "src/CGALTypedefs.h"
+#include "src/FaceFiber.h"
 
 #include <CGAL/enum.h>
 #include <cassert>
@@ -21,6 +22,10 @@
 #include <random>
 #include <ranges>
 
+#include <vtkPolyLine.h>
+#include <vtkCellArray.h>
+#include <vtkPolyData.h>
+#include <vtkXMLPolyDataWriter.h>
 
 using namespace std;
 
@@ -28,6 +33,61 @@ double randomPerturbation(double epsilon) {
     static std::mt19937 gen(std::random_device{}()); // Seeded generator
     std::uniform_real_distribution<double> dist(-epsilon, epsilon);
     return dist(gen);
+}
+
+void Data::saveFibers()
+{
+    std::cout << "Saving fibers in " << this->fibersFile << std::endl;
+    std::cout << "The fiber has size " << this->faceFibers.size() << std::endl;  
+
+    // 1. Create the points
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    auto idArray = vtkSmartPointer<vtkIntArray>::New();
+    idArray->SetName("SheetId");
+    idArray->SetNumberOfComponents(1);
+
+    for (const FaceFiberPoint &p : this->faceFibers)
+    {
+        // Insert points and corresponding IDs
+        points->InsertNextPoint(p.point[0], p.point[1], p.point[2]);
+        idArray->InsertNextValue(p.sheetId);
+
+    }
+
+    // 3. Create the cells (wrap polyline in cell array)
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    for (int i = 1 ; i < this->faceFibers.size() ; i+=2)
+    {
+        //cout << i << " " << this->faceFibers[i-1].sheetId << " " << this->faceFibers[i].sheetId << endl;
+        //cout << i << " " << this->faceFibers[i-1].triangleId << " " << this->faceFibers[i].triangleId << endl;
+        //printf("(%f, %f, %f) -> (%f, %f, %f)\n", this->faceFibers[i-1].point[0], this->faceFibers[i-1].point[1], this->faceFibers[i-1].point[2], this->faceFibers[i].point[0], this->faceFibers[i].point[1], this->faceFibers[i].point[2]);
+
+        if (this->faceFibers[i-1].sheetId == this->faceFibers[i].sheetId)
+        {
+            // One edge segment
+            auto polyLine = vtkSmartPointer<vtkPolyLine>::New();
+            polyLine->GetPointIds()->SetNumberOfIds(2);
+            polyLine->GetPointIds()->SetId(0, i-1);
+            polyLine->GetPointIds()->SetId(1, i);
+
+            cells->InsertNextCell(polyLine);
+        }
+    }
+
+    // 4. Create the polydata object
+    auto polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(cells);
+
+    // 5. Attach the VertexID array to the point data
+    polyData->GetPointData()->AddArray(idArray);
+    polyData->GetPointData()->SetScalars(idArray);  // optional: for coloring
+
+    // 6. Write to .vtp file (XML format)
+    auto writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+    writer->SetFileName(this->fibersFile.c_str());
+    writer->SetInputData(polyData);
+    writer->Write();
 }
 
 void Data::printSheetHistogram()
@@ -66,9 +126,12 @@ void Data::printSheetHistogram()
 }
 
 
-void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
+void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bool clearFibers, const std::vector<float> color)
 {
-    //this->faceFibers.clear();
+    if (true == clearFibers)
+    {
+        this->faceFibers.clear();
+    }
 
     //
     // Get the ID of the face we are intersecting
@@ -122,7 +185,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     // The sizes of these data structures are linear in the size of the fiber, not an issue
     std::queue<int> bfsQueue;
     // This also acts as the visited array
-    std::unordered_map<int, int> triangleColour;
+    std::unordered_map<int, int> triangleSheetId;
     // Needed to close loops closed fibers, hack because we are not visiting tets, but triangles
     std::unordered_set<pair<int, int>, MyHash<pair<int, int>>> activeAdjacentTrianglesConnected;
     // Cache barycentric coordintes, they are expensive to compute
@@ -134,7 +197,8 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     {
         bfsQueue.push(triangleId);
         const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
-        triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
+        //triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
+        triangleSheetId[triangleId] = sheetId;
 
         //sheetIds.push_back(sheetId);
 
@@ -151,10 +215,10 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     while (false == bfsQueue.empty())
     {
         const int currentTriangleId = bfsQueue.front();
-        const int currentColourId = triangleColour[currentTriangleId];
+        const int currentSheeId = triangleSheetId[currentTriangleId];
         bfsQueue.pop();
 
-        const vector<float> sheetColour = this->fiberColours[currentColourId];
+        const vector<float> sheetColour = this->fiberColours[this->sheetToColour[currentSheeId] % this->fiberColours.size()];
 
         const set<int> triangleUnpacked = this->indexToTriangle[currentTriangleId];
         const vector<int> triangleIndices = std::vector<int>(triangleUnpacked.begin(), triangleUnpacked.end());
@@ -180,6 +244,11 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
         // Look at the neighbours
         for (const int &neighbourTriagleId : this->adjacentTrianglesIndex[currentTriangleId])
         {
+            if (neighbourTriagleId == currentTriangleId)
+            {
+                continue;
+            }
+
             // We can't skip visited neighbours, because there may be a fiber between us (completing a circle)
             //if (triangleColour.contains(neighbourTriagle)) { continue; }
 
@@ -189,7 +258,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
 
 
             // The neighbour is active if we've already seen it
-            bool isActive = triangleColour.contains(neighbourTriagleId);
+            bool isActive = triangleSheetId.contains(neighbourTriagleId);
 
             // Or if the image of the triangle contains the fiber points
             // We use a fast test to avoid having to use barycentric coordinates all the time
@@ -209,11 +278,11 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
             if (isActive)
             {
                 // Only add the neighbour if we have not already visited it
-                if (false == triangleColour.contains(neighbourTriagleId))
+                if (false == triangleSheetId.contains(neighbourTriagleId))
                 {
                     // BFS things
                     bfsQueue.push(neighbourTriagleId);
-                    triangleColour[neighbourTriagleId] = currentColourId;
+                    triangleSheetId[neighbourTriagleId] = currentSheeId;
                 }
 
                 // Even if we have aleady added a neighbour, maybe there still isn't a fiber between us (for finishing loops)
@@ -260,6 +329,8 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
                         this->vertexDomainCoordinates[triangleIndices[2]],
                         },
                         sheetColour);
+                fb.sheetId = currentSheeId;
+                fb.triangleId = currentTriangleId;
                 this->faceFibers.push_back(fb);
 
                 FaceFiberPoint fb2(barycentricCoordinatesNeighbour[0], barycentricCoordinatesNeighbour[1], {
@@ -268,8 +339,11 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
                         this->vertexDomainCoordinates[triangle2Indices[2]],
                         },
                         sheetColour);
-
+                fb2.sheetId = currentSheeId;
+                fb2.triangleId = neighbourTriagleId;
                 this->faceFibers.push_back(fb2);
+
+                printf("Adding fiber between %d -> %d\n", currentTriangleId, neighbourTriagleId);
             }
         }
     }
@@ -279,7 +353,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
 
 void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
-    this->faceFibers.clear();
+    //this->faceFibers.clear();
 
     //
     // Get the ID of the face we are intersecting

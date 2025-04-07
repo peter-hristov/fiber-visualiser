@@ -44,7 +44,10 @@ int main(int argc, char* argv[])
     cliApp.add_option("--epsilon, -e", perturbationEpsilon, "Strength of the numerial perturbation in the range [-e, e].");
 
     string outputSheetPolygonsFilename;
-    cliApp.add_option("--output, -o", outputSheetPolygonsFilename, "Filename where to output the coordinates of the polygons that represent each sheet.");
+    cliApp.add_option("--outputSheetPolygons, -o", outputSheetPolygonsFilename, "Filename where to output the coordinates of the polygons that represent each sheet.");
+
+    //string outputFibersFilename = "./fibers.vtp";
+    //cliApp.add_option("--outputFibers", outputSheetPolygonsFilename, "Filename where to save the visible fiber components. Must be .vtp");
 
     CLI11_PARSE(cliApp, argc, argv);
 
@@ -157,9 +160,10 @@ int main(int argc, char* argv[])
 
         for (const auto &[sheetId, polygon] : data->sheetPolygon)
         {
-            outFile << sheetId << std::endl;
+            outFile << "SheetId = " << sheetId << std::endl;
 
 
+            // Compute the controid so that we can pull all verties towards it
             CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
 
             // To make sure we don't write a comma at the end of the array
@@ -172,15 +176,12 @@ int main(int argc, char* argv[])
                 float u = point.x();
                 float v = point.y();
 
-                // (Optinal) Shrink the polygon to the center point a tiny bit
-                float shrinkU = u - centroid.x();
-                float shrinkV = u - centroid.y();
-
-                u += 0.1 * shrinkU;
-                v += 0.1 * shrinkV;
+                // Interpolate closer to the centroid
+                float alpha = 0.5;
+                u = (1 - alpha) * u + alpha * centroid.x();
+                v = (1 - alpha) * v + alpha * centroid.x();
 
                 outFile << u << ", " << v << ", " << 0;
-
                 if (pointsWritten < polygon.size() - 1)
                 {
                     outFile << ", ";

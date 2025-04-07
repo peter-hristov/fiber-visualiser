@@ -694,10 +694,10 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     }
 
     // Leave a trail of fibers or not
-    if (dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers == true)
-    {
-        this->data->faceFibers.clear();
-    }
+    //if (dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers == true)
+    //{
+        //this->data->faceFibers.clear();
+    //}
 
     // If we have selected a point in the scatterplot, compute the fiber surface
     if (this->recomputeFiber == true && polyPoints.size() == 1)
@@ -728,7 +728,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         //qDebug() << "Next ...";
 
         //Timer::start();
-        this->data->computeTetExitPointsNewNew(u, v, data->fiberColours[currentFiberColour]);
+        const bool clearFibers = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers;
+        this->data->computeTetExitPointsNewNew(u, v, clearFibers, data->fiberColours[currentFiberColour]);
         //Timer::stop("Computed fiber new new                 :");
         //qDebug() << "......";
 
