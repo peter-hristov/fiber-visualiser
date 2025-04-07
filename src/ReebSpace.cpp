@@ -1326,7 +1326,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     std::cout << "\nHere are the top 20 sheets sorted by range area.\n";
     // Print to debug, at least the first new
     //for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
-    const int maxSheets = std::min((size_t)20, sheetAreaSortVector.size());
+    const int maxSheets = std::min((size_t)30, sheetAreaSortVector.size());
     for (int i = 0 ; i < maxSheets ; i++)
     {
         std::cout << i << " -- sheet " << sheetAreaSortVector[i].first << " has area " << sheetAreaSortVector[i].second << std::endl;

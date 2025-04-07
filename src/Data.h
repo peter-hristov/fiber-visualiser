@@ -64,9 +64,8 @@ class Data
     void computeTetExitPointsNewNew(const float, const float, const std::vector<float> = {1,1,1});
 
 
-    void readData(std::string);
-
-    void readDataVTK(std::string);
+    void readData(const std::string&, const float&);
+    void readDataVTU(const std::string&, const float&);
 
 
 

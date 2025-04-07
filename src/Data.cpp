@@ -100,21 +100,20 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
         sheetIds.push_back(sheetId);
 
         printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
-        //std::cout << sheetId << " ";
     }
+    std::cout << std::endl;
 
-    std::cout << "The polygons for those sheets are :\n";
-    for (const int &sheetId : sheetIds)
-    {
-        std::cout << "Polygon " << sheetId << ":\n";
+    //std::cout << "The polygons for those sheets are :\n";
+    //for (const int &sheetId : sheetIds)
+    //{
+        //std::cout << "Polygon " << sheetId << ":\n";
 
-        for (const CartesianPoint &point : this->sheetPolygon[sheetId]) 
-        {
-            printf("(%f, %f)\n", point.x(), point.y());
-        }
+        //for (const CartesianPoint &point : this->sheetPolygon[sheetId]) 
+        //{
+            //printf("%f, %f, 0, ", point.x(), point.y());
+        //}
 
-        std::cout << std::endl;
-    }
+    //}
 
 
 
@@ -692,7 +691,7 @@ void Data::printMesh()
         printf("%d - (%ld, %ld, %ld, %ld)\n", i, this->tetrahedra[i][0], this->tetrahedra[i][1], this->tetrahedra[i][2], this->tetrahedra[i][3]);
     }
 }
-void Data::readDataVTK(string filename)
+void Data::readDataVTU(const string &filename, const float &perturbationEpsilon)
 {
     // Read the VTU file
     vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
@@ -700,8 +699,6 @@ void Data::readDataVTK(string filename)
     reader->Update();
 
     vtkSmartPointer<vtkUnstructuredGrid> mesh = reader->GetOutput();
-
-
 
 
     // Set deault names for the range axis
@@ -778,8 +775,8 @@ void Data::readDataVTK(string filename)
         //this->vertexCoordinatesF[i] += iFloat * e;
         //this->vertexCoordinatesG[i] += iFloat * e * iFloat * e;
 
-        this->vertexCoordinatesF[i] += randomPerturbation(1e-2);
-        this->vertexCoordinatesG[i] += randomPerturbation(1e-2);
+        this->vertexCoordinatesF[i] += randomPerturbation(perturbationEpsilon);
+        this->vertexCoordinatesG[i] += randomPerturbation(perturbationEpsilon);
     }
 
     // Now we can sort
@@ -790,7 +787,7 @@ void Data::readDataVTK(string filename)
 }
 
 void
-Data::readData(string filename)
+Data::readData(const string &filename, const float &perturbationEpsilon)
 {
     // Set deault names for the range axis
     this->longnameF = "f";

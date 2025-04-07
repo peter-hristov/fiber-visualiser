@@ -28,50 +28,23 @@ namespace fs = std::filesystem;
 int main(int argc, char* argv[])
 {
 
-    //std::unordered_map<set<int>, int, MyHash<set<int>> test;
-
-    //std::unordered_map<set<int>, int, MyHash<set<int>>> testDta;
-
-    //set<int> a = {1,2,3};
-    //set<int> b = {4,2,3};
-
-    //testDta[a] = 2;
-    //testDta[b] = 3;
-
-    //assert(testDta[a] == testDta[b]);
-
-    //cout << testDta[a] << " " << testDta[b];
-
-
-    //return 0;
-
-    // Initialize the union-find structure
-    //CGAL::Union_find<set<int>> uf;
-
-    //// Create elements
-    //CGAL::Union_find<set<int>>::handle a = uf.push_back({1, 2});  // Adds 11 and returns the index
-    //CGAL::Union_find<set<int>>::handle b = uf.push_back({2, 3});  // Adds 12 and returns the index
-
-    //cout << "Number of sets before unification: " << uf.number_of_sets() << endl;
-
-    //uf.unify_sets(a, b);  // Use the indices returned by push_back
-
-    //cout << "Number of sets after unification: " << uf.number_of_sets() << endl;
-
-    //return 0;
-
-
     // Parse the command line arguments
     CLI::App cliApp("Fiber Visualiser");
 
-    string filename = "a";
+    string filename;
     cliApp.add_option("--file, -f", filename, "Input data filename. Has to be either .txt of .vti.")->required();
 
     bool performanceRun = false;
     cliApp.add_flag("--performanceRun, -p", performanceRun, "Only compute the Reeb space, no graphics..");
 
     bool discardFiberSeeds = false;
-    cliApp.add_flag("--discardPreimageGraphs, -d", discardFiberSeeds, "Only compute the Reeb space, no graphics..");
+    cliApp.add_flag("--discardPreimageGraphs, -d", discardFiberSeeds, "Discard the seeds for generating fibers based on sheets, discard to save a bit of memory (not too much).");
+
+    float perturbationEpsilon = 1e-7;
+    cliApp.add_option("--epsilon, -e", perturbationEpsilon, "Strength of the numerial perturbation in the range [-e, e].");
+
+    string outputSheetPolygonsFilename;
+    cliApp.add_option("--output, -o", outputSheetPolygonsFilename, "Filename where to output the coordinates of the polygons that represent each sheet.");
 
     CLI11_PARSE(cliApp, argc, argv);
 
@@ -80,9 +53,6 @@ int main(int argc, char* argv[])
     {
         discardFiberSeeds = true;
     }
-
-
-
 
     fs::path filePath(filename);
     
@@ -98,11 +68,11 @@ int main(int argc, char* argv[])
     std::string extension = filePath.extension().string();
     if (extension == ".vtu") 
     {
-        data->readDataVTK(filename);
+        data->readDataVTU(filename, perturbationEpsilon);
     } 
     else if (extension == ".txt") 
     {
-        data->readData(filename);
+        data->readData(filename, perturbationEpsilon);
     } 
     else 
     {
@@ -166,15 +136,61 @@ int main(int argc, char* argv[])
     //Timer::start();
     ReebSpace::computeReebSpacePostprocess(data);
     //Timer::stop("Computed RS(f) Postprocess             :");
-    //Timer::stop("Computed RS(f)                         :");
 
     //std::cout << "Press Enter to continue...";
     //std::cin.get();  // waits for Enter key
+
+    // Save all the polygons
+    if (false == outputSheetPolygonsFilename.empty())
+    {
+        fs::path filePathOutput(outputSheetPolygonsFilename);
+
+        // Write to the file
+        std::ofstream outFile(filePathOutput);
+        if (!outFile) 
+        {
+            std::cerr << "Error: Could not open file for writing: " << filePathOutput << std::endl;
+            return 1;
+        }
+
+        outFile << data->sheetPolygon.size() << std::endl;
+
+        for (const auto &[sheetId, polygon] : data->sheetPolygon)
+        {
+            outFile << sheetId << std::endl;
+
+            // To make sure we don't write a comma at the end of the array
+            int pointsWritten = 0;
+
+            outFile << "[";
+            for (const CartesianPoint &point : polygon) 
+            {
+                // Get point from CGAL (and convert to double )
+                const float u = point.x();
+                const float v = point.y();
+
+                outFile << u << ", " << v << ", " << 0;
+
+                if (pointsWritten < polygon.size() - 1)
+                {
+                    outFile << ", ";
+
+                }
+
+                pointsWritten++;
+            }
+            outFile << "]" << std::endl;
+
+        }
+
+        outFile.close();
+    }
 
     if (performanceRun == true)
     {
         return 0;
     }
+
 
     Timer::start();
     data->pl = std::make_unique<Point_location>(data->arr);

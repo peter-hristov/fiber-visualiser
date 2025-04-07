@@ -24,5 +24,5 @@ make
 
 make && ./fv99 -f ../data/three-sheet-toy.txt
 make && ./fv99 -f ~/Projects/data/reeb-space-test-data/data.vtu
-make && ./fv99 -f ~/Projects/data/reeb-space-test-data/torus/torus-factor-50-tets-320.vtu
+make && ./fv99 -f ~/Projects/data/reeb-space-test-data/torus/torus-factor-50-tets-320.vtu -e 1e-3
 make && ./fv99 -f ~/Projects/data/reeb-space-test-data/ttk/downsample-20-300.vtu
