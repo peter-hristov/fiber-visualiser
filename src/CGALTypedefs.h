@@ -27,6 +27,7 @@ typedef CGAL::Arr_segment_traits_2<K> Traits_2;
 typedef CGAL::Arrangement_with_history_2<Traits_2> Arrangement_2;
 typedef K::Point_2 Point_2;
 typedef K::Segment_2 Segment_2;
+typedef K::Line_2 Line_2;
 
 typedef CGAL::Arr_segment_2<K> Curve_2;
 
@@ -52,6 +53,7 @@ typedef Arrangement_2::Face_const_handle Face_const_handle;
 #include <CGAL/Arr_walk_along_line_point_location.h>
 typedef CGAL::Arr_walk_along_line_point_location<Arrangement_2> Point_location;
 
+#include <CGAL/Intersections_2/Segment_2_Segment_2.h>  // Correct header for CGAL 6
 
 
 
@@ -66,5 +68,7 @@ typedef CGAL::Arr_walk_along_line_point_location<Arrangement_2> Point_location;
 
 typedef CGAL::Simple_cartesian<double> CartesianKernel;
 typedef CartesianKernel::Point_2 CartesianPoint;
+typedef CartesianKernel::Segment_2 CartesianSegment;
+typedef CartesianKernel::Line_2 CartesianLine;
 typedef CGAL::Polygon_2<CartesianKernel> CartesianPolygon_2;
 

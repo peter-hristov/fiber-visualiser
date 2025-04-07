@@ -133,6 +133,8 @@ class Data
 
     std::unordered_map<int, CartesianPolygon_2> sheetPolygon;
 
+    std::map<int, double> sheetArea;
+
     // There's also this vector in plotwidget
     //std::vector<QPolygon> arrangementPolygons;
     

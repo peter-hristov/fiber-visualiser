@@ -1,6 +1,7 @@
 #include "Data.h"
 #include "./Timer.h"
 #include "./DisjointSet.h"
+#include "src/CGALTypedefs.h"
 
 #include <CGAL/enum.h>
 #include <cassert>
@@ -103,19 +104,29 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const st
     }
     std::cout << std::endl;
 
-    //std::cout << "The polygons for those sheets are :\n";
-    //for (const int &sheetId : sheetIds)
-    //{
-        //std::cout << "Polygon " << sheetId << ":\n";
 
-        //for (const CartesianPoint &point : this->sheetPolygon[sheetId]) 
-        //{
-            //printf("%f, %f, 0, ", point.x(), point.y());
-        //}
+    set<int> intersectedSheets;
+    CartesianLine line(CartesianPoint(0, v), CartesianPoint(1, v)); // Line through (0, 1) and (1, 0)
+    for (const auto &[sheetId, polygon] : this->sheetPolygon)
+    {
+        QVector<QPoint> points;
 
-    //}
+        for (const CartesianSegment& segment : polygon.edges()) 
+        {
+            if (CGAL::do_intersect(segment, line)) 
+            {
+                intersectedSheets.insert(sheetId);
+            }
+        }
+    }
 
+    std::cout << "Intersected sheets: ";
+    for (const auto &sheetId : intersectedSheets)
+    {
+        std::cout << sheetId << " (a = )" << this->sheetArea[sheetId] << std::endl;
 
+    }
+    std::cout << "\n";
 
 
     // Define query point

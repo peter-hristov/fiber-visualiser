@@ -1293,11 +1293,10 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
 
     Timer::start();
-    std::map<int, double> sheetArea;
     for (const auto &[sheetId, polygon] : data->sheetPolygon)
     {
         const double area = abs(polygon.area());
-        sheetArea[sheetId] = area;
+        data->sheetArea[sheetId] = area;
         //printf("The polygon of sheet %d has size %ld and area %f\n", sheetId, polygon.size(), area);
         //printf("The area of sheet %d is %f \n", sheetId, area);
     }
@@ -1306,7 +1305,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
     Timer::start();
     // Transfer the map entries into a vector of pairs so that we can sort
-    std::vector<std::pair<int, double>> sheetAreaSortVector(sheetArea.begin(), sheetArea.end());
+    std::vector<std::pair<int, double>> sheetAreaSortVector(data->sheetArea.begin(), data->sheetArea.end());
 
     //printf("The sort vector has size %ld\n", sheetAreaSortVector.size());
 
