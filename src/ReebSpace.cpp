@@ -1236,15 +1236,30 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     Timer::start();
     for (const auto &[sheetId, halfEdge]: sheetSeeds)
     {
+        // Sanity check, make sure the seed we have picked actually is on the boundary of the sheet
+        Face_const_handle faceSeedEdge = halfEdge->face();
+        const int faceSeedEdgeId = data->arrangementFacesIdices[faceSeedEdge];
+        if (false == faceSheets[faceSeedEdgeId].contains(sheetId))
+        {
+            throw std::runtime_error("The face of the seed edge does is not in the sheet.");
+        }
+
+        Face_const_handle faceSeedTwinEdge = halfEdge->twin()->face();
+        const int faceSeedTwinEdgeId = data->arrangementFacesIdices[faceSeedTwinEdge];
+        if (true == faceSheets[faceSeedTwinEdgeId].contains(sheetId))
+        {
+            throw std::runtime_error("The face of the twin of the seed edge does is no in the sheet.");
+        }
+
+
         //printf("---------------------------------------------------------------------------------------------       At sheet %d \n", sheetId);
 
         // Starting location, we don't make it visited on purpose, we want to discover it latex to finish the loop
         Vertex_const_handle startVertex = halfEdge->source();
+
+        // Time to find the next vertex
         Vertex_const_handle currentVertex = startVertex;
-
-        // For degenerate data, we can get stuck in an endless loop, we can use this counter to break out.
-        int iterations = 0;
-
+        std::unordered_set<Vertex_const_handle> visited;
         do 
         {
             // Add the current vertex to the polygon
@@ -1258,7 +1273,12 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
 
 
+            //
             // Find the next vertex on the boundary of the sheet, it will be adjacent to the current vertex
+            //
+            bool nextVertexFound = 0;
+            visited.insert(currentVertex);
+
             const auto begin = currentVertex->incident_halfedges();
             auto circ = begin;
             do {
@@ -1269,6 +1289,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
                 Face_const_handle faceA = circ->face();
                 const int faceAId = data->arrangementFacesIdices[faceA];
+
                 Face_const_handle faceB = twinHalfEdge->face();
                 const int faceBId = data->arrangementFacesIdices[faceB];
 
@@ -1279,27 +1300,39 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                 if (faceHalfEdgeContainsSheet == true && faceTwinHalfEdgeContainsEdge == false)
                 {
                     currentVertex = nextVertex;
+                    nextVertexFound = true;
                     break;
                 }
 
                 ++circ;
             } while (circ != begin);
 
-
-            iterations++;
-
-            // It's not possible for a sheet to have more edges than the total number of half edges in the arrangement.
-            if (iterations > 2 * data->arr.number_of_edges())
+            // If we did not manage to find the next vertex, or it the next vertex has already been visited (but it not the start)
+            // Then we will run forever
+            if (
+                    (currentVertex != startVertex && visited.contains(currentVertex)) ||
+                    nextVertexFound == false
+                    )
             {
-                throw std::runtime_error("Input data is degeneate, a triangle is mapped to a line.");       
+                // Make the sheet are problematic and break so we can keep going.
+                data->sheetComputedIncorrectly.insert(sheetId);
+                break;
             }
+
+
 
         } while (currentVertex != startVertex);
     }
     Timer::stop("Computing sheet boundary polygons      :");
 
+    if (data->sheetComputedIncorrectly.size() > 0)
+    {
+        std::cout << "\nThere were " << data->sheetComputedIncorrectly.size() << " sheets with incorrectly computed boundary.\n" << std::endl;
+    }
+    else
+    {
 
-
+    }
 
 
 
