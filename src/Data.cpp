@@ -5,6 +5,7 @@
 #include "src/FaceFiber.h"
 
 #include <CGAL/enum.h>
+#include <filesystem>
 #include <cassert>
 #include <fstream>
 #include <sstream>
@@ -92,7 +93,7 @@ void Data::saveFibers()
     // 5. Attach the VertexID array to the point data
     polyData->GetPointData()->AddArray(idArray);
     polyData->GetPointData()->AddArray(colourArray);
-    polyData->GetPointData()->SetScalars(idArray);  // optional: for coloring
+    polyData->GetPointData()->SetScalars(colourArray);  // optional: for coloring
 
     // 6. Write to .vtp file (XML format)
     auto writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
@@ -100,6 +101,92 @@ void Data::saveFibers()
     writer->SetInputData(polyData);
     writer->Write();
 }
+
+void Data::generatefFaceFibersForSheets(const int sheetOutputCount, const int numberOfFiberPoints, const std::string folderPath)
+{
+    namespace fs = std::filesystem;
+
+    //string folderPath = "./sheetFibers";
+    fs::path folderPathFs(folderPath);
+    if (!fs::exists(folderPathFs)) 
+    {
+        fs::create_directory(folderPathFs);
+    }
+
+    for (const auto &[sheetId, colourId] : this->sheetToColour)
+    {
+        if (colourId > sheetOutputCount)
+        {
+            continue;
+        }
+
+        std::cout << "-------------------------------------------------------------------------------------------- Generating fibers for sheet " << sheetId << "..." << std::endl;
+        this->generatefFaceFibersForSheet(sheetId, numberOfFiberPoints);
+
+        std::cout << "Saving fibers..." << std::endl;
+        this->fibersFile = folderPathFs.string() + "/fibers_" + std::to_string(sheetId) + ".vtp";
+        this->saveFibers();
+        this->faceFibers.clear();
+    }
+
+    this->fibersFile = "./fibers.vtp";
+
+}
+
+void Data::generatefFaceFibersForSheet(const int sheetId, const int numberOfFiberPoints)
+{
+    CartesianPolygon_2 &polygon = this->sheetPolygon[sheetId];
+
+    if (polygon.size() == 0)
+    {
+        return;
+    }
+
+
+    // Compute the controid so that we can pull all verties towards it
+    CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
+
+    // To make sure we don't write a comma at the end of the array
+
+    vector<vector<float>> fiberPoints;
+
+    // If need only one, get it at the center
+    if (numberOfFiberPoints == 1)
+    {
+        fiberPoints.push_back({(float)centroid.x(), (float)centroid.y()});
+        this->computeTetExitPointsNewNew(fiberPoints[0][0], fiberPoints[0][1], false, sheetId);
+
+        return;
+    }
+
+
+    // If we need more, sample along the boundary
+    for (const CartesianPoint &point : polygon) 
+    {
+        // Get point from CGAL (and convert to double )
+        float u = point.x();
+        float v = point.y();
+
+        // Interpolate closer to the centroid to make sure we are in the sheet ( if the sheet is "convex enough")
+        float alpha = 0.2;
+        u = (1 - alpha) * u + alpha * centroid.x();
+        v = (1 - alpha) * v + alpha * centroid.y();
+
+        fiberPoints.push_back({u, v});
+        //fiberPoints.push_back({centroid.x(), centroid.y()});
+    }
+
+
+    // Calculate step size we only want some of the fiber points, not all
+    double step = static_cast<double>(fiberPoints.size() - 1) / (numberOfFiberPoints - 1);
+
+    for (int i = 0; i < numberOfFiberPoints; ++i) 
+    {
+        int index = static_cast<int>(i * step);
+        this->computeTetExitPointsNewNew(fiberPoints[index][0], fiberPoints[index][1], false, sheetId);
+    }
+}
+
 
 void Data::printSheetHistogram()
 {
@@ -137,7 +224,7 @@ void Data::printSheetHistogram()
 }
 
 
-void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bool clearFibers, const std::vector<float> color)
+void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bool clearFibers, const int reebSheetIdOnly, const std::vector<float> color)
 {
     if (true == clearFibers)
     {
@@ -202,22 +289,34 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
     // Cache barycentric coordintes, they are expensive to compute
     std::unordered_map<int, std::array<double, 3>> triangleBarycentricCoordinates;
 
-    std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with (sheet IDs, sorted IDs): ";
+    if (reebSheetIdOnly == -1)
+    {
+        std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with (sheet IDs, sorted IDs): ";
+    }
+
     //vector<int> sheetIds;
     for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
     {
-        bfsQueue.push(triangleId);
         const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+
+        if (reebSheetIdOnly == -1 || sheetId == reebSheetIdOnly)
+        {
+            bfsQueue.push(triangleId);
+            //cout << "Adding seed \n";
+        }
+
+        //const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
         //triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
         triangleSheetId[triangleId] = sheetId;
 
         //sheetIds.push_back(sheetId);
 
-        printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
+        if (reebSheetIdOnly == -1)
+        {
+            printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
+        }
     }
     std::cout << std::endl;
-
-
 
 
     // Define query point

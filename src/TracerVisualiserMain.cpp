@@ -46,6 +46,15 @@ int main(int argc, char* argv[])
     string outputSheetPolygonsFilename;
     cliApp.add_option("--outputSheetPolygons, -o", outputSheetPolygonsFilename, "Filename where to output the coordinates of the polygons that represent each sheet.");
 
+    int fiberSampling = 1;
+    cliApp.add_option("--fiberSampling, -s", fiberSampling, "When saving fibers per component, how many do we save. Default is to save the centroid, otherwise sample along the boundary.");
+
+    int sheetOutputCount = 10;
+    cliApp.add_option("--sheetOutputCount", sheetOutputCount, "How many sheets to sample for automatic feature extraction.");
+
+    string outputSheetFibersFolder;
+    cliApp.add_option("--outputSheetFibersFolder", outputSheetFibersFolder, "Folder in which to ouput fiber for each sheet.");
+
     //string outputFibersFilename = "./fibers.vtp";
     //cliApp.add_option("--outputFibers", outputSheetPolygonsFilename, "Filename where to save the visible fiber components. Must be .vtp");
 
@@ -206,6 +215,11 @@ int main(int argc, char* argv[])
     Timer::start();
     data->pl = std::make_unique<Point_location>(data->arr);
     Timer::stop("Arrangement search structure           :");
+
+    if (false == outputSheetFibersFolder.empty())
+    {
+        data->generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
+    }
 
     // Set up QT Application
     QApplication app(argc, argv);
