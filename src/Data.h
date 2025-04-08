@@ -139,6 +139,8 @@ class Data
 
     std::map<int, double> sheetArea;
 
+    std::unordered_set<int> incompleteSheets;
+
     // There's also this vector in plotwidget
     //std::vector<QPolygon> arrangementPolygons;
     

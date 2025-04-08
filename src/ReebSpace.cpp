@@ -1315,7 +1315,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                     )
             {
                 // Make the sheet are problematic and break so we can keep going.
-                data->sheetComputedIncorrectly.insert(sheetId);
+                data->incompleteSheets.insert(sheetId);
                 break;
             }
 
@@ -1325,9 +1325,9 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     }
     Timer::stop("Computing sheet boundary polygons      :");
 
-    if (data->sheetComputedIncorrectly.size() > 0)
+    if (data->incompleteSheets.size() > 0)
     {
-        std::cout << "\nThere were " << data->sheetComputedIncorrectly.size() << " sheets with incorrectly computed boundary.\n" << std::endl;
+        std::cout << "\nThere were " << data->incompleteSheets.size() << " sheets with incorrectly computed boundary.\n" << std::endl;
     }
     else
     {

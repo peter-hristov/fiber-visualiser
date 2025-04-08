@@ -729,7 +729,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         //Timer::start();
         const bool clearFibers = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers;
-        this->data->computeTetExitPointsNewNew(u, v, clearFibers, -1, data->fiberColours[currentFiberColour]);
+        this->data->computeTetExitPointsNewNew(u, v, clearFibers, data->fiberColours[currentFiberColour]);
         //Timer::stop("Computed fiber new new                 :");
         //qDebug() << "......";
 
