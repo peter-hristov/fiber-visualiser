@@ -208,7 +208,8 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
     // This should not happen for generic maps
     } else {
         //std::cout << "Point r is on the line.\n";
-        assert(false);
+        throw std::runtime_error("Input data is degeneate, a triangle is mapped to a line.");       
+        //assert(false);
     }
 
     // Paranoid assert
@@ -1241,6 +1242,9 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
         Vertex_const_handle startVertex = halfEdge->source();
         Vertex_const_handle currentVertex = startVertex;
 
+        // For degenerate data, we can get stuck in an endless loop, we can use this counter to break out.
+        int iterations = 0;
+
         do 
         {
             // Add the current vertex to the polygon
@@ -1281,6 +1285,14 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                 ++circ;
             } while (circ != begin);
 
+
+            iterations++;
+
+            // It's not possible for a sheet to have more edges than the total number of half edges in the arrangement.
+            if (iterations > 2 * data->arr.number_of_edges())
+            {
+                throw std::runtime_error("Input data is degeneate, a triangle is mapped to a line.");       
+            }
 
         } while (currentVertex != startVertex);
     }
