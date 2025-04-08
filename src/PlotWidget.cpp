@@ -312,22 +312,66 @@ void PlotWidget::drawBackground(QPainter &p)
 
     for (const auto &[sheetId, polygon] : data->sheetPolygon)
     {
-
         QVector<QPoint> points;
 
-        for (const CartesianPoint &point : polygon) 
+        // If the sheet is incomplete, the polygon will not be corret, just draww all the faces manually
+        if (data->incompleteSheets.contains(sheetId))
         {
-            // Get point from CGAL (and convert to double )
-            const float u = point.x();
-            const float v = point.y();
 
-            // Translate to the window frame
-            const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
-            const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+            // Loop through all faces to see which ones are in the sheet
+            for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+            {
+                const int currentFaceID = data->arrangementFacesIdices[f];
+
+                // For each fiber component in the face, see if one of those is in our sheet
+                for (const auto &[triangleId, fiberComponentId] : this->data->fiberSeeds[currentFaceID])
+                {
+                    const int componentSheetId = data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+
+                    // Now we can add the polygon
+                    if (componentSheetId == sheetId)
+                    {
+                        typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+                        typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+                        do {
+                            typename Arrangement_2::Halfedge_const_handle e = curr;
+
+                            // Get point from CGAL (and convert to double )
+                            const float u = CGAL::to_double(e->source()->point().x());
+                            const float v = CGAL::to_double(e->source()->point().y());
+
+                            // Translate to the window frame
+                            const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
+                            const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
 
 
-            // Add to the polygon
-            points << QPoint(u1, v1);
+                            // Add to the polygon
+                            points << QPoint(u1, v1);
+
+                            //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
+                        } while (++curr != circ);
+                    }
+                }
+            }
+        }
+
+        // If the sheet is no incomplete, the polygon is valid, draw the directly
+        else
+        {
+            for (const CartesianPoint &point : polygon) 
+            {
+                // Get point from CGAL (and convert to double )
+                const float u = point.x();
+                const float v = point.y();
+
+                // Translate to the window frame
+                const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
+                const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+
+
+                // Add to the polygon
+                points << QPoint(u1, v1);
+            }
         }
 
         QPolygon qPolygon(points);

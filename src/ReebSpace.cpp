@@ -208,7 +208,7 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
     // This should not happen for generic maps
     } else {
         //std::cout << "Point r is on the line.\n";
-        throw std::runtime_error("Input data is degeneate, a triangle is mapped to a line.");       
+        //throw std::runtime_error("Input data is degeneate, a triangle is mapped to a line.");       
         //assert(false);
     }
 
@@ -1316,7 +1316,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             {
                 // Make the sheet are problematic and break so we can keep going.
                 data->incompleteSheets.insert(sheetId);
-                break;
+                //break;
             }
 
 
