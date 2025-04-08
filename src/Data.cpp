@@ -24,6 +24,8 @@
 
 #include <vtkPolyLine.h>
 #include <vtkCellArray.h>
+#include <vtkFloatArray.h>
+
 #include <vtkPolyData.h>
 #include <vtkXMLPolyDataWriter.h>
 
@@ -43,8 +45,13 @@ void Data::saveFibers()
     // 1. Create the points
     auto points = vtkSmartPointer<vtkPoints>::New();
     auto idArray = vtkSmartPointer<vtkIntArray>::New();
+    auto colourArray = vtkSmartPointer<vtkFloatArray>::New();
+
     idArray->SetName("SheetId");
     idArray->SetNumberOfComponents(1);
+
+    colourArray->SetName("Colour");
+    colourArray->SetNumberOfComponents(3);
 
     for (const FaceFiberPoint &p : this->faceFibers)
     {
@@ -52,6 +59,9 @@ void Data::saveFibers()
         points->InsertNextPoint(p.point[0], p.point[1], p.point[2]);
         idArray->InsertNextValue(p.sheetId);
 
+        const vector<float> sheetColour = this->fiberColours[this->sheetToColour[p.sheetId] % this->fiberColours.size()];
+        float color[3] = {sheetColour[0], sheetColour[1], sheetColour[2]};
+        colourArray->InsertNextTuple(color);
     }
 
     // 3. Create the cells (wrap polyline in cell array)
@@ -81,6 +91,7 @@ void Data::saveFibers()
 
     // 5. Attach the VertexID array to the point data
     polyData->GetPointData()->AddArray(idArray);
+    polyData->GetPointData()->AddArray(colourArray);
     polyData->GetPointData()->SetScalars(idArray);  // optional: for coloring
 
     // 6. Write to .vtp file (XML format)
