@@ -41,7 +41,7 @@ double randomPerturbation(double epsilon) {
 void Data::saveFibers()
 {
     std::cout << "Saving fibers in " << this->fibersFile << std::endl;
-    std::cout << "The fiber has size " << this->faceFibers.size() << std::endl;  
+    //std::cout << "The fiber has size " << this->faceFibers.size() << std::endl;  
 
     // 1. Create the points
     auto points = vtkSmartPointer<vtkPoints>::New();
@@ -115,7 +115,12 @@ void Data::generatefFaceFibersForSheets(const int sheetOutputCount, const int nu
 
     for (const auto &[sheetId, colourId] : this->sheetToColour)
     {
-        if (colourId > sheetOutputCount)
+        if (this->incompleteSheets.contains(sheetId))
+        {
+            printf("Skipping fiber %d, it's incomplete.",  sheetId);
+        }
+
+        if (colourId > sheetOutputCount || this->incompleteSheets.contains(sheetId))
         {
             continue;
         }
@@ -123,7 +128,7 @@ void Data::generatefFaceFibersForSheets(const int sheetOutputCount, const int nu
         std::cout << "-------------------------------------------------------------------------------------------- Generating fibers for sheet " << sheetId << "..." << std::endl;
         this->generatefFaceFibersForSheet(sheetId, numberOfFiberPoints);
 
-        std::cout << "Saving fibers..." << std::endl;
+        //std::cout << "Saving fibers..." << std::endl;
         this->fibersFile = folderPathFs.string() + "/fibers_" + std::to_string(sheetId) + ".vtp";
         this->saveFibers();
         this->faceFibers.clear();
@@ -235,7 +240,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
     // Get the ID of the face we are intersecting
     //
 
-    Timer::start();
+    //Timer::start();
 
     // Store the current fiber point
     this->currentFiberPoint = {u, v};
@@ -274,11 +279,11 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
     {
         assert(false);
     }
-    Timer::stop("Computed active arrangement face       :");
+    //Timer::stop("Computed active arrangement face       :");
 
 
 
-    Timer::start();
+    //Timer::start();
 
     // The sizes of these data structures are linear in the size of the fiber, not an issue
     std::queue<int> bfsQueue;
@@ -316,7 +321,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
             printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
         }
     }
-    std::cout << std::endl;
+    //std::cout << std::endl;
 
 
     // Define query point
@@ -453,12 +458,12 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
                 fb2.triangleId = neighbourTriagleId;
                 this->faceFibers.push_back(fb2);
 
-                printf("Adding fiber between %d -> %d\n", currentTriangleId, neighbourTriagleId);
+                //printf("Adding fiber between %d -> %d\n", currentTriangleId, neighbourTriagleId);
             }
         }
     }
 
-    Timer::stop("Computed fiber in                      :");
+    //Timer::stop("Computed fiber in                      :");
 }
 
 void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::vector<float> color)

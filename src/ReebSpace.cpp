@@ -1327,11 +1327,15 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
     if (data->incompleteSheets.size() > 0)
     {
-        std::cout << "\nThere were " << data->incompleteSheets.size() << " sheets with incorrectly computed boundary.\n" << std::endl;
+        std::cout << "\nThere were " << data->incompleteSheets.size() << " sheets with degeneratey boundary.\n" << std::endl;
+        for (const int &sheetId : data->incompleteSheets)
+        {
+            printf("Incomplete sheet %d\n", sheetId);
+        }
     }
     else
     {
-        std::cout << "\nThe boundaries of all sheets were computed boundary.\n" << std::endl;
+        std::cout << "\nThe boundaries of all sheets are okay! No degeneracy.\n" << std::endl;
     }
 
 
@@ -1340,8 +1344,51 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     Timer::start();
     for (const auto &[sheetId, polygon] : data->sheetPolygon)
     {
-        const double area = abs(polygon.area());
+        float area = 0.0;
+
+        // If the sheet is incomplete sum up the faces that make it
+        if (data->incompleteSheets.contains(sheetId))
+        {
+            // Loop through all faces to see which ones are in the sheet
+            for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+            {
+                const int currentFaceID = data->arrangementFacesIdices[f];
+
+                // For each fiber component in the face, see if one of those is in our sheet
+                for (const auto &[triangleId, fiberComponentId] : data->fiberSeeds[currentFaceID])
+                {
+                    const int componentSheetId = data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+
+                    // Now we can add the polygon
+                    if (componentSheetId == sheetId)
+                    {
+                        CartesianPolygon_2 poly;
+
+                        typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
+                        typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
+                        do {
+                            typename Arrangement_2::Halfedge_const_handle e = curr;
+
+                            // Get point from CGAL (and convert to double )
+                            const float u = CGAL::to_double(e->source()->point().x());
+                            const float v = CGAL::to_double(e->source()->point().y());
+
+                            poly.push_back({u, v});
+                        } while (++curr != circ);
+
+                        area += poly.area();
+                    }
+                }
+            }
+
+        }
+        else
+        {
+            area = abs(polygon.area());
+        }
+
         data->sheetArea[sheetId] = area;
+        
         //printf("The polygon of sheet %d has size %ld and area %f\n", sheetId, polygon.size(), area);
         //printf("The area of sheet %d is %f \n", sheetId, area);
     }
