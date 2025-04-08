@@ -1316,7 +1316,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             {
                 // Make the sheet are problematic and break so we can keep going.
                 data->incompleteSheets.insert(sheetId);
-                //break;
+                break;
             }
 
 
