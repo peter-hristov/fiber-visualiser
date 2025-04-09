@@ -1276,7 +1276,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             //
             // Find the next vertex on the boundary of the sheet, it will be adjacent to the current vertex
             //
-            bool nextVertexFound = 0;
+            int sheetBoundaryNeighbours = 0;
             visited.insert(currentVertex);
 
             const auto begin = currentVertex->incident_halfedges();
@@ -1300,45 +1300,40 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                 if (faceHalfEdgeContainsSheet == true && faceTwinHalfEdgeContainsEdge == false)
                 {
                     currentVertex = nextVertex;
-                    nextVertexFound = true;
-                    break;
+                    sheetBoundaryNeighbours++;
                 }
 
                 ++circ;
             } while (circ != begin);
 
-            // If we did not manage to find the next vertex, or it the next vertex has already been visited (but it not the start)
-            // Then we will run forever
-            if (
-                    (currentVertex != startVertex && visited.contains(currentVertex)) ||
-                    nextVertexFound == false
-                    )
+            
+            if (sheetBoundaryNeighbours !=1)
             {
-                // Make the sheet are problematic and break so we can keep going.
+                printf("The boundary of sheet %d is degenerate, a vertex has %d boundary neighours, should only be one.\n", sheetId, sheetBoundaryNeighbours);
                 data->incompleteSheets.insert(sheetId);
                 break;
             }
 
+            // I'm not sure if this will ever get triggered, since if we loop back to someone else than the start 
+            // that should mean 
+            if (currentVertex != startVertex && visited.contains(currentVertex))
+            {
+                printf("The boundary of sheet %d is degenerate, a vertex loops back to an already visited one.\n", sheetId);
+                data->incompleteSheets.insert(sheetId);
+                break;
 
-
+            }
         } while (currentVertex != startVertex);
     }
     Timer::stop("Computing sheet boundary polygons      :");
 
-    if (data->incompleteSheets.size() > 0)
-    {
-        std::cout << "\nThere were " << data->incompleteSheets.size() << " sheets with degeneratey boundary.\n" << std::endl;
-        for (const int &sheetId : data->incompleteSheets)
-        {
-            printf("Incomplete sheet %d\n", sheetId);
-        }
-    }
-    else
+    if (data->incompleteSheets.size() == 0)
     {
         std::cout << "\nThe boundaries of all sheets are okay! No degeneracy.\n" << std::endl;
     }
 
 
+    // Compute the areas of sheets
 
 
     Timer::start();
@@ -1380,7 +1375,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                     }
                 }
             }
-
+            printf("Incomplete sheet %d has area %f\n", sheetId, area);
         }
         else
         {
