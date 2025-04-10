@@ -1262,6 +1262,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
         std::unordered_set<Vertex_const_handle> visited;
         do 
         {
+
             // Add the current vertex to the polygon
             data->sheetPolygon[sheetId].push_back({
                     CGAL::to_double(currentVertex->point().x()), 
@@ -1277,11 +1278,21 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             // Find the next vertex on the boundary of the sheet, it will be adjacent to the current vertex
             //
             int sheetBoundaryNeighbours = 0;
+            int allNeighbours = 0;
             visited.insert(currentVertex);
 
+            // This loop should always finish
             const auto begin = currentVertex->incident_halfedges();
             auto circ = begin;
             do {
+
+                allNeighbours++;
+
+                // Too many neighourss
+                if (allNeighbours > data->arr.number_of_vertices())
+                {
+                    break;
+                }
 
                 const auto twinHalfEdge = circ->twin();
                 const auto nextVertex = twinHalfEdge->target();
@@ -1306,6 +1317,13 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                 ++circ;
             } while (circ != begin);
 
+            // A the polygon of a sheet sheet cannot have more vertices than the number of the vertices in the arrangement, something went wrong.
+            if (data->sheetPolygon[sheetId].size() > data->arr.number_of_vertices())
+            {
+                printf("The boundary of sheet %d is degenerate, it has more vertices %ld than the arrangement.\n", sheetId, data->sheetPolygon[sheetId].size());
+                data->incompleteSheets.insert(sheetId);
+                break;
+            }
             
             if (sheetBoundaryNeighbours !=1)
             {
@@ -1323,6 +1341,14 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                 break;
 
             }
+
+            if (allNeighbours > data->arr.number_of_vertices())
+            {
+                printf("The boundary of sheet %d is degenerate, the inner loop kept going for too long.\n", sheetId);
+                data->incompleteSheets.insert(sheetId);
+                break;
+            }
+
         } while (currentVertex != startVertex);
     }
     Timer::stop("Computing sheet boundary polygons      :");
