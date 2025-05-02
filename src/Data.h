@@ -20,6 +20,7 @@
 
 #include "./FaceFiber.h"
 #include "./DisjointSet.h"
+#include "./CustomArrangementTypes.h"
 
 #include <qpoint.h>
 #include <qvector.h>
@@ -163,6 +164,9 @@ void computeTetExitPointsNewNew(const float, const float, const bool, const int 
 
     void sortVertices();
     void printMesh();
+
+    std::vector<std::shared_ptr<CustomArrangement::Point<double>>> customArrangementPoints;
+    std::vector<std::shared_ptr<CustomArrangement::Segment<double>>> customArrangementSegments;
 
 
     //

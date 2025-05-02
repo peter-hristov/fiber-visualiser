@@ -471,6 +471,29 @@ void PlotWidget::drawBackground(QPainter &p)
         }
 
     }
+
+    for (const auto &point : data->customArrangementPoints)
+    {
+        float x1 = (resolution / (data->maxF - data->minF)) * (point->x - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (point->y - data->minG);
+        p.setBrush(QBrush(Qt::black));     // Set the brush color (for the fill)
+        p.drawEllipse(QPointF(x1, y1), 10, 10);
+    }
+
+
+    for (const auto &segment : data->customArrangementSegments)
+    {
+        float x1 = (resolution / (data->maxF - data->minF)) * (segment->a->x - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (segment->a->y - data->minG);
+
+        float x2 = (resolution / (data->maxF - data->minF)) * (segment->b->x - data->minF);
+        float y2 = (resolution / (data->maxG - data->minG)) * (segment->b->y - data->minG);
+
+        p.setPen(QPen(Qt::black, 5.0));
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.drawLine(x1, y1, x2, y2);
+    }
+
 }
 
 void PlotWidget::generateStaticCache()

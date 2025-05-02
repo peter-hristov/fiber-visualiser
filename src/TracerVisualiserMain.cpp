@@ -94,134 +94,136 @@ int main(int argc, char* argv[])
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
 
-    //std::cout << "Press Enter to continue...";
-    //std::cin.get();  // waits for Enter key
+    //return 0;
 
-    Timer::start();
-    ReebSpace::computeUpperLowerLink(data);
-    Timer::stop("Computed upper and lower link          :");
-
-    Timer::start();
-    ReebSpace::computeTriangleAdjacency(data);
-    Timer::stop("Computed triangle adjacency            :");
-
-
-    //cout << "Triangles to Index " << endl;
-    //for (const auto &[triangle, triangleId] : data->triangleToIndex)
-    //{
-        //cout << "Triangle = ";
-        //for (const auto v : triangle)
-        //{
-            //cout << v << " ";
-        //}
-        //cout << "  ID = " << triangleId << endl;
-    //}
-
-    //cout << "\n\nIndex to triangle" << endl;
-    //for (int i = 0 ; i < data->indexToTriangle.size() ; i++)
-    //{
-        //cout << "  ID = " << i << " ";
-
-        //cout << "Triangle = ";
-        //for (const auto v : data->indexToTriangle[i])
-        //{
-            //cout << v << " ";
-        //}
-
-        //cout << endl;
-    //}
-
-
-    Timer::start();
-    ReebSpace::testTraverseArrangement(data);
-    Timer::stop("Computed empty traversal               :");
-
-    Timer::start();
-    ReebSpace::computePreimageGraphs(data, discardFiberSeeds);
-    Timer::stop("Computed {G_F} and H                   :");
+    ////std::cout << "Press Enter to continue...";
+    ////std::cin.get();  // waits for Enter key
 
     //Timer::start();
-    //ReebSpace::computeCorrespondenceGraph(data);
-    //Timer::stop("Computed H                             :");
+    //ReebSpace::computeUpperLowerLink(data);
+    //Timer::stop("Computed upper and lower link          :");
 
-    std::cout << "Postprocessing..." << std::endl;
     //Timer::start();
-    ReebSpace::computeReebSpacePostprocess(data);
-    //Timer::stop("Computed RS(f) Postprocess             :");
-
-    //std::cout << "Press Enter to continue...";
-    //std::cin.get();  // waits for Enter key
-
-    // Save all the polygons
-    if (false == outputSheetPolygonsFilename.empty())
-    {
-        fs::path filePathOutput(outputSheetPolygonsFilename);
-
-        // Write to the file
-        std::ofstream outFile(filePathOutput);
-        if (!outFile) 
-        {
-            std::cerr << "Error: Could not open file for writing: " << filePathOutput << std::endl;
-            return 1;
-        }
-
-        outFile << data->sheetPolygon.size() << std::endl;
-
-        for (const auto &[sheetId, polygon] : data->sheetPolygon)
-        {
-            outFile << "SheetId = " << sheetId << std::endl;
+    //ReebSpace::computeTriangleAdjacency(data);
+    //Timer::stop("Computed triangle adjacency            :");
 
 
-            // Compute the controid so that we can pull all verties towards it
-            CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
+    ////cout << "Triangles to Index " << endl;
+    ////for (const auto &[triangle, triangleId] : data->triangleToIndex)
+    ////{
+        ////cout << "Triangle = ";
+        ////for (const auto v : triangle)
+        ////{
+            ////cout << v << " ";
+        ////}
+        ////cout << "  ID = " << triangleId << endl;
+    ////}
 
-            // To make sure we don't write a comma at the end of the array
-            int pointsWritten = 0;
+    ////cout << "\n\nIndex to triangle" << endl;
+    ////for (int i = 0 ; i < data->indexToTriangle.size() ; i++)
+    ////{
+        ////cout << "  ID = " << i << " ";
 
-            outFile << "[";
-            for (const CartesianPoint &point : polygon) 
-            {
-                // Get point from CGAL (and convert to double )
-                float u = point.x();
-                float v = point.y();
+        ////cout << "Triangle = ";
+        ////for (const auto v : data->indexToTriangle[i])
+        ////{
+            ////cout << v << " ";
+        ////}
 
-                // Interpolate closer to the centroid
-                float alpha = 0.5;
-                u = (1 - alpha) * u + alpha * centroid.x();
-                v = (1 - alpha) * v + alpha * centroid.x();
-
-                outFile << u << ", " << v << ", " << 0;
-                if (pointsWritten < polygon.size() - 1)
-                {
-                    outFile << ", ";
-
-                }
-
-                pointsWritten++;
-            }
-            outFile << "]" << std::endl;
-
-        }
-
-        outFile.close();
-    }
-
-    if (performanceRun == true)
-    {
-        return 0;
-    }
+        ////cout << endl;
+    ////}
 
 
-    Timer::start();
-    data->pl = std::make_unique<Point_location>(data->arr);
-    Timer::stop("Arrangement search structure           :");
+    //Timer::start();
+    //ReebSpace::testTraverseArrangement(data);
+    //Timer::stop("Computed empty traversal               :");
 
-    if (false == outputSheetFibersFolder.empty())
-    {
-        data->generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
-    }
+    //Timer::start();
+    //ReebSpace::computePreimageGraphs(data, discardFiberSeeds);
+    //Timer::stop("Computed {G_F} and H                   :");
 
-    ReebSpace::countIntersectionsTypes(data);
+    ////Timer::start();
+    ////ReebSpace::computeCorrespondenceGraph(data);
+    ////Timer::stop("Computed H                             :");
+
+    //std::cout << "Postprocessing..." << std::endl;
+    ////Timer::start();
+    //ReebSpace::computeReebSpacePostprocess(data);
+    ////Timer::stop("Computed RS(f) Postprocess             :");
+
+    ////std::cout << "Press Enter to continue...";
+    ////std::cin.get();  // waits for Enter key
+
+    //// Save all the polygons
+    //if (false == outputSheetPolygonsFilename.empty())
+    //{
+        //fs::path filePathOutput(outputSheetPolygonsFilename);
+
+        //// Write to the file
+        //std::ofstream outFile(filePathOutput);
+        //if (!outFile) 
+        //{
+            //std::cerr << "Error: Could not open file for writing: " << filePathOutput << std::endl;
+            //return 1;
+        //}
+
+        //outFile << data->sheetPolygon.size() << std::endl;
+
+        //for (const auto &[sheetId, polygon] : data->sheetPolygon)
+        //{
+            //outFile << "SheetId = " << sheetId << std::endl;
+
+
+            //// Compute the controid so that we can pull all verties towards it
+            //CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
+
+            //// To make sure we don't write a comma at the end of the array
+            //int pointsWritten = 0;
+
+            //outFile << "[";
+            //for (const CartesianPoint &point : polygon) 
+            //{
+                //// Get point from CGAL (and convert to double )
+                //float u = point.x();
+                //float v = point.y();
+
+                //// Interpolate closer to the centroid
+                //float alpha = 0.5;
+                //u = (1 - alpha) * u + alpha * centroid.x();
+                //v = (1 - alpha) * v + alpha * centroid.x();
+
+                //outFile << u << ", " << v << ", " << 0;
+                //if (pointsWritten < polygon.size() - 1)
+                //{
+                    //outFile << ", ";
+
+                //}
+
+                //pointsWritten++;
+            //}
+            //outFile << "]" << std::endl;
+
+        //}
+
+        //outFile.close();
+    //}
+
+    //if (performanceRun == true)
+    //{
+        //return 0;
+    //}
+
+
+    //Timer::start();
+    //data->pl = std::make_unique<Point_location>(data->arr);
+    //Timer::stop("Arrangement search structure           :");
+
+    //if (false == outputSheetFibersFolder.empty())
+    //{
+        //data->generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
+    //}
+
+    //ReebSpace::countIntersectionsTypes(data);
 
 
     // Set up QT Application

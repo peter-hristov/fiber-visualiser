@@ -4,6 +4,8 @@
 #include "./Timer.h"
 #include "./utility/indicators.hpp"
 
+#include "./Arrangement.h"
+
 #include <cassert>
 #include <cstddef>
 #include <map>
@@ -271,6 +273,13 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
 
 void ReebSpace::computeArrangement(Data *data) 
 {
+
+
+    CustomArrangement::computeArrangementCustom(data);
+
+    return;
+
+
     Timer::start();
 
     // Add in the vertices of the mesh 
