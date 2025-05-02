@@ -96,82 +96,6 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
     return {minusTriangles, plusTriangles};
 }
 
-//std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> ReebSpace::getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
-//{
-    //// Step 1. Initialize lists
-    //std::vector<std::set<int>> plusTriangles;
-    //std::vector<std::set<int>> minusTriangles;
-
-    //// Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
-    //const Segment_2 &segment = *data->arr.originating_curves_begin(currentHalfEdge);
-    ////std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
-    ////std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
-
-    //// These will always be sorted, it's how we created the segments
-    //const int aIndex = data->arrangementPointsIdices[segment.source()];
-    //const int bIndex = data->arrangementPointsIdices[segment.target()];
-
-    //// Sanity check
-    //assert(aIndex < bIndex);
-
-    ////printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-    ////printf("\n");
-
-
-    //// Check to see if the segment and half edge have the same orientation
-    //const bool isSegmentLeftToRight = segment.source() < segment.target(); 
-    //const bool isCurrentHalfEdgeLeftToRight = (currentHalfEdge->direction() == CGAL::ARR_LEFT_TO_RIGHT);
-
-    //// The half edge has the same direction as the original edge
-    //if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
-    //{
-        ////std::cout << "Upper link becomes lower link." << std::endl;
-
-        ////printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        //for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
-        //{
-            //minusTriangles.push_back({aIndex, bIndex, v});
-
-            ////preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-            ////printf("%d ", v);
-        //}
-        ////printf("\n");
-
-        ////printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        //for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
-        //{
-            //plusTriangles.push_back({aIndex, bIndex, v});
-            ////preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-            ////printf("%d ", v);
-        //}
-        ////printf("\n");
-    //}
-    //else
-    //{
-        ////std::cout << "Lower link becomes upper link." << std::endl;
-
-        ////printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        //for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
-        //{
-            //plusTriangles.push_back({aIndex, bIndex, v});
-            ////preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-            ////printf("%d ", v);
-        //}
-        ////printf("\n");
-
-        ////printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        //for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
-        //{
-            ////preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-            //minusTriangles.push_back({aIndex, bIndex, v});
-            ////printf("%d ", v);
-        //}
-        ////printf("\n");
-    //}
-
-    //return {minusTriangles, plusTriangles};
-//}
-
 bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data)
 {
     // Make sure the vertices of the edge are in sorted order to have consistent orientation
@@ -240,12 +164,12 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
                 {
-                    int vIndex = tet[v];
+                    const int vIndex = tet[v];
 
                     // If the currect vertex is not one of two used to define the edge
                     if (vIndex != aIndex && vIndex != bIndex) 
                     {
-                        bool isUpperLink = isUpperLinkEdgeVertex(aIndex, bIndex, vIndex, data);
+                        const bool isUpperLink = isUpperLinkEdgeVertex(aIndex, bIndex, vIndex, data);
 
                         if (true == isUpperLink) {
                             data->upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
@@ -257,127 +181,6 @@ void ReebSpace::computeUpperLowerLink(Data *data)
             }
         }
     }
-
-
-    // If the upper link is empty we have a definite edge
-    //for (const auto &[edge, linkVertices] : data->upperLink)
-    //{
-        ////printf("Upper link of (%d, %d) is:\n", edge.first, edge.second);
-        ////for (const auto &v : linkVertices)
-        ////{
-            ////printf("(%d, %d, %d)\n", edge.first, edge.second, v);
-        ////}
-
-        //// If the upper link is full, but the lower link is empty
-        //if (false == data->lowerLink.contains(edge))
-        //{
-            //data->jacobiType[edge] = 0;
-        //}
-
-    //}
-
-    //for (const auto &[edge, linkVertices] : data->lowerLink)
-    //{
-        ////printf("Lower link of (%d, %d) is:\n", edge.first, edge.second);
-
-        ////for (const auto &v : linkVertices)
-        ////{
-            ////printf("(%d, %d, %d)\n", edge.first, edge.second, v);
-        ////}
-
-        //// If the lower link is full but the upper link is empty we have a definite edge
-        //if (false == data->upperLink.contains(edge))
-        //{
-            //data->jacobiType[edge] = 0;
-            //continue;
-        //}
-
-        //// If both the upper and lower link are not empty, we can have a regular or indefinite edge
-        //assert(data->lowerLink.contains(edge) && data->upperLink.contains(edge));
-
-        //// The list of the triangles adjacent to the edge in the star
-        //std::set<std::set<int>> adjacentTriangles;
-
-        //// Assemble the triangles
-        //for (const auto &v : linkVertices)
-        //{
-            //adjacentTriangles.insert({edge.first, edge.second, v});
-        //}
-
-        //// Compute the number of connected components in the link
-        //DisjointSet<std::set<int>> linkConnectedComponents;
-        //linkConnectedComponents.initialize(adjacentTriangles);
-
-        //for (const auto &t1 : adjacentTriangles)
-        //{
-            //for (const auto &t2 : adjacentTriangles)
-            //{
-                //if (data->connectedTriangles.contains({t1, t2}))
-                //{
-                    //linkConnectedComponents.union_setsTriangle(t1, t2);
-                //}
-
-            //}
-        //}
- 
-        //data->jacobiType[edge] = linkConnectedComponents.countConnectedComponents();
-    //}
-
-    //std::map<int, int> typeCount;
-    //for (auto &[edge, jacobiType]: data->jacobiType)
-    //{
-        //if (false == typeCount.contains(jacobiType))
-        //{
-            //typeCount[jacobiType] = 0;
-        //}
-
-        //typeCount[jacobiType] += 1;
-
-        ////printf("The Jacobi type of edge (%d, %d) is %d.\n", edge.first, edge.second, jacobiType);
-    //}
-
-    //for (auto &[jacobiType, count]: typeCount)
-    //{
-        ////printf("There are %d edges of type %d.\n", count, jacobiType);
-    //}
-
-
-
-    // Print upper/lower links to debug
-
-    // otherwise the lower and upper link flip around
-    //for (const std::vector<size_t> tet : data->tetrahedra)
-    //{
-        //// All pairs give you all six edges
-        //for (int a = 0 ; a < 4 ; a++)
-        //{
-            //for (int b = a + 1 ; b < 4 ; b++)
-            //{
-                //int aIndex = tet[a];
-                //int bIndex = tet[b];
-                
-                //// Make sure the vertices of the edge are in sorted order to have consistent orientation
-                //if (aIndex > bIndex)
-                //{
-                    //std::swap(aIndex, bIndex);
-                //}
-
-                ////printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-                ////for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
-                ////{
-                    ////printf("%d ", v);
-                ////}
-                ////printf("\n");
-
-                ////printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-                ////for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
-                ////{
-                    ////printf("%d ", v);
-                ////}
-                ////printf("\n");
-            //}
-        //}
-    //}
 }
 
 
@@ -1445,5 +1248,87 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     }
 
 
+
+}
+
+void ReebSpace::countIntersectionsTypes(Data *data)
+{
+    int regularRegularIntersections = 0;
+    int singularRegularIntersections = 0;
+    int singularSingularIntersections = 0;
+    int degenerateIntersections = 0;
+    int maxNeihbours = 0;
+
+    // Now loop over all vertices
+    for (auto currentVertex = data->arr.vertices_begin(); currentVertex != data->arr.vertices_end(); ++currentVertex)
+    {
+        const Point_2& p = currentVertex->point();
+        //std::cout << "Vertex at: " << p << std::endl;
+
+        // Skip the vertices, we just want to count the inter intersections.
+        if (data->arrangementPointsIdices.contains(p))
+        {
+            continue;
+        }
+
+
+        // This loop should always finish
+        const auto begin = currentVertex->incident_halfedges();
+        auto circ = begin;
+
+        int regularNeighbours = 0;
+        int singularNeighbours = 0;
+
+        do {
+
+            const Segment_2 &segment = *data->arr.originating_curves_begin(circ);
+
+            // These will always be sorted, it's how we created the segments
+            const int aIndex = data->arrangementPointsIdices[segment.source()];
+            const int bIndex = data->arrangementPointsIdices[segment.target()];
+
+            if (data->jacobiType[{aIndex, bIndex}] == 1)
+            {
+                regularNeighbours++;
+            }
+            else
+            {
+                singularNeighbours++;
+            }
+
+            ++circ;
+        } while (circ != begin);
+
+        if (regularNeighbours + singularNeighbours > 4)
+        {
+            degenerateIntersections++;
+        }
+
+        maxNeihbours = std::max(maxNeihbours, regularNeighbours + singularNeighbours);
+
+
+
+        if (regularNeighbours == 0)
+        {
+            singularSingularIntersections++;
+        }
+        else if (singularNeighbours == 0)
+        {
+            regularRegularIntersections++;
+        }
+        else
+        {
+            singularRegularIntersections++;
+        }
+    }
+
+
+    const int totalIntersctionPoints = regularRegularIntersections + singularRegularIntersections + singularSingularIntersections;
+
+    printf("Here is a summary of the intersections types:\n");
+    printf("regular   - regular  intersections: %d the ratio is %.2f%%.\n", regularRegularIntersections, 100.0 * (float)regularRegularIntersections / (float)totalIntersctionPoints);
+    printf("singular  - regular  intersections: %d the ratio is %.2f%%.\n", singularRegularIntersections, 100.0 * (float)singularRegularIntersections / (float)totalIntersctionPoints);
+    printf("singular  - sigular  intersections: %d the ratio is %.2f%%.\n", singularSingularIntersections, 100.0 * (float)singularSingularIntersections / (float)totalIntersctionPoints);
+    printf("The number of degenerate intersections is %d with maximum being %d.\n", degenerateIntersections, maxNeihbours);
 
 }

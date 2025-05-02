@@ -221,6 +221,9 @@ int main(int argc, char* argv[])
         data->generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
     }
 
+    ReebSpace::countIntersectionsTypes(data);
+
+
     // Set up QT Application
     QApplication app(argc, argv);
     glutInit(&argc, argv);

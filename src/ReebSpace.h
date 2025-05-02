@@ -51,6 +51,8 @@ namespace ReebSpace
         // Compute the Reeb space from all the preimage graphs
         void computeReebSpacePostprocess(Data *);
 
+        void countIntersectionsTypes(Data *);
+
 
         //
         // Helper functions
