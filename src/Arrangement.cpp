@@ -1,6 +1,7 @@
 #include "./Arrangement.h"
 #include "src/CustomArrangementTypes.h"
 
+#include <algorithm>
 #include <vector>
 
 void CustomArrangement::computeArrangementCustom(Data *data)
@@ -74,34 +75,95 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         printf("Segment %d between point %d (%.2f, %.2f) and point %d (%.2f, %.2f).\n", segments[i]->index, pointA->index, pointA->x, pointA->y, pointB->index, pointB->x, pointB->y);
     }
 
+
+
+
     data->customArrangementPoints = points;
-    data->customArrangementSegments = segments;
+
+    // All points in the segment, endpoints + intersection points
+    std::vector<std::vector<int>> segmentPoints(segments.size());
 
     for (int i = 0 ; i < segments.size() ; i++)
     {
+        // Push the both endpoints together, they will be sorted later anyway
+        segmentPoints[i].push_back(segments[i]->a->index);
+        segmentPoints[i].push_back(segments[i]->b->index);
+
         for (int j = i + 1 ; j < segments.size() ; j++)
         {
             printf("Checking segments %d and %d.\n", i, j);
-            std::optional<Point> intersectionPoint = computeIntersection(segments[i], segments[j]);
-
+            std::optional<Point> result = computeIntersection(segments[i], segments[j]);
 
             // Add the new point of intersection to the list of all arrangement points
-            if (intersectionPoint) 
+            if (result) 
             {
+                ConstPointHandler intersectionPoint = std::make_shared<Point>(result.value());
+
                 std::cout << "Intersection at (" << intersectionPoint->x << ", " << intersectionPoint->y << ")\n";
 
                 // Set the index of the point
                 intersectionPoint->index = data->customArrangementPoints.size();
-                data->customArrangementPoints.push_back(std::make_shared<Point>(*intersectionPoint));
+                data->customArrangementPoints.push_back(intersectionPoint);
 
-            } else 
+                segmentPoints[i].push_back(intersectionPoint->index);
+                segmentPoints[j].push_back(intersectionPoint->index);
+            } 
+            // Segment was not intersected, keep going
+            else 
             {
                 std::cout << "No intersection.\n";
             }
+        }
+    }
 
+    printf("\n\n----------------------------\n\n");
+
+
+    for (int i = 0 ; i < segments.size() ; i++)
+    {
+        // Sort intersection points along the segment (ChatGPT code)
+        const double dx = segments[i]->b->x - segments[i]->a->x;
+        const double dy = segments[i]->b->y - segments[i]->a->y;
+        const double len2 = dx * dx + dy * dy;
+
+        std::sort(segmentPoints[i].begin(), segmentPoints[i].end(), [&](const int a, const int b) {
+                PointHandler p1 = data->customArrangementPoints[a];
+                PointHandler p2 = data->customArrangementPoints[b];
+
+                double t1 = ((p1->x - segments[i]->a->x) * dx + (p1->y - segments[i]->a->y) * dy) / len2;
+                double t2 = ((p2->x - segments[i]->a->x) * dx + (p2->y - segments[i]->a->y) * dy) / len2;
+                return t1 < t2;
+                });
+
+        std::cout << "There are this many segment points " << segmentPoints[i].size() << " in segment " << i << std::endl;
+        for (int j = 0 ; j < segmentPoints[i].size() ; j++)
+        {
+            const int pointIndex = segmentPoints[i][j];
+            printf("Point %d (%.2f, %.2f).\n", 
+                    data->customArrangementPoints[pointIndex]->index, 
+                    data->customArrangementPoints[pointIndex]->x, 
+                    data->customArrangementPoints[pointIndex]->y);
+        }
+        std::cout << "\n";
+
+        // Add the parts of the segment
+        for (int j = 1 ; j < segmentPoints[i].size() ; j++)
+        {
+            data->customArrangementSegments.push_back(
+                    std::make_shared<Segment>(
+                        data->customArrangementPoints[segmentPoints[i][j-1]], 
+                        data->customArrangementPoints[segmentPoints[i][j]], 
+                        data->customArrangementSegments.size()));
         }
 
     }
+
+    printf("In total there are %ld arrangement vertices and %ld arrangement segments.\n", data->customArrangementPoints.size(), data->customArrangementSegments.size());
+
+
+
+
+
 }
 
 
@@ -135,7 +197,8 @@ std::optional<CustomArrangement::Point> CustomArrangement::computeIntersection(C
     const CustomArrangement::DataType t = t_num / denom;
     const CustomArrangement::DataType u = u_num / denom;
 
-    if (t >= 0.0 && t <= 1.0 && u >= 0.0 && u <= 1.0) 
+    const CustomArrangement::DataType eps = 1e-6;
+    if (t >= eps && t <= 1.0 - eps && u >= eps && u <= 1.0 - eps) 
     {
         const CustomArrangement::DataType ix = A->x + t * dx1;
         const CustomArrangement::DataType iy = A->y + t * dy1;
