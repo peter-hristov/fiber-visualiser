@@ -81,7 +81,7 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         for (int j = i + 1 ; j < segments.size() ; j++)
         {
             printf("Checking segments %d and %d.\n", i, j);
-            std::optional<Point<double>> intersectionPoint = computeIntersection<double>(*segments[i], *segments[j]);
+            std::optional<Point<double>> intersectionPoint = computeIntersection<double>(segments[i], segments[j]);
 
 
             // Add the new point of intersection to the list of all arrangement points
@@ -89,6 +89,7 @@ void CustomArrangement::computeArrangementCustom(Data *data)
             {
                 std::cout << "Intersection at (" << intersectionPoint->x << ", " << intersectionPoint->y << ")\n";
 
+                // Set the index of the point
                 intersectionPoint->index = data->customArrangementPoints.size();
                 data->customArrangementPoints.push_back(std::make_shared<Point<double>>(*intersectionPoint));
 
@@ -105,11 +106,12 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
 
 template <typename coordType>
-std::optional<CustomArrangement::Point<coordType>> CustomArrangement::computeIntersection(const CustomArrangement::Segment<coordType>& s1, const CustomArrangement::Segment<coordType>& s2) {
-    const auto A = s1.a;
-    const auto B = s1.b;
-    const auto C = s2.a;
-    const auto D = s2.b;
+std::optional<CustomArrangement::Point<coordType>> CustomArrangement::computeIntersection(const std::shared_ptr<const CustomArrangement::Segment<coordType>> &s1, const std::shared_ptr<const CustomArrangement::Segment<coordType>> &s2)
+{
+    const auto A = s1->a;
+    const auto B = s1->b;
+    const auto C = s2->a;
+    const auto D = s2->b;
 
     const coordType dx1 = B->x - A->x;
     const coordType dy1 = B->y - A->y;
@@ -137,7 +139,7 @@ std::optional<CustomArrangement::Point<coordType>> CustomArrangement::computeInt
     {
         const coordType ix = A->x + t * dx1;
         const coordType iy = A->y + t * dy1;
-        return Point<coordType>(ix, iy, -1);  // -1 since it's not from input
+        return Point<coordType>(ix, iy, -1);  // -1 since it's not from input, we'll set it later
     }
 
     return std::nullopt;
