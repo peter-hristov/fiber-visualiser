@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <gmpxx.h> 
 
 namespace CustomArrangement
 {
@@ -42,7 +43,7 @@ namespace CustomArrangement
         };
 
     // Typedef (or using alias) for shared_ptr<Point<coordType>>
-    using DataType = float;
+    using DataType = mpq_class;
 
     using Point = CustomPoint<DataType>;
     using Segment = CustomSegment<DataType>;

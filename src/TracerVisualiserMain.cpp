@@ -12,6 +12,7 @@
 #include "./TracerVisualiserWindow.h"
 #include "./Timer.h"
 #include "./ReebSpace.h"
+#include "./Arrangement.h"
 
 #include "CGALTypedefs.h"
 
@@ -91,8 +92,15 @@ int main(int argc, char* argv[])
         std::cerr << "Error: Unsupported file type: " << extension << std::endl;
     }
 
+
+
+
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
+
+    Timer::start();
+    CustomArrangement::computeArrangementCustom(data);
+    Timer::stop("Computed custom arrangement in         :");
 
     //return 0;
 

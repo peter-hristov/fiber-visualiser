@@ -275,11 +275,6 @@ void ReebSpace::computeArrangement(Data *data)
 {
 
 
-    CustomArrangement::computeArrangementCustom(data);
-
-    return;
-
-
     Timer::start();
 
     // Add in the vertices of the mesh 
