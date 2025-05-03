@@ -84,12 +84,10 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
 
 
-
-
+    // doubling up on memory here, but more efficient 
     std::set<Point> uniquePoints(points.begin(), points.end());
-
-
     data->customArrangementPoints = points;
+
 
     // All points in the segment, endpoints + intersection points
     // The pair is <pointId, \lambda \in [0,1]>
@@ -113,20 +111,31 @@ void CustomArrangement::computeArrangementCustom(Data *data)
             {
                 auto &[intersectionPoint, t, u] = *result;
 
-                if (uniquePoints.contains(intersectionPoint))
-                {
+                // Now we find the index of the point
+                int pointIndex = -1;
 
+                auto it = uniquePoints.find(intersectionPoint);
+
+                // If the point has not already been added
+                if (it == uniquePoints.end())
+                {
+                    pointIndex = uniquePoints.size();
+                    intersectionPoint.index = pointIndex;
+                    uniquePoints.insert(intersectionPoint);
+                    data->customArrangementPoints.push_back(intersectionPoint);
+                }
+                else
+                {
+                    pointIndex = (*it).index;
                 }
 
                 //std::cout << "Intersection at (" << intersectionPoint->x << ", " << intersectionPoint->y << ")\n";
 
                 // Set the index of the point and add it to the rest
-                intersectionPoint.index = data->customArrangementPoints.size();
-                data->customArrangementPoints.push_back(intersectionPoint);
 
                 // Add the index of the point to the segments it intersects
-                segmentPoints[i].push_back({intersectionPoint.index, t});
-                segmentPoints[j].push_back({intersectionPoint.index, u});
+                segmentPoints[i].push_back({pointIndex, t});
+                segmentPoints[j].push_back({pointIndex, u});
             }
         }
     }
@@ -136,7 +145,7 @@ void CustomArrangement::computeArrangementCustom(Data *data)
     for (int i = 0 ; i < segments.size() ; i++)
     {
         // Sort intersection points along the segment using their lambda value
-        std::sort(segmentPoints[i].begin(), segmentPoints[i].end(), [&](const std::pair<int, DataType> &a, std::pair<int, DataType> b) {
+        std::sort(segmentPoints[i].begin(), segmentPoints[i].end(), [&](const std::pair<int, DataType> &a, std::pair<int, DataType> &b) {
                 return a.second < b.second;
                 });
 
@@ -178,12 +187,12 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
 
 
-std::optional<std::tuple<CustomArrangement::Point, CustomArrangement::DataType, CustomArrangement::DataType>> CustomArrangement::computeIntersection(Segment &s1, Segment &s2, std::vector<Point> &points)
+std::optional<std::tuple<CustomArrangement::Point, CustomArrangement::DataType, CustomArrangement::DataType>> CustomArrangement::computeIntersection(const Segment &s1, const Segment &s2, const std::vector<Point> &segmentPoints)
 {
-    const Point &A = points[s1.aIndex];
-    const Point &B = points[s1.bIndex];
-    const Point &C = points[s2.aIndex];
-    const Point &D = points[s2.bIndex];
+    const Point &A = segmentPoints[s1.aIndex];
+    const Point &B = segmentPoints[s1.bIndex];
+    const Point &C = segmentPoints[s2.aIndex];
+    const Point &D = segmentPoints[s2.bIndex];
 
     const DataType dx1 = B.x - A.x;
     const DataType dy1 = B.y - A.y;
