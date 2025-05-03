@@ -11,6 +11,10 @@ namespace CustomArrangement
             coordType x, y;
             int index;
 
+            CustomPoint()
+            {
+
+            }
             CustomPoint(coordType _x, coordType _y, int _index)
             {
                 this->x = _x;
@@ -29,14 +33,14 @@ namespace CustomArrangement
 
     template <typename coordType>
         struct CustomSegment {
-            // We assume that *a < *b
-            std::shared_ptr<CustomPoint<coordType>> a, b;
+            // Indices to points from another array
+            int aIndex, bIndex;
             int index;
 
-            CustomSegment(std::shared_ptr<CustomPoint<coordType>> _a, std::shared_ptr<CustomPoint<coordType>> _b, int index)
+            CustomSegment(int _a, int _b, int index)
             {
-                this->a = _a;
-                this->b = _b;
+                this->aIndex = _a;
+                this->bIndex = _b;
                 this->index = index;
             }
 

@@ -12,14 +12,13 @@ void CustomArrangement::computeArrangementCustom(Data *data)
     //
 
     // ASSUMPTION - these are already sorted lexicographically
-    std::vector<PointHandler> points(data->vertexCoordinatesF.size());
+    std::vector<Point> points(data->vertexCoordinatesF.size());
 
     for (int i = 0 ; i < data->vertexCoordinatesF.size() ; i++)
     {
-        const double u = data->vertexCoordinatesF[i];
-        const double v = data->vertexCoordinatesG[i];
-
-        points[i] = std::make_shared<Point>(Point(u, v, i));
+        points[i].x = data->vertexCoordinatesF[i];
+        points[i].y = data->vertexCoordinatesG[i];
+        points[i].index = i;
     }
 
 
@@ -42,7 +41,7 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         uniqueEdges[std::set<size_t>({data->tetrahedra[i][2], data->tetrahedra[i][3]})] = true;
     }
 
-    std::vector<SegmentHandler> segments;
+    std::vector<Segment> segments;
     for (const auto& edge : uniqueEdges) 
     {
         // Put in a vector for easy access
@@ -50,13 +49,13 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         assert(edgeVector.size() == 2);
 
         // Swap if the first point is not smaller
-        if (*points[edgeVector[1]] < *points[edgeVector[0]])
+        if (points[edgeVector[1]] < points[edgeVector[0]])
         {
             std::swap(edgeVector[0], edgeVector[1]);
 
         }
 
-        segments.push_back(std::make_shared<Segment>(points[edgeVector[0]], points[edgeVector[1]], segments.size()));
+        segments.push_back(Segment(points[edgeVector[0]].index, points[edgeVector[1]].index, segments.size()));
     }
 
     //std::cout << "Printing all points...\n";
@@ -71,8 +70,8 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
     for (int i = 0 ; i < segments.size() ; i++)
     {
-        auto pointA = segments[i]->a;
-        auto pointB = segments[i]->b;
+        //auto pointA = segments[i]->a;
+        //auto pointB = segments[i]->b;
         //printf("Segment %d between point %d (%.2f, %.2f) and point %d (%.2f, %.2f).\n", segments[i]->index, pointA->index, pointA->x.get_d(), pointA->y.get_d(), pointB->index, pointB->x.get_d(), pointB->y.get_d());
     }
 
@@ -87,6 +86,7 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
 
 
+    std::set<Point> uniquePoints(points.begin(), points.end());
 
 
     data->customArrangementPoints = points;
@@ -98,30 +98,35 @@ void CustomArrangement::computeArrangementCustom(Data *data)
     for (int i = 0 ; i < segments.size() ; i++)
     {
         // Push the both endpoints together, they will be sorted later anyway
-        segmentPoints[i].push_back({segments[i]->a->index, 0});
-        segmentPoints[i].push_back({segments[i]->b->index, 1});
+        segmentPoints[i].push_back({data->customArrangementPoints[segments[i].aIndex].index, 0});
+        segmentPoints[i].push_back({data->customArrangementPoints[segments[i].bIndex].index, 1});
 
         for (int j = i + 1 ; j < segments.size() ; j++)
         {
             // If the two segments have a common endpoint, skip
-            if (segments[i]->a == segments[j]->a || segments[i]->a == segments[j]->b || segments[i]->b == segments[j]->b || segments[i]->b == segments[j]->a)
+            if (segments[i].aIndex == segments[j].aIndex || segments[i].aIndex == segments[j].bIndex || segments[i].bIndex == segments[j].bIndex || segments[i].bIndex == segments[j].aIndex)
             {
                 continue;
             }
 
-            if (std::optional<std::tuple<PointHandler, DataType, DataType>> result = computeIntersection(segments[i], segments[j])) 
+            if (std::optional<std::tuple<Point, DataType, DataType>> result = computeIntersection(segments[i], segments[j], data->customArrangementPoints))
             {
                 auto &[intersectionPoint, t, u] = *result;
+
+                if (uniquePoints.contains(intersectionPoint))
+                {
+
+                }
 
                 //std::cout << "Intersection at (" << intersectionPoint->x << ", " << intersectionPoint->y << ")\n";
 
                 // Set the index of the point and add it to the rest
-                intersectionPoint->index = data->customArrangementPoints.size();
+                intersectionPoint.index = data->customArrangementPoints.size();
                 data->customArrangementPoints.push_back(intersectionPoint);
 
                 // Add the index of the point to the segments it intersects
-                segmentPoints[i].push_back({intersectionPoint->index, t});
-                segmentPoints[j].push_back({intersectionPoint->index, u});
+                segmentPoints[i].push_back({intersectionPoint.index, t});
+                segmentPoints[j].push_back({intersectionPoint.index, u});
             }
         }
     }
@@ -160,9 +165,9 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         for (int j = 1 ; j < segmentPoints[i].size() ; j++)
         {
             data->customArrangementSegments.push_back(
-                    std::make_shared<Segment>(
-                        data->customArrangementPoints[segmentPoints[i][j-1].first], 
-                        data->customArrangementPoints[segmentPoints[i][j].first], 
+                    Segment(
+                        data->customArrangementPoints[segmentPoints[i][j-1].first].index, 
+                        data->customArrangementPoints[segmentPoints[i][j].first].index, 
                         data->customArrangementSegments.size()));
         }
 
@@ -173,17 +178,17 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
 
 
-std::optional<std::tuple<CustomArrangement::PointHandler, CustomArrangement::DataType, CustomArrangement::DataType>> CustomArrangement::computeIntersection(ConstSegmentHandler &s1, ConstSegmentHandler &s2)
+std::optional<std::tuple<CustomArrangement::Point, CustomArrangement::DataType, CustomArrangement::DataType>> CustomArrangement::computeIntersection(Segment &s1, Segment &s2, std::vector<Point> &points)
 {
-    const ConstPointHandler A = s1->a;
-    const ConstPointHandler B = s1->b;
-    const ConstPointHandler C = s2->a;
-    const ConstPointHandler D = s2->b;
+    const Point &A = points[s1.aIndex];
+    const Point &B = points[s1.bIndex];
+    const Point &C = points[s2.aIndex];
+    const Point &D = points[s2.bIndex];
 
-    const DataType dx1 = B->x - A->x;
-    const DataType dy1 = B->y - A->y;
-    const DataType dx2 = D->x - C->x;
-    const DataType dy2 = D->y - C->y;
+    const DataType dx1 = B.x - A.x;
+    const DataType dy1 = B.y - A.y;
+    const DataType dx2 = D.x - C.x;
+    const DataType dy2 = D.y - C.y;
 
     const CustomArrangement::DataType denom = dx1 * dy2 - dy1 * dx2;
 
@@ -193,8 +198,8 @@ std::optional<std::tuple<CustomArrangement::PointHandler, CustomArrangement::Dat
         return std::nullopt;
     }
 
-    const DataType dx = C->x - A->x;
-    const DataType dy = C->y - A->y;
+    const DataType dx = C.x - A.x;
+    const DataType dy = C.y - A.y;
 
     const DataType t_num = dx * dy2 - dy * dx2;
     const DataType u_num = dx * dy1 - dy * dx1;
@@ -207,9 +212,9 @@ std::optional<std::tuple<CustomArrangement::PointHandler, CustomArrangement::Dat
 
     if (t > 0 && t < 1  && u > 0 && u < 1) 
     {
-        const DataType ix = A->x + t * dx1;
-        const DataType iy = A->y + t * dy1;
-        return std::make_tuple(std::make_shared<Point>(ix, iy, -1), t, u);
+        const DataType ix = A.x + t * dx1;
+        const DataType iy = A.y + t * dy1;
+        return std::make_tuple(Point(ix, iy, -1), t, u);
     }
 
     return std::nullopt;

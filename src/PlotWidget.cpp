@@ -474,8 +474,8 @@ void PlotWidget::drawBackground(QPainter &p)
 
     for (const auto &point : data->customArrangementPoints)
     {
-        float x1 = (resolution / (data->maxF - data->minF)) * (point->x.get_d() - data->minF);
-        float y1 = (resolution / (data->maxG - data->minG)) * (point->y.get_d() - data->minG);
+        float x1 = (resolution / (data->maxF - data->minF)) * (point.x.get_d() - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (point.y.get_d() - data->minG);
 
         //float x1 = (resolution / (data->maxF - data->minF)) * (point->x - data->minF);
         //float y1 = (resolution / (data->maxG - data->minG)) * (point->y - data->minG);
@@ -487,10 +487,10 @@ void PlotWidget::drawBackground(QPainter &p)
 
     for (const auto &segment : data->customArrangementSegments)
     {
-        float x1 = (resolution / (data->maxF - data->minF)) * (segment->a->x.get_d() - data->minF);
-        float y1 = (resolution / (data->maxG - data->minG)) * (segment->a->y.get_d() - data->minG);
-        float x2 = (resolution / (data->maxF - data->minF)) * (segment->b->x.get_d() - data->minF);
-        float y2 = (resolution / (data->maxG - data->minG)) * (segment->b->y.get_d() - data->minG);
+        float x1 = (resolution / (data->maxF - data->minF)) * (data->customArrangementPoints[segment.aIndex].x.get_d() - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (data->customArrangementPoints[segment.aIndex].y.get_d() - data->minG);
+        float x2 = (resolution / (data->maxF - data->minF)) * (data->customArrangementPoints[segment.bIndex].x.get_d() - data->minF);
+        float y2 = (resolution / (data->maxG - data->minG)) * (data->customArrangementPoints[segment.bIndex].y.get_d() - data->minG);
 
         //float x1 = (resolution / (data->maxF - data->minF)) * (segment->a->x - data->minF);
         //float y1 = (resolution / (data->maxG - data->minG)) * (segment->a->y - data->minG);

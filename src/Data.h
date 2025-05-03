@@ -165,8 +165,8 @@ void computeTetExitPointsNewNew(const float, const float, const bool, const int 
     void sortVertices();
     void printMesh();
 
-    std::vector<CustomArrangement::PointHandler> customArrangementPoints;
-    std::vector<CustomArrangement::SegmentHandler> customArrangementSegments;
+    std::vector<CustomArrangement::Point> customArrangementPoints;
+    std::vector<CustomArrangement::Segment> customArrangementSegments;
 
 
     //
