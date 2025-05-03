@@ -2,6 +2,7 @@
 #include "src/CustomArrangementTypes.h"
 
 #include <algorithm>
+#include <gmpxx.h>
 #include <memory>
 #include <vector>
 
@@ -16,8 +17,18 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
     for (int i = 0 ; i < data->vertexCoordinatesF.size() ; i++)
     {
-        points[i].x = data->vertexCoordinatesF[i];
-        points[i].y = data->vertexCoordinatesG[i];
+        const float u = data->vertexCoordinatesF[i];
+        const float v = data->vertexCoordinatesG[i];
+
+        //const long uInt = static_cast<long>(std::round(u * 100.0));
+        //const long vInt = static_cast<long>(std::round(v * 100.0));
+
+        //points[i].x = mpq_class(uInt, 100);
+        //points[i].y = mpq_class(vInt, 100);
+        //points[i].index = i;
+
+        points[i].x = u;
+        points[i].y = v;
         points[i].index = i;
     }
 
@@ -62,7 +73,9 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
     for (int i = 0 ; i < points.size() ; i++)
     {
-        //printf("Point %d (%.2f, %.2f).\n", points[i]->index, points[i]->x.get_d(), points[i]->y.get_d());
+        //printf("Point %d (%.2f, %.2f).\n", points[i].index, points[i].x.get_d(), points[i].y.get_d());
+        //std::cout << "Rational : " << points[i].x.get_num() << "/" << points[i].x.get_den();
+        //std::cout << " " << points[i].y.get_num() << "/" << points[i].y.get_den() << "\n";
     }
 
 
@@ -74,14 +87,6 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         //auto pointB = segments[i]->b;
         //printf("Segment %d between point %d (%.2f, %.2f) and point %d (%.2f, %.2f).\n", segments[i]->index, pointA->index, pointA->x.get_d(), pointA->y.get_d(), pointB->index, pointB->x.get_d(), pointB->y.get_d());
     }
-
-
-
-
-
-
-
-
 
 
     // doubling up on memory here, but more efficient 
@@ -155,18 +160,16 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         //std::cout << "There are this many segment points " << segmentPoints[i].size() << " in segment " << i << std::endl;
         //for (int j = 0 ; j < segmentPoints[i].size() ; j++)
         //{
-            //const int pointIndex = segmentPoints[i][j];
-            ////printf("Point %d (%.2f, %.2f).\n", 
-                    ////data->customArrangementPoints[pointIndex]->index, 
-                    ////data->customArrangementPoints[pointIndex]->x.get_d(), 
-                    ////data->customArrangementPoints[pointIndex]->y.get_d());
+            //const int pointIndex = segmentPoints[i][j].first;
 
-            //////printf("PointRational %d (%Zd/%Zd, %Zd/%Zd).\n", 
-                    ////data->customArrangementPoints[pointIndex]->index, 
-                    ////data->customArrangementPoints[pointIndex]->x.get_num().get_mpz_t(), 
-                    ////data->customArrangementPoints[pointIndex]->x.get_den().get_mpz_t(), 
-                    ////data->customArrangementPoints[pointIndex]->y.get_num().get_mpz_t(), 
-                    ////data->customArrangementPoints[pointIndex]->y.get_den().get_mpz_t());
+            //printf("Point %d (%.2f, %.2f).\n", 
+                    //data->customArrangementPoints[pointIndex].index, 
+                    //data->customArrangementPoints[pointIndex].x.get_d(), 
+                    //data->customArrangementPoints[pointIndex].y.get_d());
+
+
+            //std::cout << "Rational : " << data->customArrangementPoints[i].x.get_num() << "/" << data->customArrangementPoints[i].x.get_den();
+            //std::cout << " " << data->customArrangementPoints[i].y.get_num() << "/" << data->customArrangementPoints[i].y.get_den() << "\n";
         //}
         //std::cout << "\n";
 
