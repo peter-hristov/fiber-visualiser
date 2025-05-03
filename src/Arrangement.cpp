@@ -2,6 +2,7 @@
 #include "src/CustomArrangementTypes.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 void CustomArrangement::computeArrangementCustom(Data *data)
@@ -78,79 +79,81 @@ void CustomArrangement::computeArrangementCustom(Data *data)
 
 
 
+
+
+
+
+
+
+
+
+
+
     data->customArrangementPoints = points;
 
     // All points in the segment, endpoints + intersection points
-    std::vector<std::vector<int>> segmentPoints(segments.size());
+    // The pair is <pointId, \lambda \in [0,1]>
+    std::vector<std::vector<std::pair<int, DataType>>> segmentPoints(segments.size());
 
     for (int i = 0 ; i < segments.size() ; i++)
     {
         // Push the both endpoints together, they will be sorted later anyway
-        segmentPoints[i].push_back(segments[i]->a->index);
-        segmentPoints[i].push_back(segments[i]->b->index);
+        segmentPoints[i].push_back({segments[i]->a->index, 0});
+        segmentPoints[i].push_back({segments[i]->b->index, 1});
 
         for (int j = i + 1 ; j < segments.size() ; j++)
         {
-            //printf("Checking segments %d and %d.\n", i, j);
-            std::optional<Point> result = computeIntersection(segments[i], segments[j]);
-
-            // Add the new point of intersection to the list of all arrangement points
-            if (result) 
+            // If the two segments have a common endpoint, skip
+            if (segments[i]->a == segments[j]->a || segments[i]->a == segments[j]->b || segments[i]->b == segments[j]->b || segments[i]->b == segments[j]->a)
             {
-                ConstPointHandler intersectionPoint = std::make_shared<Point>(result.value());
+                continue;
+            }
+
+            if (std::optional<std::tuple<PointHandler, DataType, DataType>> result = computeIntersection(segments[i], segments[j])) 
+            {
+                auto &[intersectionPoint, t, u] = *result;
 
                 //std::cout << "Intersection at (" << intersectionPoint->x << ", " << intersectionPoint->y << ")\n";
 
-                // Set the index of the point
+                // Set the index of the point and add it to the rest
                 intersectionPoint->index = data->customArrangementPoints.size();
                 data->customArrangementPoints.push_back(intersectionPoint);
 
-                segmentPoints[i].push_back(intersectionPoint->index);
-                segmentPoints[j].push_back(intersectionPoint->index);
-            } 
-            // Segment was not intersected, keep going
-            else 
-            {
-                //std::cout << "No intersection.\n";
+                // Add the index of the point to the segments it intersects
+                segmentPoints[i].push_back({intersectionPoint->index, t});
+                segmentPoints[j].push_back({intersectionPoint->index, u});
             }
         }
     }
 
     //printf("\n\n----------------------------\n\n");
 
-
     for (int i = 0 ; i < segments.size() ; i++)
     {
-        // Sort intersection points along the segment (ChatGPT code)
-        const DataType dx = segments[i]->b->x - segments[i]->a->x;
-        const DataType dy = segments[i]->b->y - segments[i]->a->y;
-        const DataType len2 = dx * dx + dy * dy;
-
-        std::sort(segmentPoints[i].begin(), segmentPoints[i].end(), [&](const int a, const int b) {
-                PointHandler p1 = data->customArrangementPoints[a];
-                PointHandler p2 = data->customArrangementPoints[b];
-
-                DataType t1 = ((p1->x - segments[i]->a->x) * dx + (p1->y - segments[i]->a->y) * dy) / len2;
-                DataType t2 = ((p2->x - segments[i]->a->x) * dx + (p2->y - segments[i]->a->y) * dy) / len2;
-                return t1 < t2;
+        // Sort intersection points along the segment using their lambda value
+        std::sort(segmentPoints[i].begin(), segmentPoints[i].end(), [&](const std::pair<int, DataType> &a, std::pair<int, DataType> b) {
+                return a.second < b.second;
                 });
 
+        //
+        // Print points along the edge
+        //
         //std::cout << "There are this many segment points " << segmentPoints[i].size() << " in segment " << i << std::endl;
-        for (int j = 0 ; j < segmentPoints[i].size() ; j++)
-        {
-            const int pointIndex = segmentPoints[i][j];
-            //printf("Point %d (%.2f, %.2f).\n", 
-                    //data->customArrangementPoints[pointIndex]->index, 
-                    //data->customArrangementPoints[pointIndex]->x.get_d(), 
-                    //data->customArrangementPoints[pointIndex]->y.get_d());
+        //for (int j = 0 ; j < segmentPoints[i].size() ; j++)
+        //{
+            //const int pointIndex = segmentPoints[i][j];
+            ////printf("Point %d (%.2f, %.2f).\n", 
+                    ////data->customArrangementPoints[pointIndex]->index, 
+                    ////data->customArrangementPoints[pointIndex]->x.get_d(), 
+                    ////data->customArrangementPoints[pointIndex]->y.get_d());
 
-            ////printf("PointRational %d (%Zd/%Zd, %Zd/%Zd).\n", 
-                    //data->customArrangementPoints[pointIndex]->index, 
-                    //data->customArrangementPoints[pointIndex]->x.get_num().get_mpz_t(), 
-                    //data->customArrangementPoints[pointIndex]->x.get_den().get_mpz_t(), 
-                    //data->customArrangementPoints[pointIndex]->y.get_num().get_mpz_t(), 
-                    //data->customArrangementPoints[pointIndex]->y.get_den().get_mpz_t());
-        }
+            //////printf("PointRational %d (%Zd/%Zd, %Zd/%Zd).\n", 
+                    ////data->customArrangementPoints[pointIndex]->index, 
+                    ////data->customArrangementPoints[pointIndex]->x.get_num().get_mpz_t(), 
+                    ////data->customArrangementPoints[pointIndex]->x.get_den().get_mpz_t(), 
+                    ////data->customArrangementPoints[pointIndex]->y.get_num().get_mpz_t(), 
+                    ////data->customArrangementPoints[pointIndex]->y.get_den().get_mpz_t());
+        //}
         //std::cout << "\n";
 
         // Add the parts of the segment
@@ -158,24 +161,19 @@ void CustomArrangement::computeArrangementCustom(Data *data)
         {
             data->customArrangementSegments.push_back(
                     std::make_shared<Segment>(
-                        data->customArrangementPoints[segmentPoints[i][j-1]], 
-                        data->customArrangementPoints[segmentPoints[i][j]], 
+                        data->customArrangementPoints[segmentPoints[i][j-1].first], 
+                        data->customArrangementPoints[segmentPoints[i][j].first], 
                         data->customArrangementSegments.size()));
         }
 
     }
 
     //printf("In total there are %ld arrangement vertices and %ld arrangement segments.\n", data->customArrangementPoints.size(), data->customArrangementSegments.size());
-
-
-
-
-
 }
 
 
 
-std::optional<CustomArrangement::Point> CustomArrangement::computeIntersection(ConstSegmentHandler &s1, ConstSegmentHandler &s2)
+std::optional<std::tuple<CustomArrangement::PointHandler, CustomArrangement::DataType, CustomArrangement::DataType>> CustomArrangement::computeIntersection(ConstSegmentHandler &s1, ConstSegmentHandler &s2)
 {
     const ConstPointHandler A = s1->a;
     const ConstPointHandler B = s1->b;
@@ -204,11 +202,14 @@ std::optional<CustomArrangement::Point> CustomArrangement::computeIntersection(C
     const DataType t = t_num / denom;
     const DataType u = u_num / denom;
 
+    // Should not happen, this means the segments share and endpoint
+    assert(t != 0 && t != 1 && u != 0 && u != 1);
+
     if (t > 0 && t < 1  && u > 0 && u < 1) 
     {
         const DataType ix = A->x + t * dx1;
         const DataType iy = A->y + t * dy1;
-        return Point(ix, iy, -1);  // -1 since it's not from input, we'll set it later
+        return std::make_tuple(std::make_shared<Point>(ix, iy, -1), t, u);
     }
 
     return std::nullopt;
