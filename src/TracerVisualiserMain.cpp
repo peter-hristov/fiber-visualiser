@@ -94,8 +94,89 @@ int main(int argc, char* argv[])
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
 
-    std::cout << "Press Enter to continue...";
-    std::cin.get();  // waits for Enter key
+
+
+
+    map<int, int> degreeBins;
+    map<int, int> originatingCurvesBin;
+
+    // Now loop over all vertices
+    for (auto currentVertex = data->arr.vertices_begin(); currentVertex != data->arr.vertices_end(); ++currentVertex)
+    {
+        const Point_2& p = currentVertex->point();
+        //std::cout << "Vertex at: " << p << std::endl;
+
+        // Skip if it's an original vertex vertices, we just want to count the intersection vertices.
+        if (data->arrangementPointsIdices.contains(p))
+        {
+            continue;
+        }
+
+        const auto begin = currentVertex->incident_halfedges();
+        auto circ = begin;
+
+        // Let's see - how many originatig curves intersect at this vertex?
+        //cout << "Starting the count" << endl;
+        int originatingCurveCount = 0;
+        do {
+            originatingCurveCount += std::distance(data->arr.originating_curves_begin(circ), data->arr.originating_curves_end(circ));
+            //cout << originatingCurveCount << endl;
+            ++circ;
+        } while (circ != begin);
+
+
+        //cout << "Final count = " << originatingCurveCount << endl;
+        int actualDegree = originatingCurveCount;
+
+        degreeBins[actualDegree]++;
+    }
+
+
+
+
+    // For each half-edge how many curves does it repreent?
+    for (auto he = data->arr.halfedges_begin(); he != data->arr.halfedges_end(); ++he) {
+        std::size_t count = std::distance(data->arr.originating_curves_begin(he), data->arr.originating_curves_end(he));
+        originatingCurvesBin[count]++;
+    }
+
+
+    std::cout << "Here is an arrangement vertex degree histogram" << std::endl;
+    for (const auto &[degree, count] : degreeBins)
+    {
+        printf("Degree: %d, count : %d\n", degree, count);
+    }
+
+
+    std::cout << "Here is a originating degrees histogram" << std::endl;
+    for (const auto &[degree, count] : originatingCurvesBin)
+    {
+        printf("#Originating Curves Curves: %d, count : %d\n", degree, count);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    return 0;
+
+    //std::cout << "Press Enter to continue...";
+    //std::cin.get();  // waits for Enter key
 
     Timer::start();
     ReebSpace::computeUpperLowerLink(data);

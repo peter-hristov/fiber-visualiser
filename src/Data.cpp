@@ -991,8 +991,8 @@ void Data::readDataVTU(const string &filename, const float &perturbationEpsilon)
         //this->vertexCoordinatesF[i] += iFloat * e;
         //this->vertexCoordinatesG[i] += iFloat * e * iFloat * e;
 
-        this->vertexCoordinatesF[i] += randomPerturbation(perturbationEpsilon);
-        this->vertexCoordinatesG[i] += randomPerturbation(perturbationEpsilon);
+        //this->vertexCoordinatesF[i] += randomPerturbation(perturbationEpsilon);
+        //this->vertexCoordinatesG[i] += randomPerturbation(perturbationEpsilon);
     }
 
     // Now we can sort

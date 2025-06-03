@@ -4,6 +4,7 @@
 #include "./Timer.h"
 #include "./utility/indicators.hpp"
 
+#include <omp.h>
 #include <cassert>
 #include <cstddef>
 #include <map>
@@ -317,6 +318,153 @@ void ReebSpace::computeArrangement(Data *data)
         //std::cout << "Adding edge " << edgeVector[0] << " - " << edgeVector[1] << std::endl;
     }
     Timer::stop("Converted edges to segments            :");
+
+
+    std::cout << "There are " << segments.size() << " segments." << std::endl;
+
+
+
+
+
+
+    std::cout << "\n\n";
+    Timer::start();
+    int identicalPoints = 0;
+    for (std::size_t i = 0; i < data->arrangementPoints.size(); ++i) {
+        for (std::size_t j = i + 1; j < data->arrangementPoints.size(); ++j) {
+            if (data->arrangementPoints[i].x() == data->arrangementPoints[j].x() && data->arrangementPoints[i].y() == data->arrangementPoints[j].y())
+            {
+                identicalPoints++;
+            }
+        }
+    }
+    int numPairs = data->arrangementPoints.size() * (data->arrangementPoints.size() - 1) / 2;
+    Timer::stop("Computed identical vertices            :");
+
+
+
+    Timer::start();
+    int collinearPoints = 0;
+    // Brute-force check all triplets
+    for (std::size_t i = 0; i < data->arrangementPoints.size(); ++i) {
+        for (std::size_t j = i + 1; j < data->arrangementPoints.size(); ++j) {
+            for (std::size_t k = j + 1; k < data->arrangementPoints.size(); ++k) {
+                if (CGAL::collinear(data->arrangementPoints[i], data->arrangementPoints[j], data->arrangementPoints[k])) {
+                    collinearPoints++;
+                }
+            }
+        }
+    }
+    int numTripplets = data->arrangementPoints.size() * (data->arrangementPoints.size() - 1) * (data->arrangementPoints.size() - 2) / 6;
+    Timer::stop("Computed collinear points              :");
+
+
+    auto segments_bbox_intersect = [](const Segment_2& s1, const Segment_2& s2) {
+        return CGAL::do_overlap(s1.bbox(), s2.bbox());
+    };
+
+
+    auto segments_intersect = [](const Segment_2& s1, const Segment_2& s2, const std::map<Point_2, int> &points) 
+    {
+        // If the bounding boxes don't intersect, skip
+        if (false == CGAL::do_overlap(s1.bbox(), s2.bbox()))
+        {
+            return false;
+        }
+
+        // If they intersect at their endpoints, skip
+        if (s1.source() == s2.source() || s1.source() == s2.target() || s1.target() == s2.source() || s1.target() == s2.target())
+        {
+            return false;
+        }
+        
+        auto i1 = CGAL::intersection(s1, s2);
+        if (i1) 
+        { 
+            return true; 
+        }
+        else
+        {
+            return false;
+        }
+    };
+
+
+
+    Timer::start();
+    int concurrentSegments = 0;
+
+    #pragma omp parallel for collapse(2) schedule(dynamic)
+    for (std::size_t i = 0; i < segments.size(); ++i) {
+        for (std::size_t j = i + 1; j < segments.size(); ++j) {
+
+            if (!segments_bbox_intersect(segments[i], segments[j]))
+                continue;  // skip if bounding boxes don't intersect
+
+            auto i1 = CGAL::intersection(segments[i], segments[j]);
+
+            // If there is no intersection just continue
+            if (!i1) { continue; }
+
+            for (std::size_t k = j + 1; k < segments.size(); ++k) {
+
+                if (!segments_bbox_intersect(segments[j], segments[k]) ||
+                        !segments_bbox_intersect(segments[i], segments[k]))
+                    continue;
+
+                auto i2 = CGAL::intersection(segments[j], segments[k]);
+
+                // If there is no intersection just continue
+                if (!i2) { continue; }
+
+                auto i3 = CGAL::intersection(segments[i], segments[k]);
+
+                // If there is no intersection just continue
+                if (!i3) { continue; }
+
+                auto p1 = std::get_if<Point_2>(&*i1);
+                auto p2 = std::get_if<Point_2>(&*i2);
+                auto p3 = std::get_if<Point_2>(&*i3);
+
+                if (p1 && p2 && p3 && *p1 == *p2 && *p2 == *p3) {
+                    #pragma omp atomic
+                    concurrentSegments++;
+                }
+            }
+        }
+    }
+
+    int numTrippletSegments = segments.size() * (segments.size() - 1) * (segments.size() - 2) / 6;
+    Timer::stop("Computed concurrent segments           :");
+
+
+
+    printf("There are %d identical points out of %ld points and %d point pairs.\n", identicalPoints, data->arrangementPoints.size(), numPairs);
+    printf("There are %d collinear points out of %ld points and %d point tripples.\n", collinearPoints, data->arrangementPoints.size(), numTripplets);
+    printf("There are %d concurrent segments out of %ld segments and %d segment tripples.\n", concurrentSegments, segments.size(), numTrippletSegments);
+
+
+
+    printf("\n\n");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
