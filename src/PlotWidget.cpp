@@ -471,7 +471,7 @@ void PlotWidget::drawBackground(QPainter &p)
     }
 
     // Draw all edges
-    for (const auto &edge : data->edges)
+    for (const auto &[edge, type] : data->edges)
     {
         float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
         float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.first] - data->minG);
@@ -479,7 +479,19 @@ void PlotWidget::drawBackground(QPainter &p)
         float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
         float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
 
-        p.setPen(QPen(Qt::black, 5.2));
+        if (type == 0)
+        {
+            p.setPen(QPen(Qt::black, 4.2, Qt::DashLine));
+        }
+        else if (type == 1)
+        {
+            p.setPen(QPen(Qt::black, 3.2, Qt::SolidLine));
+        }
+        else
+        {
+            p.setPen(QPen(Qt::black, 10.2, Qt::SolidLine));
+        }
+
         p.setRenderHint(QPainter::Antialiasing, true);
         p.drawLine(x1, y1, x2, y2);
     }

@@ -169,8 +169,8 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
                 const std::pair<int, int> edge = {aIndex, bIndex};
 
-                // Add to the list of edge
-                data->edges.insert(edge);
+                // Add to the list of edge, initially all as regular
+                data->edges[edge] = 1;
 
                 std::vector<int> linkVerticesInTet;
 
@@ -237,24 +237,66 @@ void ReebSpace::computeUpperLowerLink(Data *data)
     }
 
 
-    for (const auto &edge : data->edges)
+    for (auto &[edge, type] : data->edges)
     {
         printf("Currently at the edge [%d, %d].\n", edge.first, edge.second);
 
-        printf("The upper link has %d components and these vertices: ", upperLinkComponentsDS[edge].countConnectedComponents());
+        int upperLinkComponents = upperLinkComponentsDS[edge].countConnectedComponents();
+        int lowerLinkComponents = lowerLinkComponentsDS[edge].countConnectedComponents();
+
+        printf("The upper link has %d components and these vertices: ", upperLinkComponents);
         for (const auto &v : data->upperLink[edge])
         {
             printf("%d ", v);
         }
         printf("\n");
 
-        printf("The lower link has %d components and these vertices: ", lowerLinkComponentsDS[edge].countConnectedComponents());
+        printf("The lower link has %d components and these vertices: ", lowerLinkComponents);
         for (const auto &v : data->lowerLink[edge])
         {
             printf("%d ", v);
         }
         printf("\n");
+
+        // Definite edge
+        if (0 == upperLinkComponents || 0 == lowerLinkComponents)
+        {
+            type = 0;
+        }
+        // Regular edge
+        else if (1 == upperLinkComponents || 1 == lowerLinkComponents)
+        {
+            type = 1;
+        }
+        // Indefinite edge
+        else
+        {
+            type = 2;
+        }
     }
+
+
+    // For evey face
+    //for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
+    //{
+        //// Skip the outer face
+        //if (face->is_unbounded()) { continue; }
+
+
+        //// Walk around the boundary of the face
+        //Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
+        //Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+        //do {
+
+            //ReebSpace::determineCorrespondence(data, curr);
+            //++curr;
+        //} while (curr != start);
+
+    //}
+
+    // Get the originating edge
+    //const Segment_2 &segment = *data->arr.originating_curves_begin(halfEdge);
+    //const std::pair<int, int> originatingEdge = {data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]};
 }
 
 

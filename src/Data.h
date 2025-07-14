@@ -54,7 +54,7 @@ class Data
     QVector<QPointF> mousePoints;
 
     std::vector<std::vector<size_t>> tetrahedra;
-    std::set<std::pair<int, int>> edges;
+    std::map<std::pair<int, int>, int> edges;
     std::vector<std::vector<GLfloat>> vertexDomainCoordinates;
 
     std::vector<GLfloat> vertexCoordinatesF;
@@ -69,14 +69,10 @@ class Data
 
     void computeTetExitPoints(const float, const float, const std::vector<float> = {1,1,1});
     void computeTetExitPointsNew(const float, const float, const std::vector<float> = {1,1,1});
-void computeTetExitPointsNewNew(const float, const float, const bool, const int reebSheetIdOnly = -1, const std::vector<float> = {1,1,1});
-
-
+    void computeTetExitPointsNewNew(const float, const float, const bool, const int reebSheetIdOnly = -1, const std::vector<float> = {1,1,1});
 
     void readData(const std::string&, const float&);
     void readDataVTU(const std::string&, const float&);
-
-
 
     // Reeb stuff relted content
     Arrangement_2 arr;
@@ -85,8 +81,6 @@ void computeTetExitPointsNewNew(const float, const float, const bool, const int 
     // Make sure to always keep the edge (u, v) such that u < v in index value,
     std::map<std::pair<int, int>, std::set<int>> upperLink;
     std::map<std::pair<int, int>, std::set<int>> lowerLink;
-
-
 
     //
     // <Reeb space related stuff>
@@ -105,8 +99,6 @@ void computeTetExitPointsNewNew(const float, const float, const bool, const int 
     // Tell us which triangles (as sets of IDs) are connected (part of a tetrahedron)
     std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
 
-
-
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
     //std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
 
@@ -119,17 +111,13 @@ void computeTetExitPointsNewNew(const float, const float, const bool, const int 
 
     std::vector<std::vector<int>> adjacentTrianglesIndex;
 
-
     // The jacobi type of each edge 0 for definite, 1 for regular and n > 1 for indefinite of type n
     std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> jacobiType;
 
     // The number of fiber components for each preimage graph, more of a utility thing
     //std::vector<int> arrangementFiberComponents;
 
-
-
     // Big memory usage is here
-
 
     // The connected components of the preimage graph for each face in the arrangement
     std::vector<DisjointSet<int>> preimageGraphs;
