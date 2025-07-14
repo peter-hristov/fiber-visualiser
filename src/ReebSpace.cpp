@@ -143,6 +143,9 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
 
 void ReebSpace::computeUpperLowerLink(Data *data)
 {
+    // All the edges from the mesh
+    std::set<std::pair<int, int>> edges;
+
     // otherwise the lower and upper link flip around
     for (const std::vector<size_t> tet : data->tetrahedra)
     {
@@ -160,6 +163,9 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                 {
                     std::swap(aIndex, bIndex);
                 }
+
+                // Add to the list of edge
+                edges.insert({aIndex, bIndex});
 
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
@@ -180,6 +186,68 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                 }
             }
         }
+    }
+
+    // Initialize the disjoint set for the upper and lower link 
+    std::map<std::pair<int, int>, DisjointSet<int>> upperLinkComponentsDS;
+    for (const auto &[edge, vertices] : data->upperLink)
+    {
+        upperLinkComponentsDS[edge].initialize(vertices);
+    }
+
+    std::map<std::pair<int, int>, DisjointSet<int>> lowerLinkComponentsDS;
+    for (const auto &[edge, vertices] : data->lowerLink)
+    {
+        lowerLinkComponentsDS[edge].initialize(vertices);
+    }
+
+    // Add all edges to compute the connected components
+
+    for (const auto &[edge, vertices] : data->upperLink)
+    {
+        for (const auto &v1: vertices)
+        {
+            for (const auto &v2: vertices)
+            {
+                if ((v1 < v2 && edges.contains({v1, v2})) || (v1 > v2 && edges.contains({v2, v1})))
+                {
+                    upperLinkComponentsDS[edge].union_setsTriangle(v1, v2);
+                }
+            }
+        }
+    }
+
+    for (const auto &[edge, vertices] : data->lowerLink)
+    {
+        for (const auto v1: vertices)
+        {
+            for (const auto v2: vertices)
+            {
+                if ((v1 < v2 && edges.contains({v1, v2})) || (v1 > v2 && edges.contains({v2, v1})))
+                {
+                    lowerLinkComponentsDS[edge].union_setsTriangle(v1, v2);
+                }
+            }
+        }
+    }
+
+    for (const auto &edge : edges)
+    {
+        printf("Currently at the edge [%d, %d].\n", edge.first, edge.second);
+
+        printf("The upper link had %d components and these vertices: ", upperLinkComponentsDS[edge].countConnectedComponents());
+        for (const auto &v : data->upperLink[edge])
+        {
+            printf("%d ", v);
+        }
+        printf("\n");
+
+        printf("The lower link had %d components and these vertices: ", lowerLinkComponentsDS[edge].countConnectedComponents());
+        for (const auto &v : data->lowerLink[edge])
+        {
+            printf("%d ", v);
+        }
+        printf("\n");
     }
 }
 

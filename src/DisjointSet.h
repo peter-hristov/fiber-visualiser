@@ -57,6 +57,7 @@ class DisjointSet {
         // Map a triangle to an ID (element ID)
         //std::map<std::set<int>, int> data;
         
+        // Map from the data value to it's index in the data structure
         std::unordered_map<DataType, int, MyHash<DataType>> data;
         //std::map<DataType, int> data;
 
@@ -95,7 +96,6 @@ class DisjointSet {
 
         std::vector<std::pair<DataType, int>> getUniqueRepresentativesAndRoots()
         {
-
             std::set<int> uniqueRoots;
             std::vector<std::pair<DataType, int>> representativesAndRoots;
 
