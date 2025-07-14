@@ -143,12 +143,15 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
 
 void ReebSpace::computeUpperLowerLink(Data *data)
 {
-    // All the edges from the mesh
-    std::set<std::pair<int, int>> edges;
+    // For every edge, save the edges in its link
+    std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> linkEdges;
 
     // otherwise the lower and upper link flip around
-    for (const std::vector<size_t> tet : data->tetrahedra)
+    //for (const std::vector<size_t> tet : data->tetrahedra)
+    for (int i = 0 ; i <  data->tetrahedra.size() ; i++)
     {
+        const auto &tet = data->tetrahedra[i];
+
         // All pairs give you all six edges
         for (int a = 0 ; a < 4 ; a++)
         {
@@ -164,8 +167,12 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                     std::swap(aIndex, bIndex);
                 }
 
+                const std::pair<int, int> edge = {aIndex, bIndex};
+
                 // Add to the list of edge
-                edges.insert({aIndex, bIndex});
+                data->edges.insert(edge);
+
+                std::vector<int> linkVerticesInTet;
 
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
@@ -177,6 +184,8 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                     {
                         const bool isUpperLink = isUpperLinkEdgeVertex(aIndex, bIndex, vIndex, data);
 
+                        linkVerticesInTet.push_back(vIndex);
+
                         if (true == isUpperLink) {
                             data->upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
                         } else {
@@ -184,6 +193,8 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                         }
                     }
                 }
+
+                linkEdges[edge].push_back({linkVerticesInTet[0], linkVerticesInTet[1]});
             }
         }
     }
@@ -205,44 +216,39 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
     for (const auto &[edge, vertices] : data->upperLink)
     {
-        for (const auto &v1: vertices)
+        for (const std::pair<int, int> &linkEdge : linkEdges[edge])
         {
-            for (const auto &v2: vertices)
+            if (vertices.contains(linkEdge.first) && vertices.contains(linkEdge.second))
             {
-                if ((v1 < v2 && edges.contains({v1, v2})) || (v1 > v2 && edges.contains({v2, v1})))
-                {
-                    upperLinkComponentsDS[edge].union_setsTriangle(v1, v2);
-                }
+                upperLinkComponentsDS[edge].union_setsTriangle(linkEdge.first, linkEdge.second);
             }
         }
     }
 
     for (const auto &[edge, vertices] : data->lowerLink)
     {
-        for (const auto v1: vertices)
+        for (const std::pair<int, int> &linkEdge : linkEdges[edge])
         {
-            for (const auto v2: vertices)
+            if (vertices.contains(linkEdge.first) && vertices.contains(linkEdge.second))
             {
-                if ((v1 < v2 && edges.contains({v1, v2})) || (v1 > v2 && edges.contains({v2, v1})))
-                {
-                    lowerLinkComponentsDS[edge].union_setsTriangle(v1, v2);
-                }
+                lowerLinkComponentsDS[edge].union_setsTriangle(linkEdge.first, linkEdge.second);
             }
         }
     }
 
-    for (const auto &edge : edges)
+
+    for (const auto &edge : data->edges)
     {
         printf("Currently at the edge [%d, %d].\n", edge.first, edge.second);
 
-        printf("The upper link had %d components and these vertices: ", upperLinkComponentsDS[edge].countConnectedComponents());
+        printf("The upper link has %d components and these vertices: ", upperLinkComponentsDS[edge].countConnectedComponents());
         for (const auto &v : data->upperLink[edge])
         {
             printf("%d ", v);
         }
         printf("\n");
 
-        printf("The lower link had %d components and these vertices: ", lowerLinkComponentsDS[edge].countConnectedComponents());
+        printf("The lower link has %d components and these vertices: ", lowerLinkComponentsDS[edge].countConnectedComponents());
         for (const auto &v : data->lowerLink[edge])
         {
             printf("%d ", v);
@@ -1314,9 +1320,6 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     {
         std::cout << i << " -- sheet " << sheetAreaSortVector[i].first << " has area " << sheetAreaSortVector[i].second << std::endl;
     }
-
-
-
 }
 
 void ReebSpace::countIntersectionsTypes(Data *data)

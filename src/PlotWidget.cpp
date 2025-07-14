@@ -467,10 +467,47 @@ void PlotWidget::drawBackground(QPainter &p)
 
             p.setRenderHint(QPainter::Antialiasing, true);
             p.drawLine(x1, y1, x2, y2);
-
         }
-
     }
+
+    // Draw all edges
+    for (const auto &edge : data->edges)
+    {
+        float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.first] - data->minG);
+
+        float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
+        float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
+
+        p.setPen(QPen(Qt::black, 5.2));
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.drawLine(x1, y1, x2, y2);
+    }
+
+
+
+    // Draw all the vertex coordinates
+    for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
+    {
+
+        float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF);
+        float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG);
+
+        p.setPen(QPen(Qt::black, 6, Qt::SolidLine));
+        p.setBrush(Qt::white);           // Fill color
+
+        p.drawEllipse(QPointF(x1, y1), 20, 20);
+        // @TODO Figure out how to rotate the vertex numbers
+        //p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
+
+
+        QFont font = p.font();
+        font.setPointSize(70);
+        // font.setWeight(20);
+        p.setFont(font);
+        p.drawText(x1, y1, QString::number(i));
+    }
+
 }
 
 void PlotWidget::generateStaticCache()

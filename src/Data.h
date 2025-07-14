@@ -54,6 +54,7 @@ class Data
     QVector<QPointF> mousePoints;
 
     std::vector<std::vector<size_t>> tetrahedra;
+    std::set<std::pair<int, int>> edges;
     std::vector<std::vector<GLfloat>> vertexDomainCoordinates;
 
     std::vector<GLfloat> vertexCoordinatesF;
