@@ -94,8 +94,8 @@ int main(int argc, char* argv[])
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
 
-    std::cout << "Press Enter to continue...";
-    std::cin.get();  // waits for Enter key
+    //std::cout << "Press Enter to continue...";
+    //std::cin.get();  // waits for Enter key
 
     Timer::start();
     ReebSpace::computeUpperLowerLink(data);
