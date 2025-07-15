@@ -1,35 +1,19 @@
-#include "src/DisjointSet.h"
-#include <unordered_map>
-#include <set>
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
-
-#include <QApplication>
 #include <filesystem>
+
+#include <GL/glut.h>
+#include <QApplication>
+
 #include "./TracerVisualiserWindow.h"
 #include "./Timer.h"
 #include "./ReebSpace.h"
-
-#include "CGALTypedefs.h"
-
-#include <CGAL/Union_find.h>
-
-
+#include "./CGALTypedefs.h"
 #include "./utility/CLI11.hpp"
 
-
 using namespace std;
-namespace fs = std::filesystem;
-
 
 int main(int argc, char* argv[])
 {
-
-    // Parse the command line arguments
-    CLI::App cliApp("Fiber Visualiser");
+    CLI::App cliApp("Reeb Space Fiber Visualiser");
 
     string filename;
     cliApp.add_option("--file, -f", filename, "Input data filename. Has to be either .txt of .vti.")->required();
@@ -66,17 +50,18 @@ int main(int argc, char* argv[])
         discardFiberSeeds = true;
     }
 
-    fs::path filePath(filename);
+    //
+    // Read input
+    //
+    std::filesystem::path filePath(filename);
     
-    if (!fs::exists(filePath)) 
+    if (!std::filesystem::exists(filePath)) 
     {
         std::cerr << "Error: File does not exist: " << filename << std::endl;
         return 0;
     }
 
-    // Set up the data class
     Data* data = new Data();
-
     std::string extension = filePath.extension().string();
     if (extension == ".vtu") 
     {
@@ -90,6 +75,7 @@ int main(int argc, char* argv[])
     {
         std::cerr << "Error: Unsupported file type: " << extension << std::endl;
     }
+
 
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);
@@ -155,7 +141,7 @@ int main(int argc, char* argv[])
     // Save all the polygons
     if (false == outputSheetPolygonsFilename.empty())
     {
-        fs::path filePathOutput(outputSheetPolygonsFilename);
+        std::filesystem::path filePathOutput(outputSheetPolygonsFilename);
 
         // Write to the file
         std::ofstream outFile(filePathOutput);
