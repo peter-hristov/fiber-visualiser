@@ -239,24 +239,24 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
     for (auto &[edge, type] : data->edges)
     {
-        printf("Currently at the edge [%d, %d].\n", edge.first, edge.second);
+        //printf("Currently at the edge [%d, %d].\n", edge.first, edge.second);
 
         int upperLinkComponents = upperLinkComponentsDS[edge].countConnectedComponents();
         int lowerLinkComponents = lowerLinkComponentsDS[edge].countConnectedComponents();
 
-        printf("The upper link has %d components and these vertices: ", upperLinkComponents);
-        for (const auto &v : data->upperLink[edge])
-        {
-            printf("%d ", v);
-        }
-        printf("\n");
+        //printf("The upper link has %d components and these vertices: ", upperLinkComponents);
+        //for (const auto &v : data->upperLink[edge])
+        //{
+            ////printf("%d ", v);
+        //}
+        //printf("\n");
 
-        printf("The lower link has %d components and these vertices: ", lowerLinkComponents);
-        for (const auto &v : data->lowerLink[edge])
-        {
-            printf("%d ", v);
-        }
-        printf("\n");
+        //printf("The lower link has %d components and these vertices: ", lowerLinkComponents);
+        //for (const auto &v : data->lowerLink[edge])
+        //{
+            //printf("%d ", v);
+        //}
+        //printf("\n");
 
         // Definite edge
         if (0 == upperLinkComponents || 0 == lowerLinkComponents)
@@ -264,7 +264,7 @@ void ReebSpace::computeUpperLowerLink(Data *data)
             type = 0;
         }
         // Regular edge
-        else if (1 == upperLinkComponents || 1 == lowerLinkComponents)
+        else if (1 == upperLinkComponents && 1 == lowerLinkComponents)
         {
             type = 1;
         }
@@ -276,27 +276,6 @@ void ReebSpace::computeUpperLowerLink(Data *data)
     }
 
 
-    // For evey face
-    //for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
-    //{
-        //// Skip the outer face
-        //if (face->is_unbounded()) { continue; }
-
-
-        //// Walk around the boundary of the face
-        //Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
-        //Arrangement_2::Ccb_halfedge_const_circulator curr = start;
-        //do {
-
-            //ReebSpace::determineCorrespondence(data, curr);
-            //++curr;
-        //} while (curr != start);
-
-    //}
-
-    // Get the originating edge
-    //const Segment_2 &segment = *data->arr.originating_curves_begin(halfEdge);
-    //const std::pair<int, int> originatingEdge = {data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]};
 }
 
 
@@ -459,6 +438,21 @@ void ReebSpace::computeArrangement(Data *data)
     CGAL::insert(data->arr, segments.begin(), segments.end());
     Timer::stop("Computed arrangement                   :");
 
+    Arrangement_2 arrSingular;
+
+    std::vector<Segment_2> segmentsSingular;
+    for (const auto &[edge, type] : data->edges)
+    {
+        if (type != 1)
+        {
+            segmentsSingular.push_back(Segment_2(data->arrangementPoints[edge.first], data->arrangementPoints[edge.second]));
+        }
+    };
+
+    Timer::start();
+    CGAL::insert(arrSingular, segmentsSingular.begin(), segmentsSingular.end());
+    Timer::stop("Computed arrangement Singular          :");
+
     //Timer::start();
     //Arrangement_2 arr;
     //for (const auto& segment : segments) {
@@ -471,6 +465,11 @@ void ReebSpace::computeArrangement(Data *data)
         << "   |V| = " << data->arr.number_of_vertices()
         << ",  |E| = " << data->arr.number_of_edges()
         << ",  |F| = " << data->arr.number_of_faces() << std::endl << std::endl;
+
+    std::cout << "The singular arrangement size:"
+        << "   |V| = " << arrSingular.number_of_vertices()
+        << ",  |E| = " << arrSingular.number_of_edges()
+        << ",  |F| = " << arrSingular.number_of_faces() << std::endl << std::endl;
 
     //std::cout << std::endl << std::endl << "The sequantial arrangement size:\n"
         //<< "   |V| = " << arr.number_of_vertices()
@@ -522,7 +521,62 @@ void ReebSpace::computeArrangement(Data *data)
         //}
     }
 
+
+
+    // For evey face
+    for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
+    {
+        // Skip the outer face
+        if (face->is_unbounded()) { continue; }
+
+
+        // Walk around the boundary of the face
+        Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
+        Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+        do {
+            const Segment_2 &segment = *data->arr.originating_curves_begin(curr);
+            const std::pair<int, int> originatingEdge = {data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]};
+
+            if (data->edges.contains(originatingEdge))
+            {
+                const int &edgeType = data->edges[originatingEdge];
+
+                //std::cout << edgeType << std::endl;
+
+                if (edgeType != 1)
+                {
+                    data->singularFaces.insert(face);
+                }
+
+            }
+
+
+            ++curr;
+        } while (curr != start);
+    }
+
+    printf("There are %ld singular faces out of %ld faces, which is %.4f%%.\n", 
+            data->singularFaces.size(), 
+            data->arr.number_of_faces(), 
+            100.0 * (float)data->singularFaces.size() / (float)data->arr.number_of_faces());
+
+    // Get the originating edge
+
+
+    size_t singularEdges = 0;
+    for (const auto &[edge, type] : data->edges)
+    {
+        if (type != 1)
+        {
+            singularEdges++;
+        }
+    };
+
     
+    printf("There are %ld singular edges out of %ld edges, which is %.4f%%.\n", 
+            singularEdges, 
+            data->edges.size(), 
+            100.0 * (float)singularEdges / (float)data->edges.size());
 
 
     // Use to find reverse edges
@@ -788,6 +842,28 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
     std::vector<int> order(data->arrangementFacesIdices.size(), -1);
 
 
+
+
+
+    //for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
+    //{
+        //// Skip the outer face
+        //if (face->is_unbounded()) { continue; }
+
+
+        //const int currentFaceID = data->arrangementFacesIdices[face];
+
+        //if (false == data->singularFaces.contains(face))
+        //{
+            //order[currentFaceID] = 9999999;
+        //}
+    //}
+
+
+
+
+
+
     traversalQueue.push(outerFace);
 
     // This is the order in which a face has been processed, note this is different than level
@@ -850,6 +926,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
             const int twinFaceID = data->arrangementFacesIdices[twinFace];
 
             // If the neighbour has not been visited, we enqueue it and also compute its preimage graph
+            //if (-1 == order[twinFaceID] && data->singularFaces.contains(twinFace))
             if (-1 == order[twinFaceID])
             {
                 traversalQueue.push(twinFace);
@@ -913,6 +990,245 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
     printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n\n", data->reebSpace.data.size(), data->reebSpace.getUniqueRepresentativesAndRoots().size());
 }
 
+void ReebSpace::computePreimageGraphsSingular(Data *data, const bool discardFiberSeedsSets)
+{
+
+    using namespace indicators;
+    ProgressBar bar{
+        option::BarWidth{50},
+            option::Start{"["},
+            option::Fill{"■"},
+            option::Lead{"■"},
+            option::Remainder{"-"},
+            option::End{" ]"},
+            option::PostfixText{"Computing Reeb space."},
+            option::ShowPercentage{true},  // Show percentage on the bar
+            option::ShowElapsedTime{true},
+            //option::ForegroundColor{Color::cyan},
+            //option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
+    };
+
+
+
+
+
+
+
+
+
+    // Find the unbounded face (hold the boundary of the arrangement)
+    Face_const_handle outerFace;
+
+    // Iterate over all faces and find the unbounded one
+    for (Face_const_iterator fit = data->arr.faces_begin(); fit != data->arr.faces_end(); ++fit) 
+    {
+        if (fit->is_unbounded()) 
+        {
+            // If this has already been set, we have two outerFace, this should never happen.
+            assert(outerFace == Face_const_handle());
+            outerFace = fit;
+            break;
+        }
+    }
+
+    // Sanity check, make sure the outer face is simple
+    assert(outerFace->number_of_inner_ccbs() == 1);
+    assert(outerFace->number_of_outer_ccbs() == 0);
+    assert(outerFace->number_of_holes() == 1);
+    assert(outerFace->number_of_isolated_vertices() == 0);
+
+    // Loop the edges of the boundary
+    //Arrangement_2::Ccb_halfedge_const_circulator inner_ccb = *outerFace->holes_begin();
+    //Arrangement_2::Ccb_halfedge_const_circulator he = inner_ccb;
+
+    // Iterate over the halfedges forming the inner CCB
+    //do {
+        //std::cout << he->source()->point() << " -> ";
+        //std::cout << he->target()->point() << std::endl;
+
+        // Get the originating curve of the half edge
+        // Maybe need a function for this
+        //const Segment_2& segment = *data->arr.originating_curves_begin(he);
+        //std::cout << data->arrangementPointsIdices[segment.source()] << ", ";
+        //std::cout << data->arrangementPointsIdices[segment.target()] << std::endl;
+    //} while (++he != inner_ccb);
+
+    //printf("\n\n");
+
+    // Get the the first half edge of the outerFace (could be any edge, this is a matter of convention)
+    //Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
+
+    // Make sure there is only one originating curve, something has gone wrong otherwise (edge overlap)
+    //assert(std::distance(data->arr.originating_curves_begin(outerHalfEdge), data->arr.originating_curves_end(outerHalfEdge)) == 1);
+
+    // Extract the original curve
+    //const Segment_2& segment = *data->arr.originating_curves_begin(outerHalfEdge);
+
+    //printf("The half edge came from this edge:\n");
+    //std::cout << segment.source() << " -> " << segment.target() << std::endl;
+
+    //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
+    //printf("\n\n");
+
+
+
+
+
+
+
+    // Starting from an outer half edge
+    std::queue<Face_const_handle> traversalQueue;
+    // This is the order in which faces are added, also servers as a visited flag
+    std::vector<int> order(data->arrangementFacesIdices.size(), -1);
+
+
+
+
+
+    //for (auto face = data->arr.faces_begin(); face != data->arr.faces_end(); ++face) 
+    //{
+        //// Skip the outer face
+        //if (face->is_unbounded()) { continue; }
+
+
+        //const int currentFaceID = data->arrangementFacesIdices[face];
+
+        //if (false == data->singularFaces.contains(face))
+        //{
+            //order[currentFaceID] = 9999999;
+        //}
+    //}
+
+
+
+
+
+
+    traversalQueue.push(outerFace);
+
+    // This is the order in which a face has been processed, note this is different than level
+    // This is used as an index for faces, so that we don't do double work when checking edges for correspondence
+    int orderIndex = 0;
+    order[data->arrangementFacesIdices[outerFace]] = orderIndex;
+
+    // The disjoint set to track the connected components of the preimage graph
+    data->preimageGraphs.resize(data->arrangementFacesIdices.size());
+
+    // The number of connected components for each preimage graph (computed from the disjoint set)
+    //data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
+
+    // If we want the fiber seeds, initialize them
+    if (false == discardFiberSeedsSets)
+    {
+        data->fiberSeeds.resize(data->arrangementFacesIdices.size());
+    }
+
+    int graphsInMemory = 0;
+    float averageAraphsInMemory = 0;
+    int barTickThreshold = data->arrangementFacesIdices.size() / 50;
+
+    while (false == traversalQueue.empty())
+    {
+        // Pop an half edge out
+        Face_const_handle currentFace = traversalQueue.front();
+        traversalQueue.pop();
+
+        // Get ids of the current face and the twin face
+        int currentFaceID = data->arrangementFacesIdices[currentFace];
+
+        //std::cout << "Current face " << currentFaceID << std::endl;
+
+        // Sanity check, this should always be true
+        if (false == currentFace->is_unbounded()) 
+        {
+            //assert(false == data->preimageGraphs[currentFaceID].isEmpty());
+        }
+
+        //
+        // For each neighbouring face
+        //
+
+        // Unbounded face (the starting one) has a different way of addressing its neighbours
+        Halfedge_const_handle start;
+        if (currentFace->is_unbounded()) 
+        {  
+            start = *currentFace->holes_begin();
+        }
+        else
+        {
+            start = *currentFace->outer_ccbs_begin();
+        }
+
+        Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+        do {
+
+            Face_const_handle twinFace = curr->twin()->face();
+            const int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+            // If the neighbour has not been visited, we enqueue it and also compute its preimage graph
+            if (-1 == order[twinFaceID] && data->singularFaces.contains(twinFace))
+            //if (-1 == order[twinFaceID])
+            {
+                traversalQueue.push(twinFace);
+                order[twinFaceID] = ++orderIndex;
+
+                //std::cout << "Computing for neighbour " << twinFaceID << std::endl;
+
+                // Compute the preimage graph of this unvisited face
+                ReebSpace::computeTwinFacePreimageGraph(data, curr);
+                graphsInMemory++;
+
+                // Get all unique roots and a representative
+                const std::vector<std::pair<int, int>> representativesAndRoots = data->preimageGraphs[twinFaceID].getUniqueRepresentativesAndRoots();
+
+                // Initialize the vertices of H with the connected components of the twin graph
+                for (const auto &[representative, root] : representativesAndRoots)
+                {
+                    data->reebSpace.addElements({twinFaceID, root});
+                }
+
+                // If we want fiber computation, cache the seeds for the fiber components
+                if (false == discardFiberSeedsSets)
+                {
+                    data->fiberSeeds[twinFaceID] = representativesAndRoots;
+                }
+            }
+
+            // Sanity check, all graphs should have either been computed before or now
+            //assert(false == data->preimageGraphs[twinFaceID].isEmpty());
+
+            // Compute the correspondence with the neighbours, but only if they are at a higher level, or we are at the same level, currentFaceID < twinFaceID is used to avoid double work, we only need it once
+            if (order[currentFaceID] < order[twinFaceID])
+            {
+                //std::cout << "Determining correspondence with neighbour " << twinFaceID << std::endl;
+                ReebSpace::determineCorrespondence(data, curr);
+            }
+
+            ++curr;
+        } while (curr != start);
+
+        averageAraphsInMemory = averageAraphsInMemory + ((float)graphsInMemory - (float)averageAraphsInMemory) / (float)orderIndex;
+
+        //printf("There are %d active preimage graphs with average %f at index %d/%ld.\n", graphsInMemory, averageAraphsInMemory, orderIndex, data->preimageGraphs.size());
+
+        // If the threshold is zero the ticks bugs out, so we don't do it
+        if (barTickThreshold > 0 && order[currentFaceID] % barTickThreshold == 0)
+        {
+            // Update bar state
+            if (false == bar.is_completed()) {  bar.tick(); }
+            if (false == bar.is_completed()) {  bar.tick(); }
+        }
+
+
+        // Dispose of the preimage graph we will no longer need it
+        data->preimageGraphs[currentFaceID].clear();
+        graphsInMemory--;
+    }
+
+    bar.set_progress(100); // all done
+    printf("\n\nThere is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
+    printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n\n", data->reebSpace.data.size(), data->reebSpace.getUniqueRepresentativesAndRoots().size());
+}
 
 void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_const_handle &halfEdge)
 {

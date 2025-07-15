@@ -113,3 +113,127 @@ Arrangement_2 ReebSpace::computeArrangement(Data *data) {
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Find the unbounded face to use as a starting point for the BFS 
+Face_const_handle outerFace;
+for (Face_const_iterator fit = data->arr.faces_begin(); fit != data->arr.faces_end(); ++fit) 
+{
+    if (fit->is_unbounded()) 
+    {
+        outerFace = fit;
+        break;
+    }
+}
+
+// Sanity check, make sure the outer face is simple
+assert(outerFace->number_of_inner_ccbs() == 1);
+assert(outerFace->number_of_outer_ccbs() == 0);
+assert(outerFace->number_of_holes() == 1);
+assert(outerFace->number_of_isolated_vertices() == 0);
+
+
+std::queue<Face_const_handle> traversalQueue;
+std::vector<bool> visited(data->arrangementFacesIdices.size(), false);
+
+traversalQueue.push(outerFace);
+visited[data->arrangementFacesIdices[outerFace]] = true;
+
+while (false == traversalQueue.empty())
+{
+    Face_const_handle currentFace = traversalQueue.front();
+    traversalQueue.pop();
+
+    int currentFaceID = data->arrangementFacesIdices[currentFace];
+
+    // Loop through the neighbours of the current face
+    Halfedge_const_handle start;
+
+    // The unbounded face (the starting one) has a different way of addressing its neighbours
+    if (currentFace->is_unbounded()) 
+    {  
+        start = *currentFace->holes_begin();
+    }
+    else
+    {
+        start = *currentFace->outer_ccbs_begin();
+    }
+
+    Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+    do {
+
+        Face_const_handle twinFace = curr->twin()->face();
+        const int twinFaceID = data->arrangementFacesIdices[twinFace];
+
+        // If the neighbour has not been visited, we enqueue it and also compute its preimage graph
+        if (false == visited[twinFaceID])
+        {
+            traversalQueue.push(twinFace);
+            visited[twinFaceID] = true;
+
+            // Compute the preimage graph of this unvisited face
+            ReebSpace::computeTwinFacePreimageGraph(data, curr);
+        }
+
+        ++curr;
+    } while (curr != start);
+}
+
+

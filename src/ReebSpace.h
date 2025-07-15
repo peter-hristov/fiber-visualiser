@@ -41,6 +41,7 @@ namespace ReebSpace
 
         // Compute the preimage graphs Gi for each cell in the arrangement
         void computePreimageGraphs(Data *, const bool);
+        void computePreimageGraphsSingular(Data *, const bool);
 
         // Computes the correspondence between two faces given a half edge between them
         void determineCorrespondence(Data *data, Arrangement_2::Halfedge_const_handle &);

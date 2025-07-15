@@ -91,12 +91,6 @@ int main(int argc, char* argv[])
         std::cerr << "Error: Unsupported file type: " << extension << std::endl;
     }
 
-    // Compute the 2D arrangement
-    ReebSpace::computeArrangement(data);
-
-    //std::cout << "Press Enter to continue...";
-    //std::cin.get();  // waits for Enter key
-
     Timer::start();
     ReebSpace::computeUpperLowerLink(data);
     Timer::stop("Computed upper and lower link          :");
@@ -104,6 +98,11 @@ int main(int argc, char* argv[])
     Timer::start();
     ReebSpace::computeTriangleAdjacency(data);
     Timer::stop("Computed triangle adjacency            :");
+
+    // Compute the 2D arrangement
+    ReebSpace::computeArrangement(data);
+
+
 
 
     //cout << "Triangles to Index " << endl;
@@ -139,6 +138,15 @@ int main(int argc, char* argv[])
     Timer::start();
     ReebSpace::computePreimageGraphs(data, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
+
+    Timer::start();
+    ReebSpace::computePreimageGraphsSingular(data, discardFiberSeeds);
+    Timer::stop("Computed {G_F} and H Singular          :");
+
+    return 0;
+
+    std::cout << "Press Enter to continue...";
+    std::cin.get();  // waits for Enter key
 
     //Timer::start();
     //ReebSpace::computeCorrespondenceGraph(data);
