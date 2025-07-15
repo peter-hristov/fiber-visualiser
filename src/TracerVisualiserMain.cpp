@@ -1,13 +1,16 @@
+#include <cstddef>
 #include <filesystem>
 
 #include <GL/glut.h>
 #include <QApplication>
 
+#include "./io.h"
 #include "./TracerVisualiserWindow.h"
 #include "./Timer.h"
 #include "./ReebSpace.h"
 #include "./CGALTypedefs.h"
 #include "./utility/CLI11.hpp"
+#include "src/io.h"
 
 using namespace std;
 
@@ -51,31 +54,15 @@ int main(int argc, char* argv[])
     }
 
     //
-    // Read input
+    // Read, perturb and sort the indices of the vertices lexicographically (by their range position).
     //
-    std::filesystem::path filePath(filename);
-    
-    if (!std::filesystem::exists(filePath)) 
-    {
-        std::cerr << "Error: File does not exist: " << filename << std::endl;
-        return 0;
-    }
+    Data *data = io::readData(filename);
+    if (data == nullptr) { return 1; }
+    data->perturbRangeValues(perturbationEpsilon);
+    data->sortVertices();
 
-    Data* data = new Data();
-    std::string extension = filePath.extension().string();
-    if (extension == ".vtu") 
-    {
-        data->readDataVTU(filename, perturbationEpsilon);
-    } 
-    else if (extension == ".txt") 
-    {
-        data->readData(filename, perturbationEpsilon);
-    } 
-    else 
-    {
-        std::cerr << "Error: Unsupported file type: " << extension << std::endl;
-    }
-
+    // Compute bounding box of the data in the domain and in the range.
+    data->computeMinMaxRangeDomainCoordinates();
 
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);

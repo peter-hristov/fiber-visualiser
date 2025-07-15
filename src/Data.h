@@ -71,8 +71,6 @@ class Data
     void computeTetExitPointsNew(const float, const float, const std::vector<float> = {1,1,1});
     void computeTetExitPointsNewNew(const float, const float, const bool, const int reebSheetIdOnly = -1, const std::vector<float> = {1,1,1});
 
-    void readData(const std::string&, const float&);
-    void readDataVTU(const std::string&, const float&);
 
     // Reeb stuff relted content
     Arrangement_2 arr;
@@ -152,6 +150,8 @@ class Data
 
     void sortVertices();
     void printMesh();
+
+    void perturbRangeValues(const float &perturbationEpsilon);
 
 
     //

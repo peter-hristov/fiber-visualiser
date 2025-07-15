@@ -35,6 +35,7 @@ find_package(VTK 9.4.1 REQUIRED)
 
 set(SOURCES
     ./src/Data.cpp
+    ./src/io.cpp
     ./src/ReebSpace.cpp
     ./src/PlotWidget.cpp
     ./src/TracerVisualiserMain.cpp

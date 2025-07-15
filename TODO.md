@@ -1,3 +1,7 @@
+# Refactor
+Make test vector<array>
+
+
 # Optomise memory:
 done - Remove the polygons and colours from PlotWidget
 done - remove  - data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
