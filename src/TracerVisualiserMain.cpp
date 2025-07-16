@@ -114,12 +114,12 @@ int main(int argc, char* argv[])
     //}
 
 
-    Timer::start();
-    ReebSpace::testTraverseArrangement(data);
-    Timer::stop("Computed empty traversal               :");
+    //Timer::start();
+    //ReebSpace::testTraverseArrangement(data);
+    //Timer::stop("Computed empty traversal               :");
 
     Timer::start();
-    ReebSpace::computePreimageGraphs(data, discardFiberSeeds);
+    data->reebSpace.computePreimageGraphs(data->tetMesh, data->arrangement, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
 
     //Timer::start();
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 
     std::cout << "Postprocessing..." << std::endl;
     //Timer::start();
-    ReebSpace::computeReebSpacePostprocess(data);
+    data->reebSpace.computeReebSpacePostprocess(data->tetMesh, data->arrangement);
     //Timer::stop("Computed RS(f) Postprocess             :");
 
     //std::cout << "Press Enter to continue...";
@@ -147,9 +147,9 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        outFile << data->sheetPolygon.size() << std::endl;
+        outFile << data->reebSpace.sheetPolygon.size() << std::endl;
 
-        for (const auto &[sheetId, polygon] : data->sheetPolygon)
+        for (const auto &[sheetId, polygon] : data->reebSpace.sheetPolygon)
         {
             outFile << "SheetId = " << sheetId << std::endl;
 
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
         data->generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
     }
 
-    ReebSpace::countIntersectionsTypes(data);
+    //ReebSpace::countIntersectionsTypes(data);
 
 
     // Set up QT Application

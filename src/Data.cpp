@@ -54,7 +54,7 @@ void Data::saveFibers()
         points->InsertNextPoint(p.point[0], p.point[1], p.point[2]);
         idArray->InsertNextValue(p.sheetId);
 
-        const vector<float> sheetColour = this->fiberColours[this->sheetToColour[p.sheetId] % this->fiberColours.size()];
+        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetToColour[p.sheetId] % this->fiberColours.size()];
         float color[3] = {sheetColour[0], sheetColour[1], sheetColour[2]};
         colourArray->InsertNextTuple(color);
     }
@@ -107,14 +107,14 @@ void Data::generatefFaceFibersForSheets(const int sheetOutputCount, const int nu
         fs::create_directory(folderPathFs);
     }
 
-    for (const auto &[sheetId, colourId] : this->sheetToColour)
+    for (const auto &[sheetId, colourId] : this->reebSpace.sheetToColour)
     {
-        if (this->incompleteSheets.contains(sheetId))
+        if (this->reebSpace.incompleteSheets.contains(sheetId))
         {
             printf("Skipping fiber %d, it's incomplete.",  sheetId);
         }
 
-        if (colourId > sheetOutputCount || this->incompleteSheets.contains(sheetId))
+        if (colourId > sheetOutputCount || this->reebSpace.incompleteSheets.contains(sheetId))
         {
             continue;
         }
@@ -134,7 +134,7 @@ void Data::generatefFaceFibersForSheets(const int sheetOutputCount, const int nu
 
 void Data::generatefFaceFibersForSheet(const int sheetId, const int numberOfFiberPoints)
 {
-    CartesianPolygon_2 &polygon = this->sheetPolygon[sheetId];
+    CartesianPolygon_2 &polygon = this->reebSpace.sheetPolygon[sheetId];
 
     if (polygon.size() == 0)
     {
@@ -199,7 +199,7 @@ void Data::printSheetHistogram()
 
     set<int> intersectedSheets;
     CartesianLine line(CartesianPoint(0, this->currentFiberPoint[0]), CartesianPoint(1, this->currentFiberPoint[1])); // Line through (0, 1) and (1, 0)
-    for (const auto &[sheetId, polygon] : this->sheetPolygon)
+    for (const auto &[sheetId, polygon] : this->reebSpace.sheetPolygon)
     {
         QVector<QPoint> points;
 
@@ -215,7 +215,7 @@ void Data::printSheetHistogram()
     std::cout << "Intersected sheets: ";
     for (const auto &sheetId : intersectedSheets)
     {
-        std::cout << sheetId << " (a = )" << this->sheetArea[sheetId] << std::endl;
+        std::cout << sheetId << " (a = )" << this->reebSpace.sheetArea[sheetId] << std::endl;
 
     }
     std::cout << "\n";
@@ -290,13 +290,13 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
 
     if (reebSheetIdOnly == -1)
     {
-        std::cout << "There are " << this->fiberSeeds[currentFaceID].size() << " fiber components with (sheet IDs, sorted IDs): ";
+        std::cout << "There are " << this->reebSpace.fiberSeeds[currentFaceID].size() << " fiber components with (sheet IDs, sorted IDs): ";
     }
 
     //vector<int> sheetIds;
-    for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
+    for (const auto &[triangleId, fiberComponentId] : this->reebSpace.fiberSeeds[currentFaceID])
     {
-        const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+        const int sheetId = this->reebSpace.reebSpace.findTriangle({currentFaceID, fiberComponentId});
 
         if (reebSheetIdOnly == -1 || sheetId == reebSheetIdOnly)
         {
@@ -312,7 +312,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
 
         if (reebSheetIdOnly == -1)
         {
-            printf("(%d, %d) ", sheetId, this->sheetToColour[sheetId]);
+            printf("(%d, %d) ", sheetId, this->reebSpace.sheetToColour[sheetId]);
         }
     }
     //std::cout << std::endl;
@@ -327,7 +327,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         const int currentSheeId = triangleSheetId[currentTriangleId];
         bfsQueue.pop();
 
-        const vector<float> sheetColour = this->fiberColours[this->sheetToColour[currentSheeId] % this->fiberColours.size()];
+        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetToColour[currentSheeId] % this->fiberColours.size()];
 
         const set<int> triangleUnpacked = this->tetMesh.indexToTriangle[currentTriangleId];
         const vector<int> triangleIndices = std::vector<int>(triangleUnpacked.begin(), triangleUnpacked.end());
@@ -509,11 +509,11 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
 
 
     int i = -1;
-    for (const auto &[triangle, triangleId] : this->preimageGraphs[currentFaceID].data)
+    for (const auto &[triangle, triangleId] : this->reebSpace.preimageGraphs[currentFaceID].data)
     {
         i++;
         int j = -1;
-        for (const auto&[triangle2, triangleId2] : this->preimageGraphs[currentFaceID].data)
+        for (const auto&[triangle2, triangleId2] : this->reebSpace.preimageGraphs[currentFaceID].data)
         {
             j++;
             if (j <= i) { continue; }
@@ -523,10 +523,10 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
 
             if (this->tetMesh.connectedTriangles.contains({triangleUnpacked, triangle2Unpacked}))
             {
-                const int componentID = this->preimageGraphs[currentFaceID].find(triangleId);
+                const int componentID = this->reebSpace.preimageGraphs[currentFaceID].find(triangleId);
                 //const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
-                const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
-                const int sheetColourID = this->sheetToColour[sheetID] % this->fiberColours.size();
+                const int sheetID = this->reebSpace.reebSpace.findTriangle({currentFaceID, componentID});
+                const int sheetColourID = this->reebSpace.sheetToColour[sheetID] % this->fiberColours.size();
                 const vector<float> sheetColour = this->fiberColours[sheetColourID];
 
                 //
@@ -720,17 +720,17 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
                         // Which sheets does this fiber belong to?
                         // 1. Triangle -> Face ComponentID
                         const int triangleID = this->tetMesh.triangleToIndex[std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC})];
-                        const int componentID = this->preimageGraphs[currentFaceID].findTriangle(triangleID);
+                        const int componentID = this->reebSpace.preimageGraphs[currentFaceID].findTriangle(triangleID);
                         //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
 
                         // 2. Fac ComponentID -> Reeb Space Sheet
                         //const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
                         //const int sheetID = this->reebSpace.findTriangle(pairToHIndex);
-                        const int sheetID = this->reebSpace.findTriangle({currentFaceID, componentID});
+                        const int sheetID = this->reebSpace.reebSpace.findTriangle({currentFaceID, componentID});
 
                         //printf("The Sheet ID is = %d\n", sheetID);
 
-                        const int sheetColourID = this->sheetToColour[sheetID];
+                        const int sheetColourID = this->reebSpace.sheetToColour[sheetID];
 
                         // 3. Get the colou of the sheet
                         const vector<float> sheetColour = this->fiberColours[sheetColourID];

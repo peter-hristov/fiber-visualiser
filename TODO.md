@@ -5,6 +5,8 @@ Compute plus/minus triangles only once
 Update the timer for use a hashmap
 Put the Reeb space computation in a different library
 
+Is this called twice? - ReebSpace::determineCorrespondence(tetMesh, arrangement, curr); in the BFS?
+
 
 # Optomise memory:
 done - Remove the polygons and colours from PlotWidget

@@ -310,12 +310,12 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
 void PlotWidget::drawBackground(QPainter &p)
 {
 
-    for (const auto &[sheetId, polygon] : data->sheetPolygon)
+    for (const auto &[sheetId, polygon] : data->reebSpace.sheetPolygon)
     {
         QVector<QPoint> points;
 
         // If the sheet is incomplete, the polygon will not be corret, just draww all the faces manually
-        if (data->incompleteSheets.contains(sheetId))
+        if (data->reebSpace.incompleteSheets.contains(sheetId))
         {
 
             // Loop through all faces to see which ones are in the sheet
@@ -324,9 +324,9 @@ void PlotWidget::drawBackground(QPainter &p)
                 const int currentFaceID = data->arrangement.arrangementFacesIdices[f];
 
                 // For each fiber component in the face, see if one of those is in our sheet
-                for (const auto &[triangleId, fiberComponentId] : this->data->fiberSeeds[currentFaceID])
+                for (const auto &[triangleId, fiberComponentId] : this->data->reebSpace.fiberSeeds[currentFaceID])
                 {
-                    const int componentSheetId = data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+                    const int componentSheetId = data->reebSpace.reebSpace.findTriangle({currentFaceID, fiberComponentId});
 
                     // Now we can add the polygon
                     if (componentSheetId == sheetId)
@@ -376,7 +376,7 @@ void PlotWidget::drawBackground(QPainter &p)
 
         QPolygon qPolygon(points);
 
-        const int colourID = data->sheetToColour[sheetId];
+        const int colourID = data->reebSpace.sheetToColour[sheetId];
         const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
 
         p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));

@@ -2,6 +2,7 @@
 
 #include "src/Arrangement.h"
 #include "src/CGALTypedefs.h"
+#include "src/ReebSpace.h"
 #include "src/TetMesh.h"
 #include <GL/gl.h>
 #include <unordered_map>
@@ -29,6 +30,7 @@
 #include "./CGALTypedefs.h"
 #include "./TetMesh.h"
 #include "./Arrangement.h"
+#include "./ReebSpace.h"
 
 class Data
 {
@@ -37,6 +39,7 @@ class Data
 
     TetMesh tetMesh;
     Arrangement arrangement;
+    ReebSpace reebSpace;
 
 
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
@@ -47,33 +50,6 @@ class Data
 
 
 
-    //
-    // <Reeb space related stuff>
-    //
-
-
-    // The number of fiber components for each preimage graph, more of a utility thing
-    //std::vector<int> arrangementFiberComponents;
-
-    // Big memory usage is here
-
-    // The connected components of the preimage graph for each face in the arrangement
-    std::vector<DisjointSet<int>> preimageGraphs;
-
-    // The actual Reeb space, map from a connected component of a preimage graph to a sheet.
-    DisjointSet<std::pair<int, int>> reebSpace;
-
-    // For each faceID we ahve a number of triangle seeds, which are given in fiberComponentId
-    std::vector<std::vector<std::pair<int, int>>> fiberSeeds;
-
-    std::unordered_map<int, CartesianPolygon_2> sheetPolygon;
-
-    std::map<int, double> sheetArea;
-
-    std::unordered_set<int> incompleteSheets;
-
-    // There's also this vector in plotwidget
-    //std::vector<QPolygon> arrangementPolygons;
     
 
     // The vertices of the correspondence graph H are pairs of int <faceID, fiber component ID>
@@ -81,8 +57,6 @@ class Data
     //std::vector<std::pair<int, int>> indexToVertexH;
     //std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> vertexHtoIndex;
 
-    // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
-    std::unordered_map<int, int> sheetToColour;
 
     // Data structure to query the arrangement
     // Given a point, which face is it in?

@@ -12,20 +12,20 @@
 #include <iterator>
 #include <unordered_map>
 
-std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data)
+std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(TetMesh &tetMesh, Arrangement &arrangement, Arrangement_2::Halfedge_const_handle currentHalfEdge)
 {
     // Step 1. Initialize lists
     std::set<int> plusTriangles;
     std::set<int> minusTriangles;
 
     // Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
-    const Segment_2 &segment = *data->arrangement.arr.originating_curves_begin(currentHalfEdge);
+    const Segment_2 &segment = *arrangement.arr.originating_curves_begin(currentHalfEdge);
     //std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
     //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
 
     // These will always be sorted, it's how we created the segments
-    const int aIndex = data->arrangement.arrangementPointsIdices[segment.source()];
-    const int bIndex = data->arrangement.arrangementPointsIdices[segment.target()];
+    const int aIndex = arrangement.arrangementPointsIdices[segment.source()];
+    const int bIndex = arrangement.arrangementPointsIdices[segment.target()];
 
     // Sanity check
     assert(aIndex < bIndex);
@@ -44,11 +44,11 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
         //std::cout << "Upper link becomes lower link." << std::endl;
 
         //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->tetMesh.upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: tetMesh.upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //minusTriangles.push_back({aIndex, bIndex, v});
-            minusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
+            minusTriangles.insert(tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
 
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
             //printf("%d ", v);
@@ -56,11 +56,11 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
         //printf("\n");
 
         //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->tetMesh.lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: tetMesh.lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //plusTriangles.push_back({aIndex, bIndex, v});
-            plusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
+            plusTriangles.insert(tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
             //printf("%d ", v);
         }
@@ -71,22 +71,22 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
         //std::cout << "Lower link becomes upper link." << std::endl;
 
         //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->tetMesh.upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: tetMesh.upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //plusTriangles.push_back({aIndex, bIndex, v});
-            plusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
+            plusTriangles.insert(tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
             //printf("%d ", v);
         }
         //printf("\n");
 
         //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->tetMesh.lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: tetMesh.lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //minusTriangles.push_back({aIndex, bIndex, v});
-            minusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
+            minusTriangles.insert(tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
             //printf("%d ", v);
         }
@@ -98,13 +98,13 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
 
 
 
-void ReebSpace::testTraverseArrangement(Data *data)
+void ReebSpace::testTraverseArrangement(Arrangement &arrangement)
 {
     // Find the unbounded face (hold the boundary of the arrangement)
     Face_const_handle outerFace;
 
     // Iterate over all faces and find the unbounded one
-    for (Face_const_iterator fit = data->arrangement.arr.faces_begin(); fit != data->arrangement.arr.faces_end(); ++fit) 
+    for (Face_const_iterator fit = arrangement.arr.faces_begin(); fit != arrangement.arr.faces_end(); ++fit) 
     {
         if (fit->is_unbounded()) 
         {
@@ -125,7 +125,7 @@ void ReebSpace::testTraverseArrangement(Data *data)
     Halfedge_const_handle outerHalfEdge = *outerFace->holes_begin();
 
     // Make sure there is only one originating curve, something has gone wrong otherwise (edge overlap)
-    assert(std::distance(data->arrangement.arr.originating_curves_begin(outerHalfEdge), data->arrangement.arr.originating_curves_end(outerHalfEdge)) == 1);
+    assert(std::distance(arrangement.arr.originating_curves_begin(outerHalfEdge), arrangement.arr.originating_curves_end(outerHalfEdge)) == 1);
 
     // Starting from an outer half edge
     std::queue<Arrangement_2::Halfedge_const_handle> traversalQueue;
@@ -147,8 +147,8 @@ void ReebSpace::testTraverseArrangement(Data *data)
         Arrangement_2::Face_const_handle twinFace = twin->face();
 
         // Get ids of the current face and the twin face
-        int currentFaceID = data->arrangement.arrangementFacesIdices[currentFace];
-        int twinFaceID = data->arrangement.arrangementFacesIdices[twinFace];
+        int currentFaceID = arrangement.arrangementFacesIdices[currentFace];
+        int twinFaceID = arrangement.arrangementFacesIdices[twinFace];
 
         // If we have never visited this face, then we have never visited any of the half edges.
         if (visited.find(twinFace) == visited.end())
@@ -183,7 +183,7 @@ void ReebSpace::testTraverseArrangement(Data *data)
 
 
 
-void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge_const_handle &currentHalfEdge)
+void ReebSpace::computeTwinFacePreimageGraph(TetMesh &tetMesh, Arrangement &arrangement, Arrangement_2::Halfedge_const_handle &currentHalfEdge)
 {
     // Get the face
     Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
@@ -193,17 +193,17 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
     Arrangement_2::Face_const_handle twinFace = twin->face();
 
     // Get ids of the current face and the twin face
-    int currentFaceID = data->arrangement.arrangementFacesIdices[currentFace];
-    int twinFaceID = data->arrangement.arrangementFacesIdices[twinFace];
+    int currentFaceID = arrangement.arrangementFacesIdices[currentFace];
+    int twinFaceID = arrangement.arrangementFacesIdices[twinFace];
 
-    auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(currentHalfEdge, data);
+    auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(tetMesh, arrangement, currentHalfEdge);
 
     //std::cout << "Computed minus/plus triangles..." << std::endl;
     //printf("The current preimage graph has %d triangles...\n", data->preimageGraphs[currentFaceID].data.size());
 
     // Set the current preimage graph to be the preimage graph of the parent
     std::set<int> preimageGraph;
-    for (const auto &[t, id] : data->preimageGraphs[currentFaceID].data)
+    for (const auto &[t, id] : preimageGraphs[currentFaceID].data)
     {
         preimageGraph.insert(t);
     }
@@ -234,15 +234,15 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
     // Step 3. Compute disjointSets[twinFaceID]
     //
 
-    data->preimageGraphs[twinFaceID].initialize(preimageGraph);
+    this->preimageGraphs[twinFaceID].initialize(preimageGraph);
 
-    for (const auto &[t1, id1] : data->preimageGraphs[twinFaceID].data)
+    for (const auto &[t1, id1] : this->preimageGraphs[twinFaceID].data)
     {
-        for (const auto &t2 : data->tetMesh.adjacentTrianglesIndex[t1])
+        for (const auto &t2 : tetMesh.adjacentTrianglesIndex[t1])
         {
-            if (data->preimageGraphs[twinFaceID].data.contains(t2))
+            if (this->preimageGraphs[twinFaceID].data.contains(t2))
             {
-                data->preimageGraphs[twinFaceID].union_setsTriangle(t1, t2);
+                this->preimageGraphs[twinFaceID].union_setsTriangle(t1, t2);
             }
         }
     }
@@ -250,13 +250,13 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
     //std::cout << "Unioned sets..." << std::endl;
 
     // Finaly make sure everyon points to their root
-    data->preimageGraphs[twinFaceID].update();
+    this->preimageGraphs[twinFaceID].update();
 
     // Used when drawing the arrangement
     //data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
 }
 
-void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSets)
+void ReebSpace::computePreimageGraphs(TetMesh &tetMesh, Arrangement &arrangement, const bool discardFiberSeedsSets)
 {
 
     using namespace indicators;
@@ -286,7 +286,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
     Face_const_handle outerFace;
 
     // Iterate over all faces and find the unbounded one
-    for (Face_const_iterator fit = data->arrangement.arr.faces_begin(); fit != data->arrangement.arr.faces_end(); ++fit) 
+    for (Face_const_iterator fit = arrangement.arr.faces_begin(); fit != arrangement.arr.faces_end(); ++fit) 
     {
         if (fit->is_unbounded()) 
         {
@@ -345,7 +345,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
     // Starting from an outer half edge
     std::queue<Face_const_handle> traversalQueue;
     // This is the order in which faces are added, also servers as a visited flag
-    std::vector<int> order(data->arrangement.arrangementFacesIdices.size(), -1);
+    std::vector<int> order(arrangement.arrangementFacesIdices.size(), -1);
 
 
     traversalQueue.push(outerFace);
@@ -353,10 +353,10 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
     // This is the order in which a face has been processed, note this is different than level
     // This is used as an index for faces, so that we don't do double work when checking edges for correspondence
     int orderIndex = 0;
-    order[data->arrangement.arrangementFacesIdices[outerFace]] = orderIndex;
+    order[arrangement.arrangementFacesIdices[outerFace]] = orderIndex;
 
     // The disjoint set to track the connected components of the preimage graph
-    data->preimageGraphs.resize(data->arrangement.arrangementFacesIdices.size());
+    this->preimageGraphs.resize(arrangement.arrangementFacesIdices.size());
 
     // The number of connected components for each preimage graph (computed from the disjoint set)
     //data->arrangementFiberComponents.resize(data->arrangementFacesIdices.size(), -1);
@@ -364,12 +364,12 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
     // If we want the fiber seeds, initialize them
     if (false == discardFiberSeedsSets)
     {
-        data->fiberSeeds.resize(data->arrangement.arrangementFacesIdices.size());
+        this->fiberSeeds.resize(arrangement.arrangementFacesIdices.size());
     }
 
     int graphsInMemory = 0;
     float averageAraphsInMemory = 0;
-    int barTickThreshold = data->arrangement.arrangementFacesIdices.size() / 50;
+    int barTickThreshold = arrangement.arrangementFacesIdices.size() / 50;
 
     while (false == traversalQueue.empty())
     {
@@ -378,7 +378,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
         traversalQueue.pop();
 
         // Get ids of the current face and the twin face
-        int currentFaceID = data->arrangement.arrangementFacesIdices[currentFace];
+        int currentFaceID = arrangement.arrangementFacesIdices[currentFace];
 
         //std::cout << "Current face " << currentFaceID << std::endl;
 
@@ -407,7 +407,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
         do {
 
             Face_const_handle twinFace = curr->twin()->face();
-            const int twinFaceID = data->arrangement.arrangementFacesIdices[twinFace];
+            const int twinFaceID = arrangement.arrangementFacesIdices[twinFace];
 
             // If the neighbour has not been visited, we enqueue it and also compute its preimage graph
             if (-1 == order[twinFaceID])
@@ -418,22 +418,22 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
                 //std::cout << "Computing for neighbour " << twinFaceID << std::endl;
 
                 // Compute the preimage graph of this unvisited face
-                ReebSpace::computeTwinFacePreimageGraph(data, curr);
+                ReebSpace::computeTwinFacePreimageGraph(tetMesh, arrangement, curr);
                 graphsInMemory++;
 
                 // Get all unique roots and a representative
-                const std::vector<std::pair<int, int>> representativesAndRoots = data->preimageGraphs[twinFaceID].getUniqueRepresentativesAndRoots();
+                const std::vector<std::pair<int, int>> representativesAndRoots = this->preimageGraphs[twinFaceID].getUniqueRepresentativesAndRoots();
 
                 // Initialize the vertices of H with the connected components of the twin graph
                 for (const auto &[representative, root] : representativesAndRoots)
                 {
-                    data->reebSpace.addElements({twinFaceID, root});
+                    this->reebSpace.addElements({twinFaceID, root});
                 }
 
                 // If we want fiber computation, cache the seeds for the fiber components
                 if (false == discardFiberSeedsSets)
                 {
-                    data->fiberSeeds[twinFaceID] = representativesAndRoots;
+                    this->fiberSeeds[twinFaceID] = representativesAndRoots;
                 }
             }
 
@@ -444,7 +444,7 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
             if (order[currentFaceID] < order[twinFaceID])
             {
                 //std::cout << "Determining correspondence with neighbour " << twinFaceID << std::endl;
-                ReebSpace::determineCorrespondence(data, curr);
+                ReebSpace::determineCorrespondence(tetMesh, arrangement, curr);
             }
 
             ++curr;
@@ -464,65 +464,65 @@ void ReebSpace::computePreimageGraphs(Data *data, const bool discardFiberSeedsSe
 
 
         // Dispose of the preimage graph we will no longer need it
-        data->preimageGraphs[currentFaceID].clear();
+        this->preimageGraphs[currentFaceID].clear();
         graphsInMemory--;
     }
 
     bar.set_progress(100); // all done
-    printf("\n\nThere is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, data->preimageGraphs.size());
-    printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n\n", data->reebSpace.data.size(), data->reebSpace.getUniqueRepresentativesAndRoots().size());
+    printf("\n\nThere is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, this->preimageGraphs.size());
+    printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n\n", this->reebSpace.data.size(), this->reebSpace.getUniqueRepresentativesAndRoots().size());
 }
 
 
-void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_const_handle &halfEdge)
+void ReebSpace::determineCorrespondence(TetMesh &tetMesh, Arrangement &arrangement, Arrangement_2::Halfedge_const_handle &halfEdge)
 {
     // Get the face IDs of the current face and its twin
     Face_const_handle face = halfEdge->face();
     Face_const_handle twinFace = halfEdge->twin()->face();
 
-    const int faceID = data->arrangement.arrangementFacesIdices[face];
-    const int twinFaceID = data->arrangement.arrangementFacesIdices[twinFace];
+    const int faceID = arrangement.arrangementFacesIdices[face];
+    const int twinFaceID = arrangement.arrangementFacesIdices[twinFace];
 
     // Get the originating edge
-    const Segment_2 &segment = *data->arrangement.arr.originating_curves_begin(halfEdge);
-    const std::pair<int, int> originatingEdge = {data->arrangement.arrangementPointsIdices[segment.source()], data->arrangement.arrangementPointsIdices[segment.target()]};
+    const Segment_2 &segment = *arrangement.arr.originating_curves_begin(halfEdge);
+    const std::pair<int, int> originatingEdge = {arrangement.arrangementPointsIdices[segment.source()], arrangement.arrangementPointsIdices[segment.target()]};
 
     // The triangls that are added/removd from face -> twinFace
-    const auto& [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(halfEdge, data);
+    const auto& [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(tetMesh, arrangement, halfEdge);
 
 
     // See which of the roots (connected components) are active (contain an active triangle)
     std::set<int> activeRootsFace;
     for (int triangle : minusTriangles)
     {
-        activeRootsFace.insert(data->preimageGraphs[faceID].findTriangle(triangle));
+        activeRootsFace.insert(this->preimageGraphs[faceID].findTriangle(triangle));
     }
 
     std::set<int> activeRootsTwinFace;
     for (int triangle : plusTriangles)
     {
-        activeRootsTwinFace.insert(data->preimageGraphs[twinFaceID].findTriangle(triangle));
+        activeRootsTwinFace.insert(preimageGraphs[twinFaceID].findTriangle(triangle));
 
     }
 
     // Definite edge
-    if (activeRootsFace.size() == 0 || activeRootsTwinFace.size() == 0)
-    {
+    //if (activeRootsFace.size() == 0 || activeRootsTwinFace.size() == 0)
+    //{
 
-        data->jacobiType[originatingEdge] = 0;
-    }
-    // Reeb-regular
-    else if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
-    {
+        //data->jacobiType[originatingEdge] = 0;
+    //}
+    //// Reeb-regular
+    //else if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
+    //{
 
-        data->jacobiType[originatingEdge] = 1;
-    }
-    // Indefinite edge
-    else
-    {
-        data->jacobiType[originatingEdge] = 2;
+        //data->jacobiType[originatingEdge] = 1;
+    //}
+    //// Indefinite edge
+    //else
+    //{
+        //data->jacobiType[originatingEdge] = 2;
 
-    }
+    //}
 
     // This is a regular edge then connect the two active components, for singular edge we skip this, they are considered new
     if (activeRootsFace.size() == 1 && activeRootsTwinFace.size() == 1)
@@ -546,7 +546,7 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
                         //});
 
 
-                data->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
+                this->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
 
 
 
@@ -566,23 +566,23 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
     //
     // Link together all other connected components
     //
-    for (const auto &[t, id] : data->preimageGraphs[faceID].data)
+    for (const auto &[t, id] : this->preimageGraphs[faceID].data)
     {
         // The root of the triangle in the face
-        const int triangleRootFace = data->preimageGraphs[faceID].findTriangle(t);
+        const int triangleRootFace = this->preimageGraphs[faceID].findTriangle(t);
 
         // We have already deal with the active fiber
         if (activeRootsFace.contains(triangleRootFace)) { continue; }
 
         // The root of the triangle in the twin face
-        const int triangleRootTwinFace = data->preimageGraphs[twinFaceID].findTriangle(t);
+        const int triangleRootTwinFace = this->preimageGraphs[twinFaceID].findTriangle(t);
 
         //connectedFacesAndRoots.insert(reebSpaceConnection);
         //data->edgesH.push_back({
                 //{faceID, triangleRootFace}, 
                 //{twinFaceID, triangleRootTwinFace}
                 //});
-        data->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
+        this->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
 
         //int faceVertexHindex = data->vertexHtoIndex[{faceID, triangleRootFace}];
         //int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, triangleRootTwinFace}];
@@ -593,22 +593,21 @@ void ReebSpace::determineCorrespondence(Data *data, Arrangement_2::Halfedge_cons
 
 
 
-void ReebSpace::computeCorrespondenceGraph(Data *data)
+void ReebSpace::computeCorrespondenceGraph(TetMesh &tetMesh, Arrangement &arrangement)
 {
 
     // For evey face
-    for (auto face = data->arrangement.arr.faces_begin(); face != data->arrangement.arr.faces_end(); ++face) 
+    for (auto face = arrangement.arr.faces_begin(); face != arrangement.arr.faces_end(); ++face) 
     {
         // Skip the outer face
         if (face->is_unbounded()) { continue; }
-
 
         // Walk around the boundary of the face
         Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
         Arrangement_2::Ccb_halfedge_const_circulator curr = start;
         do {
 
-            ReebSpace::determineCorrespondence(data, curr);
+            ReebSpace::determineCorrespondence(tetMesh, arrangement, curr);
             ++curr;
         } while (curr != start);
 
@@ -617,22 +616,22 @@ void ReebSpace::computeCorrespondenceGraph(Data *data)
 
 
 
-void ReebSpace::computeReebSpacePostprocess(Data *data)
+void ReebSpace::computeReebSpacePostprocess(TetMesh &tetMesh, Arrangement &arrangement)
 {
 
     Timer::start();
     // Path compression to make sure every element of H is poiting to its root
-    data->reebSpace.update();
+    this->reebSpace.update();
     Timer::stop("Updating RS disjoint set               :");
 
 
     // For faster lookups cache the sheetd IDs for each face
-    std::vector<std::unordered_set<int>> faceSheets(data->fiberSeeds.size());
-    for (int i = 0 ; i < data->fiberSeeds.size() ; i++)
+    std::vector<std::unordered_set<int>> faceSheets(this->fiberSeeds.size());
+    for (int i = 0 ; i < this->fiberSeeds.size() ; i++)
     {
-        for (const auto &[triangleId, fiberComponentId] : data->fiberSeeds[i])
+        for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[i])
         {
-            const int sheetId = data->reebSpace.findTriangle({i, fiberComponentId});
+            const int sheetId = this->reebSpace.findTriangle({i, fiberComponentId});
             faceSheets[i].insert(sheetId);
         }
 
@@ -643,12 +642,12 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     // In order to compute the polygon of each sheet, first obtain a halfEdge of the arrangement that is on the boundary of the sheet
     //
     std::unordered_map<int, Arrangement_2::Halfedge_const_handle> sheetSeeds;
-    for (auto currentFaceIterator = data->arrangement.arr.faces_begin(); currentFaceIterator != data->arrangement.arr.faces_end(); ++currentFaceIterator) 
+    for (auto currentFaceIterator = arrangement.arr.faces_begin(); currentFaceIterator != arrangement.arr.faces_end(); ++currentFaceIterator) 
     {
         Arrangement_2::Face_const_handle currentFace = currentFaceIterator;
         if (currentFace->is_unbounded()) { continue; }
 
-        int currentFaceID = data->arrangement.arrangementFacesIdices[currentFace];
+        int currentFaceID = arrangement.arrangementFacesIdices[currentFace];
 
         //printf("\n\nFace %d has these sheets - ", currentFaceID);
 
@@ -669,7 +668,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             Face_const_handle twinFace = curr->twin()->face();
             if (twinFace->is_unbounded()) { curr++; continue; }
 
-            const int twinFaceID = data->arrangement.arrangementFacesIdices[twinFace];
+            const int twinFaceID = arrangement.arrangementFacesIdices[twinFace];
             std::unordered_set<int> twinFaceSheetIds = faceSheets[twinFaceID];
 
             // Which sheets are in the currentFace, but NOT in the twin face
@@ -717,14 +716,14 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     {
         // Sanity check, make sure the seed we have picked actually is on the boundary of the sheet
         Face_const_handle faceSeedEdge = halfEdge->face();
-        const int faceSeedEdgeId = data->arrangement.arrangementFacesIdices[faceSeedEdge];
+        const int faceSeedEdgeId = arrangement.arrangementFacesIdices[faceSeedEdge];
         if (false == faceSheets[faceSeedEdgeId].contains(sheetId))
         {
             throw std::runtime_error("The face of the seed edge does is not in the sheet.");
         }
 
         Face_const_handle faceSeedTwinEdge = halfEdge->twin()->face();
-        const int faceSeedTwinEdgeId = data->arrangement.arrangementFacesIdices[faceSeedTwinEdge];
+        const int faceSeedTwinEdgeId = arrangement.arrangementFacesIdices[faceSeedTwinEdge];
         if (true == faceSheets[faceSeedTwinEdgeId].contains(sheetId))
         {
             throw std::runtime_error("The face of the twin of the seed edge does is no in the sheet.");
@@ -743,7 +742,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
         {
 
             // Add the current vertex to the polygon
-            data->sheetPolygon[sheetId].push_back({
+            this->sheetPolygon[sheetId].push_back({
                     CGAL::to_double(currentVertex->point().x()), 
                     CGAL::to_double(currentVertex->point().y())
                     });
@@ -768,7 +767,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                 allNeighbours++;
 
                 // Too many neighourss
-                if (allNeighbours > data->arrangement.arr.number_of_vertices())
+                if (allNeighbours > arrangement.arr.number_of_vertices())
                 {
                     break;
                 }
@@ -778,10 +777,10 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
                 //printf("Looking at neighbour (%f, %f) \n ", CGAL::to_double(twinHalfEdge->target()->point().x()), CGAL::to_double(twinHalfEdge->target()->point().y()));
 
                 Face_const_handle faceA = circ->face();
-                const int faceAId = data->arrangement.arrangementFacesIdices[faceA];
+                const int faceAId = arrangement.arrangementFacesIdices[faceA];
 
                 Face_const_handle faceB = twinHalfEdge->face();
-                const int faceBId = data->arrangement.arrangementFacesIdices[faceB];
+                const int faceBId = arrangement.arrangementFacesIdices[faceB];
 
                 // If one of the face contains the sheet
                 const bool faceHalfEdgeContainsSheet = faceSheets[faceAId].contains(sheetId);
@@ -797,17 +796,17 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             } while (circ != begin);
 
             // A the polygon of a sheet sheet cannot have more vertices than the number of the vertices in the arrangement, something went wrong.
-            if (data->sheetPolygon[sheetId].size() > data->arrangement.arr.number_of_vertices())
+            if (this->sheetPolygon[sheetId].size() > arrangement.arr.number_of_vertices())
             {
-                printf("The boundary of sheet %d is degenerate, it has more vertices %ld than the arrangement.\n", sheetId, data->sheetPolygon[sheetId].size());
-                data->incompleteSheets.insert(sheetId);
+                printf("The boundary of sheet %d is degenerate, it has more vertices %ld than the arrangement.\n", sheetId, this->sheetPolygon[sheetId].size());
+                this->incompleteSheets.insert(sheetId);
                 break;
             }
             
             if (sheetBoundaryNeighbours !=1)
             {
                 printf("The boundary of sheet %d is degenerate, a vertex has %d boundary neighours, should only be one.\n", sheetId, sheetBoundaryNeighbours);
-                data->incompleteSheets.insert(sheetId);
+                this->incompleteSheets.insert(sheetId);
                 break;
             }
 
@@ -816,15 +815,15 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             if (currentVertex != startVertex && visited.contains(currentVertex))
             {
                 printf("The boundary of sheet %d is degenerate, a vertex loops back to an already visited one.\n", sheetId);
-                data->incompleteSheets.insert(sheetId);
+                this->incompleteSheets.insert(sheetId);
                 break;
 
             }
 
-            if (allNeighbours > data->arrangement.arr.number_of_vertices())
+            if (allNeighbours > arrangement.arr.number_of_vertices())
             {
                 printf("The boundary of sheet %d is degenerate, the inner loop kept going for too long.\n", sheetId);
-                data->incompleteSheets.insert(sheetId);
+                this->incompleteSheets.insert(sheetId);
                 break;
             }
 
@@ -832,7 +831,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     }
     Timer::stop("Computing sheet boundary polygons      :");
 
-    if (data->incompleteSheets.size() == 0)
+    if (this->incompleteSheets.size() == 0)
     {
         std::cout << "\nThe boundaries of all sheets are okay! No degeneracy.\n" << std::endl;
     }
@@ -842,22 +841,22 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
 
     Timer::start();
-    for (const auto &[sheetId, polygon] : data->sheetPolygon)
+    for (const auto &[sheetId, polygon] : this->sheetPolygon)
     {
         float area = 0.0;
 
         // If the sheet is incomplete sum up the faces that make it
-        if (data->incompleteSheets.contains(sheetId))
+        if (this->incompleteSheets.contains(sheetId))
         {
             // Loop through all faces to see which ones are in the sheet
-            for (auto f = data->arrangement.arr.faces_begin(); f != data->arrangement.arr.faces_end(); ++f) 
+            for (auto f = arrangement.arr.faces_begin(); f != arrangement.arr.faces_end(); ++f) 
             {
-                const int currentFaceID = data->arrangement.arrangementFacesIdices[f];
+                const int currentFaceID = arrangement.arrangementFacesIdices[f];
 
                 // For each fiber component in the face, see if one of those is in our sheet
-                for (const auto &[triangleId, fiberComponentId] : data->fiberSeeds[currentFaceID])
+                for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
                 {
-                    const int componentSheetId = data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+                    const int componentSheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
 
                     // Now we can add the polygon
                     if (componentSheetId == sheetId)
@@ -887,7 +886,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
             area = abs(polygon.area());
         }
 
-        data->sheetArea[sheetId] = area;
+        this->sheetArea[sheetId] = area;
         
         //printf("The polygon of sheet %d has size %ld and area %f\n", sheetId, polygon.size(), area);
         //printf("The area of sheet %d is %f \n", sheetId, area);
@@ -897,7 +896,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
 
     Timer::start();
     // Transfer the map entries into a vector of pairs so that we can sort
-    std::vector<std::pair<int, double>> sheetAreaSortVector(data->sheetArea.begin(), data->sheetArea.end());
+    std::vector<std::pair<int, double>> sheetAreaSortVector(this->sheetArea.begin(), this->sheetArea.end());
 
     //printf("The sort vector has size %ld\n", sheetAreaSortVector.size());
 
@@ -910,7 +909,7 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
     {
         const auto &[sheetId, area] = sheetAreaSortVector[i];
-        data->sheetToColour[sheetId] = i;
+        this->sheetToColour[sheetId] = i;
     }
     Timer::stop("Sorting sheets and labeling them       :");
 
@@ -924,84 +923,84 @@ void ReebSpace::computeReebSpacePostprocess(Data *data)
     }
 }
 
-void ReebSpace::countIntersectionsTypes(Data *data)
-{
-    int regularRegularIntersections = 0;
-    int singularRegularIntersections = 0;
-    int singularSingularIntersections = 0;
-    int degenerateIntersections = 0;
-    int maxNeihbours = 0;
+//void ReebSpace::countIntersectionsTypes(Data *data)
+//{
+    //int regularRegularIntersections = 0;
+    //int singularRegularIntersections = 0;
+    //int singularSingularIntersections = 0;
+    //int degenerateIntersections = 0;
+    //int maxNeihbours = 0;
 
-    // Now loop over all vertices
-    for (auto currentVertex = data->arrangement.arr.vertices_begin(); currentVertex != data->arrangement.arr.vertices_end(); ++currentVertex)
-    {
-        const Point_2& p = currentVertex->point();
-        //std::cout << "Vertex at: " << p << std::endl;
+    //// Now loop over all vertices
+    //for (auto currentVertex = data->arrangement.arr.vertices_begin(); currentVertex != data->arrangement.arr.vertices_end(); ++currentVertex)
+    //{
+        //const Point_2& p = currentVertex->point();
+        ////std::cout << "Vertex at: " << p << std::endl;
 
-        // Skip the vertices, we just want to count the inter intersections.
-        if (data->arrangement.arrangementPointsIdices.contains(p))
-        {
-            continue;
-        }
-
-
-        // This loop should always finish
-        const auto begin = currentVertex->incident_halfedges();
-        auto circ = begin;
-
-        int regularNeighbours = 0;
-        int singularNeighbours = 0;
-
-        do {
-
-            const Segment_2 &segment = *data->arrangement.arr.originating_curves_begin(circ);
-
-            // These will always be sorted, it's how we created the segments
-            const int aIndex = data->arrangement.arrangementPointsIdices[segment.source()];
-            const int bIndex = data->arrangement.arrangementPointsIdices[segment.target()];
-
-            if (data->jacobiType[{aIndex, bIndex}] == 1)
-            {
-                regularNeighbours++;
-            }
-            else
-            {
-                singularNeighbours++;
-            }
-
-            ++circ;
-        } while (circ != begin);
-
-        if (regularNeighbours + singularNeighbours > 4)
-        {
-            degenerateIntersections++;
-        }
-
-        maxNeihbours = std::max(maxNeihbours, regularNeighbours + singularNeighbours);
+        //// Skip the vertices, we just want to count the inter intersections.
+        //if (data->arrangement.arrangementPointsIdices.contains(p))
+        //{
+            //continue;
+        //}
 
 
+        //// This loop should always finish
+        //const auto begin = currentVertex->incident_halfedges();
+        //auto circ = begin;
 
-        if (regularNeighbours == 0)
-        {
-            singularSingularIntersections++;
-        }
-        else if (singularNeighbours == 0)
-        {
-            regularRegularIntersections++;
-        }
-        else
-        {
-            singularRegularIntersections++;
-        }
-    }
+        //int regularNeighbours = 0;
+        //int singularNeighbours = 0;
+
+        //do {
+
+            //const Segment_2 &segment = *data->arrangement.arr.originating_curves_begin(circ);
+
+            //// These will always be sorted, it's how we created the segments
+            //const int aIndex = data->arrangement.arrangementPointsIdices[segment.source()];
+            //const int bIndex = data->arrangement.arrangementPointsIdices[segment.target()];
+
+            //if (data->jacobiType[{aIndex, bIndex}] == 1)
+            //{
+                //regularNeighbours++;
+            //}
+            //else
+            //{
+                //singularNeighbours++;
+            //}
+
+            //++circ;
+        //} while (circ != begin);
+
+        //if (regularNeighbours + singularNeighbours > 4)
+        //{
+            //degenerateIntersections++;
+        //}
+
+        //maxNeihbours = std::max(maxNeihbours, regularNeighbours + singularNeighbours);
 
 
-    const int totalIntersctionPoints = regularRegularIntersections + singularRegularIntersections + singularSingularIntersections;
 
-    printf("Here is a summary of the intersections types:\n");
-    printf("regular   - regular  intersections: %d the ratio is %.2f%%.\n", regularRegularIntersections, 100.0 * (float)regularRegularIntersections / (float)totalIntersctionPoints);
-    printf("singular  - regular  intersections: %d the ratio is %.2f%%.\n", singularRegularIntersections, 100.0 * (float)singularRegularIntersections / (float)totalIntersctionPoints);
-    printf("singular  - sigular  intersections: %d the ratio is %.2f%%.\n", singularSingularIntersections, 100.0 * (float)singularSingularIntersections / (float)totalIntersctionPoints);
-    printf("The number of degenerate intersections is %d with maximum being %d.\n", degenerateIntersections, maxNeihbours);
+        //if (regularNeighbours == 0)
+        //{
+            //singularSingularIntersections++;
+        //}
+        //else if (singularNeighbours == 0)
+        //{
+            //regularRegularIntersections++;
+        //}
+        //else
+        //{
+            //singularRegularIntersections++;
+        //}
+    //}
 
-}
+
+    //const int totalIntersctionPoints = regularRegularIntersections + singularRegularIntersections + singularSingularIntersections;
+
+    //printf("Here is a summary of the intersections types:\n");
+    //printf("regular   - regular  intersections: %d the ratio is %.2f%%.\n", regularRegularIntersections, 100.0 * (float)regularRegularIntersections / (float)totalIntersctionPoints);
+    //printf("singular  - regular  intersections: %d the ratio is %.2f%%.\n", singularRegularIntersections, 100.0 * (float)singularRegularIntersections / (float)totalIntersctionPoints);
+    //printf("singular  - sigular  intersections: %d the ratio is %.2f%%.\n", singularSingularIntersections, 100.0 * (float)singularSingularIntersections / (float)totalIntersctionPoints);
+    //printf("The number of degenerate intersections is %d with maximum being %d.\n", degenerateIntersections, maxNeihbours);
+
+//}
