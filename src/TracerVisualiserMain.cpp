@@ -56,13 +56,22 @@ int main(int argc, char* argv[])
     //
     // Read, perturb and sort the indices of the vertices lexicographically (by their range position).
     //
-    Data *data = io::readData(filename);
-    if (data == nullptr) { return 1; }
-    data->perturbRangeValues(perturbationEpsilon);
-    data->sortVertices();
+    Data *data = new Data();
 
-    // Compute bounding box of the data in the domain and in the range.
-    data->computeMinMaxRangeDomainCoordinates();
+    try
+    {
+        data->tetMesh = io::readData(filename);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Error: " << e.what() << '\n';
+    }
+
+    data->tetMesh.perturbRangeValues(perturbationEpsilon);
+    data->tetMesh.sortVertices();
+
+    // Compute bounding the box of the data in the domain and in the range.
+    data->tetMesh.computeMinMaxRangeDomainCoordinates();
 
     // Compute the 2D arrangement
     ReebSpace::computeArrangement(data);

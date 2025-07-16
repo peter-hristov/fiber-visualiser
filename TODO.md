@@ -1,5 +1,6 @@
 # Refactor
 Make test vector<array>
+Move the hashes outside of Disjoint set
 
 
 # Optomise memory:

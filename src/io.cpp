@@ -18,16 +18,16 @@
 #include <vtkXMLPolyDataWriter.h>
 
 #include "./io.h"
+#include "src/TetMesh.h"
 
 
-Data* io::readData(const std::string &filename)
+TetMesh io::readData(const std::string &filename)
 {
     std::filesystem::path filePath(filename);
     
     if (!std::filesystem::exists(filePath)) 
     {
-        std::cerr << "File does not exist: " << filename;
-        return nullptr;
+        throw std::runtime_error("File does not exist: " + filename);
     }
 
     std::string extension = filePath.extension().string();
@@ -40,59 +40,47 @@ Data* io::readData(const std::string &filename)
         return io::readDataTxt(filename);
     } 
 
-    std::cerr << "Unsupported file type: " <<  extension;
-    return nullptr;
+    throw std::runtime_error("Unsupported file type: " + extension);
 }
 
-Data* io::readDataVtu(const std::string &filename)
+TetMesh io::readDataVtu(const std::string &filename)
 {
-    Data *data = new Data();
+    TetMesh tetMesh;
 
     // Read the VTU file
     vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
     reader->SetFileName(filename.c_str());
 
-    try
-    {
-        reader->Update();
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << "VTK failed to read the file: " << e.what() << std::endl;
-        return nullptr;
-    }
+    reader->Update();
 
     vtkSmartPointer<vtkUnstructuredGrid> mesh = reader->GetOutput();
     if (!mesh)
     {
-        std::cerr << "Failed to get mesh output from the file: " << filename << std::endl;
-        return nullptr;
+        throw std::runtime_error("Failed to get mesh output from the file: " + filename);
     }
 
     if (mesh->GetNumberOfPoints() == 0)
     {
-        std::cerr << "Mesh contains no points: " << filename << std::endl;
-        return nullptr;
+        throw std::runtime_error("Mesh contains no points: " + filename);
     }
 
     if (mesh->GetNumberOfCells() == 0)
     {
-        std::cerr << "Mesh contains no cells: " << filename << std::endl;
-        return nullptr;
+        throw std::runtime_error("Mesh contains no cells: " + filename);
     }
 
     // Set deault names for the range axis
-    data->longnameF = "f";
-    data->longnameG = "g";
+    tetMesh.longnameF = "f";
+    tetMesh.longnameG = "g";
 
     int numVertices = mesh->GetPoints()->GetNumberOfPoints(); 
     int numTets = mesh->GetNumberOfCells();
 
     // Initialize all the data arrays
-    data->vertexCoordinatesF = std::vector<GLfloat>(numVertices, 0);
-    data->vertexCoordinatesG = std::vector<GLfloat>(numVertices, 0);
-    data->tetrahedra = std::vector<std::vector<size_t>>(numTets, {0, 0, 0, 0});
-    data->vertexDomainCoordinates = std::vector<std::vector<GLfloat>>(numVertices, {0, 0, 0});
+    tetMesh.vertexCoordinatesF = std::vector<float>(numVertices, 0);
+    tetMesh.vertexCoordinatesG = std::vector<float>(numVertices, 0);
+    tetMesh.tetrahedra = std::vector<std::vector<size_t>>(numTets, {0, 0, 0, 0});
+    tetMesh.vertexDomainCoordinates = std::vector<std::vector<float>>(numVertices, {0, 0, 0});
 
     // Print vertices
     vtkSmartPointer<vtkPoints> points = mesh->GetPoints();
@@ -102,9 +90,9 @@ Data* io::readDataVtu(const std::string &filename)
         points->GetPoint(i, p);
         //std::cout << "Vertex " << i << ": (" << p[0] << ", " << p[1] << ", " << p[2] << ")\n";
 
-        data->vertexDomainCoordinates[i][0] = p[0];
-        data->vertexDomainCoordinates[i][1] = p[1];
-        data->vertexDomainCoordinates[i][2] = p[2];
+        tetMesh.vertexDomainCoordinates[i][0] = p[0];
+        tetMesh.vertexDomainCoordinates[i][1] = p[1];
+        tetMesh.vertexDomainCoordinates[i][2] = p[2];
     }
 
     // Print tetrahedra
@@ -115,7 +103,7 @@ Data* io::readDataVtu(const std::string &filename)
             //std::cout << "Tetrahedron " << i << ": ";
             for (vtkIdType j = 0; j < 4; j++) {
                 //std::cout << cell->GetPointId(j) << " ";
-                data->tetrahedra[i][j] = cell->GetPointId(j);
+                tetMesh.tetrahedra[i][j] = cell->GetPointId(j);
             }
             //std::cout << "\n";
         }
@@ -135,32 +123,31 @@ Data* io::readDataVtu(const std::string &filename)
 
     for (vtkIdType i = 0; i < fDataArray->GetNumberOfTuples(); i++) 
     {
-        data->vertexCoordinatesF[i] = fDataArray->GetTuple1(i);
+        tetMesh.vertexCoordinatesF[i] = fDataArray->GetTuple1(i);
     }
 
     for (vtkIdType i = 0; i < gDataArray->GetNumberOfTuples(); i++) 
     {
-        data->vertexCoordinatesG[i] = gDataArray->GetTuple1(i);
+        tetMesh.vertexCoordinatesG[i] = gDataArray->GetTuple1(i);
     }
 
-    return data;
+    return tetMesh;
 }
 
 
-Data* io::readDataTxt(const std::string &filename)
+TetMesh io::readDataTxt(const std::string &filename)
 {
-    Data *data = new Data();
+    TetMesh tetMesh;
     
     // Set deault names for the range axis
-    data->longnameF = "f";
-    data->longnameG = "g";
+    tetMesh.longnameF = "f";
+    tetMesh.longnameG = "g";
 
     // Open data file
     std::ifstream dataFile (filename);
     if (false == dataFile.is_open()) 
     { 
-        std::cerr << "Could not open file: " << filename;
-        return nullptr;
+        throw std::runtime_error("Could not open file: " + filename);
     }
 
 
@@ -187,34 +174,34 @@ Data* io::readDataTxt(const std::string &filename)
     dataStream >> numVertices >> numTets;
 
     // Initialize all the data arrays
-    data->vertexCoordinatesF = std::vector<GLfloat>(numVertices, 0);
-    data->vertexCoordinatesG = std::vector<GLfloat>(numVertices, 0);
-    data->tetrahedra = std::vector<std::vector<size_t>>(numTets, {0, 0, 0, 0});
-    data->vertexDomainCoordinates = std::vector<std::vector<GLfloat>>(numVertices, {0, 0, 0});
+    tetMesh.vertexCoordinatesF = std::vector<float>(numVertices, 0);
+    tetMesh.vertexCoordinatesG = std::vector<float>(numVertices, 0);
+    tetMesh.tetrahedra = std::vector<std::vector<size_t>>(numTets, {0, 0, 0, 0});
+    tetMesh.vertexDomainCoordinates = std::vector<std::vector<float>>(numVertices, {0, 0, 0});
 
     // Read in the domain coordinates
     for  (int i = 0 ; i < numVertices ; i++)
     {
-        dataStream >> data->vertexDomainCoordinates[i][0];
-        dataStream >> data->vertexDomainCoordinates[i][1];
-        dataStream >> data->vertexDomainCoordinates[i][2];
+        dataStream >> tetMesh.vertexDomainCoordinates[i][0];
+        dataStream >> tetMesh.vertexDomainCoordinates[i][1];
+        dataStream >> tetMesh.vertexDomainCoordinates[i][2];
     }
 
     // Read in the range coordinates
     for  (int i = 0 ; i < numVertices ; i++)
     {
-        dataStream >> data->vertexCoordinatesF[i];
-        dataStream >> data->vertexCoordinatesG[i];
+        dataStream >> tetMesh.vertexCoordinatesF[i];
+        dataStream >> tetMesh.vertexCoordinatesG[i];
     }
     
     // Read in the tetrahedron configuration
     for  (int i = 0 ; i < numTets ; i++)
     {
-        dataStream >> data->tetrahedra[i][0];
-        dataStream >> data->tetrahedra[i][1];
-        dataStream >> data->tetrahedra[i][2];
-        dataStream >> data->tetrahedra[i][3];
+        dataStream >> tetMesh.tetrahedra[i][0];
+        dataStream >> tetMesh.tetrahedra[i][1];
+        dataStream >> tetMesh.tetrahedra[i][2];
+        dataStream >> tetMesh.tetrahedra[i][3];
     }
 
-    return data;
+    return tetMesh;
 }

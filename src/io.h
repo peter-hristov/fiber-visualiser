@@ -2,11 +2,11 @@
 
 #include <string>
 
-#include "./Data.h"
+#include "./TetMesh.h"
 
 namespace io
 {
-    Data* readData(const std::string&);
-    Data* readDataTxt(const std::string&);
-    Data* readDataVtu(const std::string&);
+    TetMesh readData(const std::string&);
+    TetMesh readDataTxt(const std::string&);
+    TetMesh readDataVtu(const std::string&);
 }

@@ -20,7 +20,6 @@
 #include <vtkCell.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
-#include <random>
 #include <ranges>
 
 #include <vtkPolyLine.h>
@@ -32,17 +31,6 @@
 
 using namespace std;
 
-void Data::perturbRangeValues(const float &epsilon)
-{
-    static std::mt19937 gen(std::random_device{}());
-    std::uniform_real_distribution<float> dist(-epsilon, epsilon);
-
-    for (size_t i = 0; i < this->vertexCoordinatesF.size(); i++) 
-    {
-        this->vertexCoordinatesF[i] += dist(gen);
-        this->vertexCoordinatesG[i] += dist(gen);
-    }
-}
 
 void Data::saveFibers()
 {
@@ -341,7 +329,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
 
         const vector<float> sheetColour = this->fiberColours[this->sheetToColour[currentSheeId] % this->fiberColours.size()];
 
-        const set<int> triangleUnpacked = this->indexToTriangle[currentTriangleId];
+        const set<int> triangleUnpacked = this->tetMesh.indexToTriangle[currentTriangleId];
         const vector<int> triangleIndices = std::vector<int>(triangleUnpacked.begin(), triangleUnpacked.end());
 
         std::array<double, 3> barycentricCoordinatesCurrent;
@@ -352,9 +340,9 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         }
         else
         {
-            const CartesianPoint A(this->vertexCoordinatesF[triangleIndices[0]], this->vertexCoordinatesG[triangleIndices[0]]);
-            const CartesianPoint B(this->vertexCoordinatesF[triangleIndices[1]], this->vertexCoordinatesG[triangleIndices[1]]);
-            const CartesianPoint C(this->vertexCoordinatesF[triangleIndices[2]], this->vertexCoordinatesG[triangleIndices[2]]);
+            const CartesianPoint A(this->tetMesh.vertexCoordinatesF[triangleIndices[0]], this->tetMesh.vertexCoordinatesG[triangleIndices[0]]);
+            const CartesianPoint B(this->tetMesh.vertexCoordinatesF[triangleIndices[1]], this->tetMesh.vertexCoordinatesG[triangleIndices[1]]);
+            const CartesianPoint C(this->tetMesh.vertexCoordinatesF[triangleIndices[2]], this->tetMesh.vertexCoordinatesG[triangleIndices[2]]);
             CGAL::Barycentric_coordinates::triangle_coordinates_2(A, B, C, P, barycentricCoordinatesCurrent.begin());
             triangleBarycentricCoordinates[currentTriangleId] = barycentricCoordinatesCurrent;
         }
@@ -363,7 +351,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         assert(barycentricCoordinatesCurrent[0] > 0 && barycentricCoordinatesCurrent[1] > 0 && barycentricCoordinatesCurrent[2] > 0);
 
         // Look at the neighbours
-        for (const int &neighbourTriagleId : this->adjacentTrianglesIndex[currentTriangleId])
+        for (const int &neighbourTriagleId : this->tetMesh.adjacentTrianglesIndex[currentTriangleId])
         {
             if (neighbourTriagleId == currentTriangleId)
             {
@@ -373,7 +361,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
             // We can't skip visited neighbours, because there may be a fiber between us (completing a circle)
             //if (triangleColour.contains(neighbourTriagle)) { continue; }
 
-            const set<int> triangle2Unpacked = this->indexToTriangle[neighbourTriagleId];
+            const set<int> triangle2Unpacked = this->tetMesh.indexToTriangle[neighbourTriagleId];
             const vector<int> triangle2Indices = std::vector<int>(triangle2Unpacked.begin(), triangle2Unpacked.end());
 
 
@@ -385,9 +373,9 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
             // We use a fast test to avoid having to use barycentric coordinates all the time
             if (false == isActive)
             {
-                CartesianPoint A(this->vertexCoordinatesF[triangle2Indices[0]], this->vertexCoordinatesG[triangle2Indices[0]]);
-                CartesianPoint B(this->vertexCoordinatesF[triangle2Indices[1]], this->vertexCoordinatesG[triangle2Indices[1]]);
-                CartesianPoint C(this->vertexCoordinatesF[triangle2Indices[2]], this->vertexCoordinatesG[triangle2Indices[2]]);
+                CartesianPoint A(this->tetMesh.vertexCoordinatesF[triangle2Indices[0]], this->tetMesh.vertexCoordinatesG[triangle2Indices[0]]);
+                CartesianPoint B(this->tetMesh.vertexCoordinatesF[triangle2Indices[1]], this->tetMesh.vertexCoordinatesG[triangle2Indices[1]]);
+                CartesianPoint C(this->tetMesh.vertexCoordinatesF[triangle2Indices[2]], this->tetMesh.vertexCoordinatesG[triangle2Indices[2]]);
 
                 std::vector<CartesianPoint> triangle = {A, B, C};
                 const auto result = CGAL::bounded_side_2(triangle.begin(), triangle.end(), P);
@@ -430,9 +418,9 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
                 }
                 else
                 {
-                    CartesianPoint A(this->vertexCoordinatesF[triangle2Indices[0]], this->vertexCoordinatesG[triangle2Indices[0]]);
-                    CartesianPoint B(this->vertexCoordinatesF[triangle2Indices[1]], this->vertexCoordinatesG[triangle2Indices[1]]);
-                    CartesianPoint C(this->vertexCoordinatesF[triangle2Indices[2]], this->vertexCoordinatesG[triangle2Indices[2]]);
+                    CartesianPoint A(this->tetMesh.vertexCoordinatesF[triangle2Indices[0]], this->tetMesh.vertexCoordinatesG[triangle2Indices[0]]);
+                    CartesianPoint B(this->tetMesh.vertexCoordinatesF[triangle2Indices[1]], this->tetMesh.vertexCoordinatesG[triangle2Indices[1]]);
+                    CartesianPoint C(this->tetMesh.vertexCoordinatesF[triangle2Indices[2]], this->tetMesh.vertexCoordinatesG[triangle2Indices[2]]);
 
                     CGAL::Barycentric_coordinates::triangle_coordinates_2(A, B, C, P, barycentricCoordinatesNeighbour.begin());
                     triangleBarycentricCoordinates[neighbourTriagleId] = barycentricCoordinatesNeighbour;
@@ -445,9 +433,9 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
                 // Add a fiber segment
                 //
                 FaceFiberPoint fb(barycentricCoordinatesCurrent[0], barycentricCoordinatesCurrent[1], {
-                        this->vertexDomainCoordinates[triangleIndices[0]],
-                        this->vertexDomainCoordinates[triangleIndices[1]],
-                        this->vertexDomainCoordinates[triangleIndices[2]],
+                        this->tetMesh.vertexDomainCoordinates[triangleIndices[0]],
+                        this->tetMesh.vertexDomainCoordinates[triangleIndices[1]],
+                        this->tetMesh.vertexDomainCoordinates[triangleIndices[2]],
                         },
                         sheetColour);
                 fb.sheetId = currentSheeId;
@@ -455,9 +443,9 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
                 this->faceFibers.push_back(fb);
 
                 FaceFiberPoint fb2(barycentricCoordinatesNeighbour[0], barycentricCoordinatesNeighbour[1], {
-                        this->vertexDomainCoordinates[triangle2Indices[0]],
-                        this->vertexDomainCoordinates[triangle2Indices[1]],
-                        this->vertexDomainCoordinates[triangle2Indices[2]],
+                        this->tetMesh.vertexDomainCoordinates[triangle2Indices[0]],
+                        this->tetMesh.vertexDomainCoordinates[triangle2Indices[1]],
+                        this->tetMesh.vertexDomainCoordinates[triangle2Indices[2]],
                         },
                         sheetColour);
                 fb2.sheetId = currentSheeId;
@@ -530,10 +518,10 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
             j++;
             if (j <= i) { continue; }
 
-            const set<int> triangleUnpacked = this->indexToTriangle[triangle];
-            const set<int> triangle2Unpacked = this->indexToTriangle[triangle2];
+            const set<int> triangleUnpacked = this->tetMesh.indexToTriangle[triangle];
+            const set<int> triangle2Unpacked = this->tetMesh.indexToTriangle[triangle2];
 
-            if (this->connectedTriangles.contains({triangleUnpacked, triangle2Unpacked}))
+            if (this->tetMesh.connectedTriangles.contains({triangleUnpacked, triangle2Unpacked}))
             {
                 const int componentID = this->preimageGraphs[currentFaceID].find(triangleId);
                 //const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
@@ -551,9 +539,9 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
                     vertexIds.push_back(vertexId);
                 }
 
-                CartesianPoint A(this->vertexCoordinatesF[vertexIds[0]], this->vertexCoordinatesG[vertexIds[0]]);
-                CartesianPoint B(this->vertexCoordinatesF[vertexIds[1]], this->vertexCoordinatesG[vertexIds[1]]);
-                CartesianPoint C(this->vertexCoordinatesF[vertexIds[2]], this->vertexCoordinatesG[vertexIds[2]]);
+                CartesianPoint A(this->tetMesh.vertexCoordinatesF[vertexIds[0]], this->tetMesh.vertexCoordinatesG[vertexIds[0]]);
+                CartesianPoint B(this->tetMesh.vertexCoordinatesF[vertexIds[1]], this->tetMesh.vertexCoordinatesG[vertexIds[1]]);
+                CartesianPoint C(this->tetMesh.vertexCoordinatesF[vertexIds[2]], this->tetMesh.vertexCoordinatesG[vertexIds[2]]);
 
                 // Define query point
                 CartesianPoint P(u, v);
@@ -564,9 +552,9 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
                 assert(coordinates[0] >= 0 && coordinates[1] >= 0 && coordinates[2] >= 0);
 
                 FaceFiberPoint fb(coordinates[0], coordinates[1], {
-                        this->vertexDomainCoordinates[vertexIds[0]],
-                        this->vertexDomainCoordinates[vertexIds[1]],
-                        this->vertexDomainCoordinates[vertexIds[2]],
+                        this->tetMesh.vertexDomainCoordinates[vertexIds[0]],
+                        this->tetMesh.vertexDomainCoordinates[vertexIds[1]],
+                        this->tetMesh.vertexDomainCoordinates[vertexIds[2]],
                         },
                         sheetColour);
                 this->faceFibers.push_back(fb);
@@ -584,18 +572,18 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
 
 
                 // Define triangle vertices
-                CartesianPoint A2(this->vertexCoordinatesF[vertexIds2[0]], this->vertexCoordinatesG[vertexIds2[0]]);
-                CartesianPoint B2(this->vertexCoordinatesF[vertexIds2[1]], this->vertexCoordinatesG[vertexIds2[1]]);
-                CartesianPoint C2(this->vertexCoordinatesF[vertexIds2[2]], this->vertexCoordinatesG[vertexIds2[2]]);
+                CartesianPoint A2(this->tetMesh.vertexCoordinatesF[vertexIds2[0]], this->tetMesh.vertexCoordinatesG[vertexIds2[0]]);
+                CartesianPoint B2(this->tetMesh.vertexCoordinatesF[vertexIds2[1]], this->tetMesh.vertexCoordinatesG[vertexIds2[1]]);
+                CartesianPoint C2(this->tetMesh.vertexCoordinatesF[vertexIds2[2]], this->tetMesh.vertexCoordinatesG[vertexIds2[2]]);
 
                 std::array<double, 3> coordinates2;
                 CGAL::Barycentric_coordinates::triangle_coordinates_2(A2, B2, C2, P, coordinates2.begin());
                 assert(coordinates2[0] >= 0 && coordinates2[1] >= 0 && coordinates2[2] >= 0);
 
                 FaceFiberPoint fb2(coordinates2[0], coordinates2[1], {
-                        this->vertexDomainCoordinates[vertexIds2[0]],
-                        this->vertexDomainCoordinates[vertexIds2[1]],
-                        this->vertexDomainCoordinates[vertexIds2[2]],
+                        this->tetMesh.vertexDomainCoordinates[vertexIds2[0]],
+                        this->tetMesh.vertexDomainCoordinates[vertexIds2[1]],
+                        this->tetMesh.vertexDomainCoordinates[vertexIds2[2]],
                         },
                         sheetColour);
 
@@ -614,7 +602,7 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
 void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vector<float> color)
 {
     this->faceFibers.clear();
-    this->tetsWithFibers = vector<bool>(this->tetrahedra.size(), false);
+    this->tetsWithFibers = vector<bool>(this->tetMesh.tetrahedra.size(), false);
 
     //
     // Get the ID of the face we are intersecting
@@ -655,9 +643,9 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
     }
 
     // For every tet, compute the two exit points
-    for(size_t tetId = 0 ; tetId < this->tetrahedra.size(); tetId++)
+    for(size_t tetId = 0 ; tetId < this->tetMesh.tetrahedra.size(); tetId++)
     {
-        const auto tet = this->tetrahedra[tetId];
+        const auto tet = this->tetMesh.tetrahedra[tetId];
 
         // For every triangle in every tet, get the fiber point in it
         for(int i = 0 ; i < 4 ; i++)
@@ -666,14 +654,14 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
             {
                 for(int k = j + 1 ; k < 4 ; k++)
                 {
-                    float x1 = this->vertexCoordinatesF[tet[i]];
-                    float y1 = this->vertexCoordinatesG[tet[i]];
+                    float x1 = this->tetMesh.vertexCoordinatesF[tet[i]];
+                    float y1 = this->tetMesh.vertexCoordinatesG[tet[i]];
 
-                    float x2 = this->vertexCoordinatesF[tet[j]];
-                    float y2 = this->vertexCoordinatesG[tet[j]];
+                    float x2 = this->tetMesh.vertexCoordinatesF[tet[j]];
+                    float y2 = this->tetMesh.vertexCoordinatesG[tet[j]];
 
-                    float x3 = this->vertexCoordinatesF[tet[k]];
-                    float y3 = this->vertexCoordinatesG[tet[k]];
+                    float x3 = this->tetMesh.vertexCoordinatesF[tet[k]];
+                    float y3 = this->tetMesh.vertexCoordinatesG[tet[k]];
 
 
                     const float xmin = std::min({x1, x2, x3});
@@ -731,7 +719,7 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
                         // Which sheets does this fiber belong to?
                         // 1. Triangle -> Face ComponentID
-                        const int triangleID = this->triangleToIndex[std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC})];
+                        const int triangleID = this->tetMesh.triangleToIndex[std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC})];
                         const int componentID = this->preimageGraphs[currentFaceID].findTriangle(triangleID);
                         //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
 
@@ -749,9 +737,9 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
 
                         FaceFiberPoint fb(alpha, beta, {
-                                this->vertexDomainCoordinates[tet[i]],
-                                this->vertexDomainCoordinates[tet[j]],
-                                this->vertexDomainCoordinates[tet[k]],
+                                this->tetMesh.vertexDomainCoordinates[tet[i]],
+                                this->tetMesh.vertexDomainCoordinates[tet[j]],
+                                this->tetMesh.vertexDomainCoordinates[tet[k]],
                                 },
                                 sheetColour);
 
@@ -764,154 +752,5 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
     }
 }
 
-void
-Data::computeMinMaxRangeDomainCoordinates()
-{
-    // Compute the min/max domain coordinates
-    this->minX = this->vertexDomainCoordinates[0][0];
-    this->maxX = this->vertexDomainCoordinates[0][0];
-
-    this->minY = this->vertexDomainCoordinates[0][1];
-    this->maxY = this->vertexDomainCoordinates[0][1];
-
-    this->minZ = this->vertexDomainCoordinates[0][2];
-    this->maxZ = this->vertexDomainCoordinates[0][2];
-
-    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
-    {
-        this->minX = std::min(this->minX, this->vertexDomainCoordinates[i][0]);
-        this->maxX = std::max(this->maxX, this->vertexDomainCoordinates[i][0]);
-
-        this->minY = std::min(this->minY, this->vertexDomainCoordinates[i][1]);
-        this->maxY = std::max(this->maxY, this->vertexDomainCoordinates[i][1]);
-
-        this->minZ = std::min(this->minZ, this->vertexDomainCoordinates[i][2]);
-        this->maxZ = std::max(this->maxZ, this->vertexDomainCoordinates[i][2]);
-    }
-
-
-    // Compute the min/max range coordinates
-    this->minF = this->vertexCoordinatesF[0];
-    this->maxF = this->vertexCoordinatesF[0];
-
-    this->minG = this->vertexCoordinatesG[0];
-    this->maxG = this->vertexCoordinatesG[0];
-
-    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
-    {
-        this->minF = std::min(this->minF, this->vertexCoordinatesF[i]);
-        this->maxF = std::max(this->maxF, this->vertexCoordinatesF[i]);
-
-        this->minG = std::min(this->minG, this->vertexCoordinatesG[i]);
-        this->maxG = std::max(this->maxG, this->vertexCoordinatesG[i]);
-    }
-
-    // Add some padding to the range coordinates for better visibility
-    //this->minF -= .2;
-    //this->maxF += .2;
-    //this->minG -= .2;
-    //this->maxG += .2;
-
-    this->minF -= 0.1 * (this->maxF - this->minF);
-    this->maxF += 0.1 * (this->maxF - this->minF);
-    this->minG -= 0.1 * (this->maxG - this->minG);
-    this->maxG += 0.1 * (this->maxG - this->minG);
-}
-
-void Data::sortVertices()
-{
-    vector<pair<CartesianPoint, int>> pointWithIndices(this->vertexCoordinatesG.size());
-
-    for (int i = 0 ; i < pointWithIndices.size() ; i++)
-    {
-        pointWithIndices[i] = {CartesianPoint(this->vertexCoordinatesF[i], this->vertexCoordinatesG[i]), i};
-    }
-
-    //cout << "Before sorting" << endl;
-    //this->printMesh();
-
-    std::sort(pointWithIndices.begin(), pointWithIndices.end(),
-            [](const pair<CartesianPoint, int> &a, const pair<CartesianPoint, int>& b) {
-            return CGAL::compare_xy(a.first, b.first) == CGAL::SMALLER;
-            });
-
-    //cout << "Printing points... " << endl;
-    //for (int i = 0 ; i < pointWithIndices.size() ; i++)
-    //{
-        //printf("%d - (%f, %f) - %d\n", i, pointWithIndices[i].first.x(), pointWithIndices[i].first.y(), pointWithIndices[i].second);
-    //}
-
-
-    // Set up the inverse index search
-    vector<int> meshIDtoSortIndex(pointWithIndices.size());
-    for (int i = 0 ; i < pointWithIndices.size() ; i++)
-    {
-        meshIDtoSortIndex[pointWithIndices[i].second] = i;
-    }
-
-    //cout << "Swapping..." << endl;
-    //for (int i = 0 ; i < pointWithIndices.size() ; i++)
-    //{
-        //printf("%d -> %d\n", i, meshIDtoSortIndex[i]);
-
-    //}
-
-    //
-    // Now we can swap things around
-    //
-
-    // Set up copies of the originals for the swap, otherwise editin in place causes errors
-    std::vector<std::vector<GLfloat>> vertexDomainCoordinatesOriginal = this->vertexDomainCoordinates;
-    std::vector<GLfloat> vertexCoordinatesFOriginal = this->vertexCoordinatesF;
-    std::vector<GLfloat> vertexCoordinatesGOriginal = this->vertexCoordinatesG;
-
-    // Swap tet indices
-    for (int i = 0 ; i < this->tetrahedra.size() ; i++)
-    {
-        for (int j = 0 ; j < this->tetrahedra[i].size() ; j++)
-        {
-            this->tetrahedra[i][j] = meshIDtoSortIndex[this->tetrahedra[i][j]];
-        }
-    }
-
-    // Swap domain positions
-    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
-    {
-        this->vertexDomainCoordinates[i] = vertexDomainCoordinatesOriginal[pointWithIndices[i].second];
-    }
-    
-    // Swap range positions
-    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
-    {
-        this->vertexCoordinatesF[i] = vertexCoordinatesFOriginal[pointWithIndices[i].second];
-        this->vertexCoordinatesG[i] = vertexCoordinatesGOriginal[pointWithIndices[i].second];
-    }
-    //cout << "After sorting..." << endl;
-    //this->printMesh();
-
-}
-
-void Data::printMesh()
-{
-    // Print vertex domain coordinates
-    cout << "Vertex domain coordinates: " << endl;
-    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
-    {
-        printf("%d - (%f, %f, %f)\n", i, this->vertexDomainCoordinates[i][0], this->vertexDomainCoordinates[i][1], this->vertexDomainCoordinates[i][2]);
-    }
-    // Print vertex range coordinates
-    cout << "Vertex range coordinates: " << endl;
-    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
-    {
-        printf("%d - (%f, %f)\n", i, this->vertexCoordinatesF[i], this->vertexCoordinatesG[i]);
-    }
-
-    // Print tetrahedra
-    cout << "Tetrahedra: " << endl;
-    for (int i = 0 ; i < this->tetrahedra.size() ; i++)
-    {
-        printf("%d - (%ld, %ld, %ld, %ld)\n", i, this->tetrahedra[i][0], this->tetrahedra[i][1], this->tetrahedra[i][2], this->tetrahedra[i][3]);
-    }
-}
 
 

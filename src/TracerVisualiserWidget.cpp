@@ -36,8 +36,8 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
     this->sibling = _sibling;
 
     // Default values for paraters
-    this->scale = (data->maxZ - data->minZ) * 2;
-    this->scaleFactor = abs(data->maxZ + data->minZ) * this->scaleFactor;
+    this->scale = (data->tetMesh.maxZ - data->tetMesh.minZ) * 2;
+    this->scaleFactor = abs(data->tetMesh.maxZ + data->tetMesh.minZ) * this->scaleFactor;
 
     // Initialise Arcball
     Ball_Init(&theBall);
@@ -237,29 +237,29 @@ TracerVisualiserWidget::drawScene()
     // gluSphere(sphere, 2, 3, 3);
 
     // Data Center
-    glTranslatef(-1.0 * (this->data->maxX + this->data->minX) / 2.0, 0, 0);
-    glTranslatef(0, 0, (this->data->maxY + this->data->minY) / 2.0);
-    glTranslatef(0, -1.0 * (this->data->maxZ + this->data->minZ) / 2.0, 0);
+    glTranslatef(-1.0 * (this->data->tetMesh.maxX + this->data->tetMesh.minX) / 2.0, 0, 0);
+    glTranslatef(0, 0, (this->data->tetMesh.maxY + this->data->tetMesh.minY) / 2.0);
+    glTranslatef(0, -1.0 * (this->data->tetMesh.maxZ + this->data->tetMesh.minZ) / 2.0, 0);
 
     // Don't remember why I need this
     glRotatef(-90., 1., 0., 0.);
 
-    this->drawAxis(1000., 1.0 * (this->data->maxX - this->data->minX) / 1800.0);
+    this->drawAxis(1000., 1.0 * (this->data->tetMesh.maxX - this->data->tetMesh.minX) / 1800.0);
 
 
     //
     // Data bounding box
     //
     GLfloat vertices[8][3] = {
-        {this->data->minX, this->data->minY, this->data->minZ},
-        {this->data->minX, this->data->minY, this->data->maxZ},
-        {this->data->minX, this->data->maxY, this->data->minZ},
-        {this->data->minX, this->data->maxY, this->data->maxZ},
+        {this->data->tetMesh.minX, this->data->tetMesh.minY, this->data->tetMesh.minZ},
+        {this->data->tetMesh.minX, this->data->tetMesh.minY, this->data->tetMesh.maxZ},
+        {this->data->tetMesh.minX, this->data->tetMesh.maxY, this->data->tetMesh.minZ},
+        {this->data->tetMesh.minX, this->data->tetMesh.maxY, this->data->tetMesh.maxZ},
 
-        {this->data->maxX, this->data->minY, this->data->minZ},
-        {this->data->maxX, this->data->minY, this->data->maxZ},
-        {this->data->maxX, this->data->maxY, this->data->minZ},
-        {this->data->maxX, this->data->maxY, this->data->maxZ},
+        {this->data->tetMesh.maxX, this->data->tetMesh.minY, this->data->tetMesh.minZ},
+        {this->data->tetMesh.maxX, this->data->tetMesh.minY, this->data->tetMesh.maxZ},
+        {this->data->tetMesh.maxX, this->data->tetMesh.maxY, this->data->tetMesh.minZ},
+        {this->data->tetMesh.maxX, this->data->tetMesh.maxY, this->data->tetMesh.maxZ},
     };
 
     setMaterial(0., 0., 1., 1.0, 30.);
@@ -276,10 +276,10 @@ TracerVisualiserWidget::drawScene()
         // Tet Edges
         glBegin(GL_LINES);
         {
-            for(int t = 0 ; t < this->data->tetrahedra.size() ; t++)
+            for(int t = 0 ; t < this->data->tetMesh.tetrahedra.size() ; t++)
             {
                 //if (this->data->tetsWithFibers[t] == false) {continue;}
-                const auto tet = this->data->tetrahedra[t];
+                const auto tet = this->data->tetMesh.tetrahedra[t];
 
                 for(int i = 0 ; i < 4 ; i++)
                 {
@@ -287,13 +287,13 @@ TracerVisualiserWidget::drawScene()
                     {
                         GLfloat pointA[3], pointB[3];
 
-                        pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
-                        pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
-                        pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
+                        pointA[0] = this->data->tetMesh.vertexDomainCoordinates[tet[i]][0];
+                        pointA[1] = this->data->tetMesh.vertexDomainCoordinates[tet[i]][1];
+                        pointA[2] = this->data->tetMesh.vertexDomainCoordinates[tet[i]][2];
 
-                        pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
-                        pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
-                        pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
+                        pointB[0] = this->data->tetMesh.vertexDomainCoordinates[tet[j]][0];
+                        pointB[1] = this->data->tetMesh.vertexDomainCoordinates[tet[j]][1];
+                        pointB[2] = this->data->tetMesh.vertexDomainCoordinates[tet[j]][2];
 
                         glVertex3fv(pointA);
                         glVertex3fv(pointB);
@@ -336,9 +336,9 @@ TracerVisualiserWidget::drawScene()
         // Draw Vertices
         {
             //for (const auto &vertex : this->data->vertexDomainCoordinates) 
-            for (int i = 0 ; i < this->data->vertexDomainCoordinates.size() ; i++) 
+            for (int i = 0 ; i < this->data->tetMesh.vertexDomainCoordinates.size() ; i++) 
             {
-                const auto &vertex = this->data->vertexDomainCoordinates[i];
+                const auto &vertex = this->data->tetMesh.vertexDomainCoordinates[i];
 
                 glColor4f(1, 1, 1, this->vertexOpacity);
                 if (dynamic_cast<PlotWidget*>(sibling)->dragMode ==  PlotWidget::MouseDragMode::DataPoint && i == dynamic_cast<PlotWidget*>(sibling)->movePoint)
@@ -363,17 +363,17 @@ TracerVisualiserWidget::drawScene()
     {
         glColor4f(1, 1, 1, this->faceOpacity);
 
-        int centerVertexId = this->data->vertexDomainCoordinates.size() - 1;
+        int centerVertexId = this->data->tetMesh.vertexDomainCoordinates.size() - 1;
 
         int triangles = 0;
 
         glBegin(GL_TRIANGLES);
         {
             //for(const auto &tet : this->data->tetrahedra)
-            for(int t = 0 ; t < this->data->tetrahedra.size() ; t++)
+            for(int t = 0 ; t < this->data->tetMesh.tetrahedra.size() ; t++)
             {
                 //if (this->data->tetsWithFibers[t] == false) {continue;}
-                const auto tet = this->data->tetrahedra[t];
+                const auto tet = this->data->tetMesh.tetrahedra[t];
 
                 bool isCorrectTet = true;
                 //bool isCorrectTet = false;
@@ -405,17 +405,17 @@ TracerVisualiserWidget::drawScene()
 
                             GLfloat pointA[3], pointB[3], pointC[3];
 
-                            pointA[0] = this->data->vertexDomainCoordinates[tet[i]][0];
-                            pointA[1] = this->data->vertexDomainCoordinates[tet[i]][1];
-                            pointA[2] = this->data->vertexDomainCoordinates[tet[i]][2];
+                            pointA[0] = this->data->tetMesh.vertexDomainCoordinates[tet[i]][0];
+                            pointA[1] = this->data->tetMesh.vertexDomainCoordinates[tet[i]][1];
+                            pointA[2] = this->data->tetMesh.vertexDomainCoordinates[tet[i]][2];
 
-                            pointB[0] = this->data->vertexDomainCoordinates[tet[j]][0];
-                            pointB[1] = this->data->vertexDomainCoordinates[tet[j]][1];
-                            pointB[2] = this->data->vertexDomainCoordinates[tet[j]][2];
+                            pointB[0] = this->data->tetMesh.vertexDomainCoordinates[tet[j]][0];
+                            pointB[1] = this->data->tetMesh.vertexDomainCoordinates[tet[j]][1];
+                            pointB[2] = this->data->tetMesh.vertexDomainCoordinates[tet[j]][2];
 
-                            pointC[0] = this->data->vertexDomainCoordinates[tet[k]][0];
-                            pointC[1] = this->data->vertexDomainCoordinates[tet[k]][1];
-                            pointC[2] = this->data->vertexDomainCoordinates[tet[k]][2];
+                            pointC[0] = this->data->tetMesh.vertexDomainCoordinates[tet[k]][0];
+                            pointC[1] = this->data->tetMesh.vertexDomainCoordinates[tet[k]][1];
+                            pointC[2] = this->data->tetMesh.vertexDomainCoordinates[tet[k]][2];
 
                             glVertex3fv(pointA);
                             glVertex3fv(pointB);

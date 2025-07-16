@@ -341,8 +341,8 @@ void PlotWidget::drawBackground(QPainter &p)
                             const float v = CGAL::to_double(e->source()->point().y());
 
                             // Translate to the window frame
-                            const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
-                            const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+                            const float u1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (u - data->tetMesh.minF);
+                            const float v1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (v - data->tetMesh.minG);
 
 
                             // Add to the polygon
@@ -365,8 +365,8 @@ void PlotWidget::drawBackground(QPainter &p)
                 const float v = point.y();
 
                 // Translate to the window frame
-                const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
-                const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+                const float u1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (u - data->tetMesh.minF);
+                const float v1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (v - data->tetMesh.minG);
 
 
                 // Add to the polygon
@@ -459,11 +459,11 @@ void PlotWidget::drawBackground(QPainter &p)
                 p.setPen(QPen(Qt::black, 0.2));
             }
 
-            float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
-            float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.first] - data->minG);
+            float x1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.first] - data->tetMesh.minF);
+            float y1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.first] - data->tetMesh.minG);
 
-            float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
-            float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
+            float x2 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.second] - data->tetMesh.minF);
+            float y2 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.second] - data->tetMesh.minG);
 
             p.setRenderHint(QPainter::Antialiasing, true);
             p.drawLine(x1, y1, x2, y2);
@@ -471,13 +471,13 @@ void PlotWidget::drawBackground(QPainter &p)
     }
 
     // Draw all edges
-    for (const auto &[edge, type] : data->edges)
+    for (const auto &[edge, type] : data->tetMesh.edges)
     {
-        float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.first] - data->minF);
-        float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.first] - data->minG);
+        float x1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.first] - data->tetMesh.minF);
+        float y1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.first] - data->tetMesh.minG);
 
-        float x2 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[edge.second] - data->minF);
-        float y2 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[edge.second] - data->minG);
+        float x2 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.second] - data->tetMesh.minF);
+        float y2 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.second] - data->tetMesh.minG);
 
         if (type == 0)
         {
@@ -499,11 +499,11 @@ void PlotWidget::drawBackground(QPainter &p)
 
 
     // Draw all the vertex coordinates
-    for(size_t i = 0 ; i <  this->data->vertexCoordinatesF.size() ; i++)
+    for(size_t i = 0 ; i <  this->data->tetMesh.vertexCoordinatesF.size() ; i++)
     {
 
-        float x1 = (resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF);
-        float y1 = (resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG);
+        float x1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[i] - data->tetMesh.minF);
+        float y1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[i] - data->tetMesh.minG);
 
         p.setPen(QPen(Qt::black, 6, Qt::SolidLine));
         p.setBrush(Qt::white);           // Fill color
@@ -613,10 +613,10 @@ PlotWidget::drawAxisLabels(QPainter& p)
     //
     float step = resolution / 15;
 
-    float xMin = data->minF;
-    float yMin = data->minG;
-    float xMax = data->maxF;
-    float yMax = data->maxG;
+    float xMin = data->tetMesh.minF;
+    float yMin = data->tetMesh.minG;
+    float xMax = data->tetMesh.maxF;
+    float yMax = data->tetMesh.maxG;
     float xRange = xMax - xMin;
     float yRange = yMax - yMin;
     float a = 10.0;
@@ -690,8 +690,8 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Vertical (constant X)
     for (const auto number : this->verticalLineNumbers) {
-        if (data->minF < number && number < data->maxF) {
-            float ratio = (number - data->minF) / ((data->maxF - data->minF));
+        if (data->tetMesh.minF < number && number < data->tetMesh.maxF) {
+            float ratio = (number - data->tetMesh.minF) / ((data->tetMesh.maxF - data->tetMesh.minF));
             float plotPosition = ratio * (resolution);
             p.drawLine(plotPosition, resolution - boxOffset - 20000, plotPosition, resolution - boxOffset);
         }
@@ -699,9 +699,9 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Horizontal (constant Y)
     for (const auto number : this->horizontalLineNumbers) {
-        if (data->minG < number && number < data->maxG) {
+        if (data->tetMesh.minG < number && number < data->tetMesh.maxG) {
             // Invert the y axis
-            float ratio = 1.0 - (number - data->minG) / ((data->maxG - data->minG));
+            float ratio = 1.0 - (number - data->tetMesh.minG) / ((data->tetMesh.maxG - data->tetMesh.minG));
             float plotPosition = ratio * (resolution);
             p.drawLine(boxOffset, plotPosition, boxOffset + 2000, plotPosition);
         }
@@ -716,7 +716,7 @@ PlotWidget::drawAxisLabels(QPainter& p)
     // x label
     p.drawText(resolution / 2 - 30,
             resolution - boxOffset + 10,
-            QString::fromStdString(data->longnameF) + " (" + QString::fromStdString(data->units) +
+            QString::fromStdString(data->tetMesh.longnameF) + " (" + QString::fromStdString(data->tetMesh.units) +
             ")");
 
     p.translate(boxOffset - 5, resolution / 2 + 20);
@@ -724,7 +724,7 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // y label
     p.drawText(
-            0, 0, QString::fromStdString(data->longnameG) + " (" + QString::fromStdString(data->units) + ")");
+            0, 0, QString::fromStdString(data->tetMesh.longnameG) + " (" + QString::fromStdString(data->tetMesh.units) + ")");
 }
 
     void
@@ -798,8 +798,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         this->recomputeFiber = false;
 
         // Reside to the original range data dimensions
-        float u = this->data->minF + (polyPoints[0].x() / resolution) * (this->data->maxF - this->data->minF);
-        float v = this->data->minG + (polyPoints[0].y() / resolution) * (this->data->maxG - this->data->minG);
+        float u = this->data->tetMesh.minF + (polyPoints[0].x() / resolution) * (this->data->tetMesh.maxF - this->data->tetMesh.minF);
+        float v = this->data->tetMesh.minG + (polyPoints[0].y() / resolution) * (this->data->tetMesh.maxG - this->data->tetMesh.minG);
 
         const int currentFiberColour = 0;
         // Compute all tet exit points

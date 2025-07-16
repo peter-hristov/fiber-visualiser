@@ -44,11 +44,11 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
         //std::cout << "Upper link becomes lower link." << std::endl;
 
         //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: data->tetMesh.upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //minusTriangles.push_back({aIndex, bIndex, v});
-            minusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
+            minusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
 
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
             //printf("%d ", v);
@@ -56,11 +56,11 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
         //printf("\n");
 
         //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: data->tetMesh.lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //plusTriangles.push_back({aIndex, bIndex, v});
-            plusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
+            plusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
             //printf("%d ", v);
         }
@@ -71,22 +71,22 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(Ar
         //std::cout << "Lower link becomes upper link." << std::endl;
 
         //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->upperLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: data->tetMesh.upperLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //plusTriangles.push_back({aIndex, bIndex, v});
-            plusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
+            plusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
             //printf("%d ", v);
         }
         //printf("\n");
 
         //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: data->lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
+        for (const int v: data->tetMesh.lowerLink[std::pair<int, int>({aIndex, bIndex})]) 
         {
-            assert(data->triangleToIndex.contains({aIndex, bIndex, v}));
+            assert(data->tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
             //minusTriangles.push_back({aIndex, bIndex, v});
-            minusTriangles.insert(data->triangleToIndex[{aIndex, bIndex, v}]);
+            minusTriangles.insert(data->tetMesh.triangleToIndex[{aIndex, bIndex, v}]);
             //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
             //printf("%d ", v);
         }
@@ -105,11 +105,11 @@ bool ReebSpace::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *
     }
 
     // Define the two points that form the line
-    const Point_2 a(data->vertexCoordinatesF[aIndex], data->vertexCoordinatesG[aIndex]);
-    const Point_2 b(data->vertexCoordinatesF[bIndex], data->vertexCoordinatesG[bIndex]);
+    const Point_2 a(data->tetMesh.vertexCoordinatesF[aIndex], data->tetMesh.vertexCoordinatesG[aIndex]);
+    const Point_2 b(data->tetMesh.vertexCoordinatesF[bIndex], data->tetMesh.vertexCoordinatesG[bIndex]);
 
     // Define the test point
-    const Point_2 v(data->vertexCoordinatesF[vIndex], data->vertexCoordinatesG[vIndex]);  // Change this to test different locations
+    const Point_2 v(data->tetMesh.vertexCoordinatesF[vIndex], data->tetMesh.vertexCoordinatesG[vIndex]);  // Change this to test different locations
 
     // Determine which half-plane r is in
     const CGAL::Orientation result = CGAL::orientation(a, b, v);
@@ -148,9 +148,9 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
     // otherwise the lower and upper link flip around
     //for (const std::vector<size_t> tet : data->tetrahedra)
-    for (int i = 0 ; i <  data->tetrahedra.size() ; i++)
+    for (int i = 0 ; i <  data->tetMesh.tetrahedra.size() ; i++)
     {
-        const auto &tet = data->tetrahedra[i];
+        const auto &tet = data->tetMesh.tetrahedra[i];
 
         // All pairs give you all six edges
         for (int a = 0 ; a < 4 ; a++)
@@ -170,7 +170,7 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                 const std::pair<int, int> edge = {aIndex, bIndex};
 
                 // Add to the list of edge, initially all as regular
-                data->edges[edge] = 1;
+                data->tetMesh.edges[edge] = 1;
 
                 std::vector<int> linkVerticesInTet;
 
@@ -187,9 +187,9 @@ void ReebSpace::computeUpperLowerLink(Data *data)
                         linkVerticesInTet.push_back(vIndex);
 
                         if (true == isUpperLink) {
-                            data->upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
+                            data->tetMesh.upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
                         } else {
-                            data->lowerLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
+                            data->tetMesh.lowerLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
                         }
                     }
                 }
@@ -201,20 +201,20 @@ void ReebSpace::computeUpperLowerLink(Data *data)
 
     // Initialize the disjoint set for the upper and lower link 
     std::map<std::pair<int, int>, DisjointSet<int>> upperLinkComponentsDS;
-    for (const auto &[edge, vertices] : data->upperLink)
+    for (const auto &[edge, vertices] : data->tetMesh.upperLink)
     {
         upperLinkComponentsDS[edge].initialize(vertices);
     }
 
     std::map<std::pair<int, int>, DisjointSet<int>> lowerLinkComponentsDS;
-    for (const auto &[edge, vertices] : data->lowerLink)
+    for (const auto &[edge, vertices] : data->tetMesh.lowerLink)
     {
         lowerLinkComponentsDS[edge].initialize(vertices);
     }
 
     // Add all edges to compute the connected components
 
-    for (const auto &[edge, vertices] : data->upperLink)
+    for (const auto &[edge, vertices] : data->tetMesh.upperLink)
     {
         for (const std::pair<int, int> &linkEdge : linkEdges[edge])
         {
@@ -225,7 +225,7 @@ void ReebSpace::computeUpperLowerLink(Data *data)
         }
     }
 
-    for (const auto &[edge, vertices] : data->lowerLink)
+    for (const auto &[edge, vertices] : data->tetMesh.lowerLink)
     {
         for (const std::pair<int, int> &linkEdge : linkEdges[edge])
         {
@@ -237,7 +237,7 @@ void ReebSpace::computeUpperLowerLink(Data *data)
     }
 
 
-    for (auto &[edge, type] : data->edges)
+    for (auto &[edge, type] : data->tetMesh.edges)
     {
         printf("Currently at the edge [%d, %d].\n", edge.first, edge.second);
 
@@ -245,14 +245,14 @@ void ReebSpace::computeUpperLowerLink(Data *data)
         int lowerLinkComponents = lowerLinkComponentsDS[edge].countConnectedComponents();
 
         printf("The upper link has %d components and these vertices: ", upperLinkComponents);
-        for (const auto &v : data->upperLink[edge])
+        for (const auto &v : data->tetMesh.upperLink[edge])
         {
             printf("%d ", v);
         }
         printf("\n");
 
         printf("The lower link has %d components and these vertices: ", lowerLinkComponents);
-        for (const auto &v : data->lowerLink[edge])
+        for (const auto &v : data->tetMesh.lowerLink[edge])
         {
             printf("%d ", v);
         }
@@ -305,7 +305,7 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
 
     std::set<std::set<int>> allTriangles;
 
-    for (const std::vector<size_t> tet : data->tetrahedra)
+    for (const std::vector<size_t> tet : data->tetMesh.tetrahedra)
     {
         // The triangles of the tet
         std::set<std::set<int>> triangles;
@@ -332,16 +332,16 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
 
     for (const std::set<int> triangle : allTriangles)
     {
-        data->indexToTriangle.push_back(triangle);
-        data->triangleToIndex[triangle] = data->indexToTriangle.size() - 1;
+        data->tetMesh.indexToTriangle.push_back(triangle);
+        data->tetMesh.triangleToIndex[triangle] = data->tetMesh.indexToTriangle.size() - 1;
     }
 
-    data->adjacentTrianglesIndex.resize(allTriangles.size());
+    data->tetMesh.adjacentTrianglesIndex.resize(allTriangles.size());
 
 
 
     // Compute the adjacency of triangles in the mesh, two triangles are adjacent when they are the faces of the same tet
-    for (const std::vector<size_t> tet : data->tetrahedra)
+    for (const std::vector<size_t> tet : data->tetMesh.tetrahedra)
     {
         // The triangles of the tet
         std::set<std::set<int>> triangles;
@@ -370,16 +370,16 @@ void ReebSpace::computeTriangleAdjacency(Data *data)
                 std::pair<std::set<int>, std::set<int>> pairOfTriangles = {t1, t2};
 
                 // Insert the pair into the set
-                data->connectedTriangles.insert(pairOfTriangles);
+                data->tetMesh.connectedTriangles.insert(pairOfTriangles);
 
                 //data->adjacentTriangles[t1].push_back(t2);
                 //data->adjacentTriangles[t2].push_back(t1);
                 
-                int t1Index = data->triangleToIndex[t1];
-                int t2Index = data->triangleToIndex[t2];
+                int t1Index = data->tetMesh.triangleToIndex[t1];
+                int t2Index = data->tetMesh.triangleToIndex[t2];
 
-                data->adjacentTrianglesIndex[t1Index].push_back(t2Index);
-                data->adjacentTrianglesIndex[t2Index].push_back(t1Index);
+                data->tetMesh.adjacentTrianglesIndex[t1Index].push_back(t2Index);
+                data->tetMesh.adjacentTrianglesIndex[t2Index].push_back(t1Index);
             }
         }
     }
@@ -390,11 +390,11 @@ void ReebSpace::computeArrangement(Data *data)
     Timer::start();
 
     // Add in the vertices of the mesh 
-    data->arrangementPoints.resize(data->vertexCoordinatesF.size());
-    for (int i = 0 ; i < data->vertexCoordinatesF.size() ; i++)
+    data->arrangementPoints.resize(data->tetMesh.vertexCoordinatesF.size());
+    for (int i = 0 ; i < data->tetMesh.vertexCoordinatesF.size() ; i++)
     {
-        const float u = data->vertexCoordinatesF[i];
-        const float v = data->vertexCoordinatesG[i];
+        const float u = data->tetMesh.vertexCoordinatesF[i];
+        const float v = data->tetMesh.vertexCoordinatesG[i];
         const Point_2 point(u, v);
 
         data->arrangementPoints[i] = point;
@@ -406,17 +406,17 @@ void ReebSpace::computeArrangement(Data *data)
     Timer::start();
     // Make sure you don't add duplicate edge to the arrangement
     std::map<std::set<size_t>, bool> uniqueEdges;
-    for (int i = 0 ; i < data->tetrahedra.size() ; i++)
+    for (int i = 0 ; i < data->tetMesh.tetrahedra.size() ; i++)
     {
         // Bottom face
-        uniqueEdges[std::set<size_t>({data->tetrahedra[i][0], data->tetrahedra[i][1]})] = true;
-        uniqueEdges[std::set<size_t>({data->tetrahedra[i][1], data->tetrahedra[i][2]})] = true;
-        uniqueEdges[std::set<size_t>({data->tetrahedra[i][2], data->tetrahedra[i][0]})] = true;
+        uniqueEdges[std::set<size_t>({data->tetMesh.tetrahedra[i][0], data->tetMesh.tetrahedra[i][1]})] = true;
+        uniqueEdges[std::set<size_t>({data->tetMesh.tetrahedra[i][1], data->tetMesh.tetrahedra[i][2]})] = true;
+        uniqueEdges[std::set<size_t>({data->tetMesh.tetrahedra[i][2], data->tetMesh.tetrahedra[i][0]})] = true;
 
         // Connect bottom face to top vertex
-        uniqueEdges[std::set<size_t>({data->tetrahedra[i][0], data->tetrahedra[i][3]})] = true;
-        uniqueEdges[std::set<size_t>({data->tetrahedra[i][1], data->tetrahedra[i][3]})] = true;
-        uniqueEdges[std::set<size_t>({data->tetrahedra[i][2], data->tetrahedra[i][3]})] = true;
+        uniqueEdges[std::set<size_t>({data->tetMesh.tetrahedra[i][0], data->tetMesh.tetrahedra[i][3]})] = true;
+        uniqueEdges[std::set<size_t>({data->tetMesh.tetrahedra[i][1], data->tetMesh.tetrahedra[i][3]})] = true;
+        uniqueEdges[std::set<size_t>({data->tetMesh.tetrahedra[i][2], data->tetMesh.tetrahedra[i][3]})] = true;
     }
     Timer::stop("Computed unique edges                  :");
 
@@ -678,7 +678,7 @@ void ReebSpace::computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge
 
     for (const auto &[t1, id1] : data->preimageGraphs[twinFaceID].data)
     {
-        for (const auto &t2 : data->adjacentTrianglesIndex[t1])
+        for (const auto &t2 : data->tetMesh.adjacentTrianglesIndex[t1])
         {
             if (data->preimageGraphs[twinFaceID].data.contains(t2))
             {
