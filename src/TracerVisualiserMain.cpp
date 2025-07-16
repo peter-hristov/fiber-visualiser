@@ -57,41 +57,44 @@ int main(int argc, char* argv[])
     //
     // Read, perturb and sort the indices of the vertices lexicographically (by their range position).
     //
-    //TetMesh tetMesh;
-    Data data;
+    TetMesh tetMesh;
     try
     {
-        data.tetMesh = io::readData(filename);
+        tetMesh = io::readData(filename);
     }
     catch (const std::exception &e)
     {
         std::cerr << "Error: " << e.what() << '\n';
     }
 
-    data.tetMesh.perturbRangeValues(perturbationEpsilon);
-    data.tetMesh.sortVertices();
-    data.tetMesh.computeMinMaxRangeDomainCoordinates();
-    data.tetMesh.computeUpperLowerLink();
-    data.tetMesh.computeTriangleAdjacency();
+    tetMesh.perturbRangeValues(perturbationEpsilon);
+    tetMesh.sortVertices();
+    tetMesh.computeMinMaxRangeDomainCoordinates();
+    tetMesh.computeUpperLowerLink();
+    tetMesh.computeTriangleAdjacency();
 
-    //Arrangement arrangement;
-    data.arrangement.computeArrangement(data.tetMesh);
-
-    //ReebSpace reebSpace;
     Timer::start();
-    data.reebSpace.computePreimageGraphs(data.tetMesh, data.arrangement, discardFiberSeeds);
+    Arrangement arrangement;
+    arrangement.computeArrangement(tetMesh);
+    Timer::stop("Arrangement                            :");
+
+    Timer::start();
+    arrangement.computePointLocationDataStructure();
+    Timer::stop("Arrangement search structure           :");
+
+    ReebSpace reebSpace;
+    Timer::start();
+    reebSpace.computePreimageGraphs(tetMesh, arrangement, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
 
     std::cout << "Postprocessing..." << std::endl;
     Timer::start();
-    data.reebSpace.computeReebSpacePostprocess(data.tetMesh, data.arrangement);
+    reebSpace.computeReebSpacePostprocess(tetMesh, arrangement);
     Timer::stop("Computed RS(f) Postprocess             :");
 
     // Package all my data for visualisation
-    //Data data(std::move(tetMesh), std::move(arrangement), std::move(reebSpace));
+    Data data(tetMesh, arrangement, reebSpace);
 
-    //std::cout << "Press Enter to continue...";
-    //std::cin.get();  // waits for Enter key
 
     // Save all the polygons
     if (false == outputSheetPolygonsFilename.empty())
@@ -153,9 +156,6 @@ int main(int argc, char* argv[])
     }
 
 
-    Timer::start();
-    data.pl = std::make_unique<Point_location>(data.arrangement.arr);
-    Timer::stop("Arrangement search structure           :");
 
     if (false == outputSheetFibersFolder.empty())
     {

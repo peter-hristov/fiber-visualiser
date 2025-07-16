@@ -57,6 +57,10 @@ class ReebSpace
         // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
         std::unordered_map<int, int> sheetToColour;
 
+
+        // Jacobi type computing from the Reeb space algorithm, for comparison with the Jacobi type computed from the mesh
+        std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> jacobiType;
+
         // There's also this vector in plotwidget
         //std::vector<QPolygon> arrangementPolygons;
 

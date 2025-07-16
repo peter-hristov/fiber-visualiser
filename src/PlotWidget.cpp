@@ -445,30 +445,30 @@ void PlotWidget::drawBackground(QPainter &p)
     //
     // Draw the Jacobi set
     //
-    for (const auto &[edge, type] : data.jacobiType)
-    {
-        if (type != 1)
-        {
-            if (type == 0)
-            {
-                //p.setPen(QPen(Qt::black, 1, Qt::DashLine));
-                p.setPen(QPen(Qt::black, 0.2));
-            }
-            else
-            {
-                p.setPen(QPen(Qt::black, 0.2));
-            }
+    //for (const auto &[edge, type] : data.reebSpace.jacobiType)
+    //{
+        //if (type != 1)
+        //{
+            //if (type == 0)
+            //{
+                ////p.setPen(QPen(Qt::black, 1, Qt::DashLine));
+                //p.setPen(QPen(Qt::black, 0.2));
+            //}
+            //else
+            //{
+                //p.setPen(QPen(Qt::black, 0.2));
+            //}
 
-            float x1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.first] - data.tetMesh.minF);
-            float y1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.first] - data.tetMesh.minG);
+            //float x1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.first] - data.tetMesh.minF);
+            //float y1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.first] - data.tetMesh.minG);
 
-            float x2 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.second] - data.tetMesh.minF);
-            float y2 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.second] - data.tetMesh.minG);
+            //float x2 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.second] - data.tetMesh.minF);
+            //float y2 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.second] - data.tetMesh.minG);
 
-            p.setRenderHint(QPainter::Antialiasing, true);
-            p.drawLine(x1, y1, x2, y2);
-        }
-    }
+            //p.setRenderHint(QPainter::Antialiasing, true);
+            //p.drawLine(x1, y1, x2, y2);
+        //}
+    //}
 
     // Draw all edges
     for (const auto &[edge, type] : data.tetMesh.edges)
@@ -822,7 +822,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         //Timer::start();
         const bool clearFibers = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers;
-        this->data.computeTetExitPointsNewNew(u, v, clearFibers, -1, data.fiberColours[currentFiberColour]);
+        this->data. computeTetExitPointsNewNew(u, v, clearFibers, -1, data.fiberColours[currentFiberColour]);
         //Timer::stop("Computed fiber new new                 :");
         //qDebug() << "......";
 

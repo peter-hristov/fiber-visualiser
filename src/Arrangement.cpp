@@ -104,3 +104,8 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh)
         counter++;
     }
 }
+
+void Arrangement::computePointLocationDataStructure()
+{
+    this->pl = std::make_unique<Point_location>(this->arr);
+}

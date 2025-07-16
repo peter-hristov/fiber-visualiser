@@ -230,6 +230,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         this->faceFibers.clear();
     }
 
+
     //
     // Get the ID of the face we are intersecting
     //
@@ -244,7 +245,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
 
 
     // Locate the point in the arrangement
-    CGAL::Object result = this->pl->locate(query_point);
+    CGAL::Object result = this->arrangement.pl->locate(query_point);
 
     // Try to assign to a face, edge or a vertex
     Arrangement_2::Face_const_handle face;
@@ -256,12 +257,14 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
     if (CGAL::assign(face, result)) 
     {
         currentFaceID = this->arrangement.arrangementFacesIdices[face];
+        printf("Found query point.");
     } 
     // If we are on an edge, just grad an adjacent face
     else if (CGAL::assign(edge, result)) 
     {
         face = edge->face();
         currentFaceID = this->arrangement.arrangementFacesIdices[face];
+        printf("Found query point.");
     } 
     // If we are on a vertex grab an indicent edge and get its face
     else if (CGAL::assign(vertex, result)) 
@@ -269,12 +272,15 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         edge = vertex->incident_halfedges();
         face = edge->face();
         currentFaceID = this->arrangement.arrangementFacesIdices[face];
+        printf("Found query point.");
     } else 
     {
+        printf("NOT Found query point.");
         assert(false);
     }
     //Timer::stop("Computed active arrangement face       :");
 
+    printf("The current faces ID is %d\n", currentFaceID);
 
 
     //Timer::start();
@@ -301,7 +307,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         if (reebSheetIdOnly == -1 || sheetId == reebSheetIdOnly)
         {
             bfsQueue.push(triangleId);
-            //cout << "Adding seed \n";
+            cout << "Adding seed \n";
         }
 
         //const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
@@ -475,7 +481,7 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
 
 
     // Locate the point in the arrangement
-    CGAL::Object result = this->pl->locate(query_point);
+    CGAL::Object result = this->arrangement.pl->locate(query_point);
 
     // Try to assign to a face, edge or a vertex
     Arrangement_2::Face_const_handle face;
@@ -612,7 +618,7 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
     Point_2 query_point(u, v);
 
     // Locate the point in the arrangement
-    CGAL::Object result = this->pl->locate(query_point);
+    CGAL::Object result = this->arrangement.pl->locate(query_point);
 
     // Try to assign to a face, edge or a vertex
     Arrangement_2::Face_const_handle face;

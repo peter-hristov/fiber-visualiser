@@ -23,6 +23,9 @@ class Arrangement
     std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
     std::vector<Arrangement_2::Face_const_handle> arrangementIndexToFace;
 
+    std::unique_ptr<Point_location> pl;  // nullptr by default
+
     // We only add data->arr, the rest of data is unchanged
     void computeArrangement(const TetMesh&);
+    void computePointLocationDataStructure();
 };

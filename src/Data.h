@@ -35,43 +35,20 @@
 class Data
 {
   public:
-    Data() {}
 
-    TetMesh tetMesh;
-    Arrangement arrangement;
-    ReebSpace reebSpace;
+    // Ideally, I would like a move constructor, but there's some issues in computing the search structure for the arrangement, something is not moved.
+    // For not, just pass by reference
 
-    Data(TetMesh&& tm, Arrangement&& a, ReebSpace&& rs): 
-        tetMesh(std::move(tm)),
-        arrangement(std::move(a)),
-        reebSpace(std::move(rs)) 
+    TetMesh &tetMesh;
+    Arrangement &arrangement;
+    ReebSpace &reebSpace;
+
+    Data(TetMesh& tm, Arrangement& a, ReebSpace& rs)
+        : tetMesh(tm),
+        arrangement(a),
+        reebSpace(rs)
     {}
 
-    //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
-    //std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;
-
-    // The jacobi type of each edge 0 for definite, 1 for regular and n > 1 for indefinite of type n
-    std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> jacobiType;
-
-
-
-    
-
-    // The vertices of the correspondence graph H are pairs of int <faceID, fiber component ID>
-    // I'd like to map between them and int indices for the disjoint set
-    //std::vector<std::pair<int, int>> indexToVertexH;
-    //std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> vertexHtoIndex;
-
-
-    // Data structure to query the arrangement
-    // Given a point, which face is it in?
-    std::unique_ptr<Point_location> pl;  // nullptr by default
-
-
-
-    //
-    // </Reeb space related stuff>
-    //
 
 
 
