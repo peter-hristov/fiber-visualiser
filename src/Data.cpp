@@ -255,20 +255,20 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
 
     if (CGAL::assign(face, result)) 
     {
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } 
     // If we are on an edge, just grad an adjacent face
     else if (CGAL::assign(edge, result)) 
     {
         face = edge->face();
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } 
     // If we are on a vertex grab an indicent edge and get its face
     else if (CGAL::assign(vertex, result)) 
     {
         edge = vertex->incident_halfedges();
         face = edge->face();
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } else 
     {
         assert(false);
@@ -486,20 +486,20 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
 
     if (CGAL::assign(face, result)) 
     {
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } 
     // If we are on an edge, just grad an adjacent face
     else if (CGAL::assign(edge, result)) 
     {
         face = edge->face();
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } 
     // If we are on a vertex grab an indicent edge and get its face
     else if (CGAL::assign(vertex, result)) 
     {
         edge = vertex->incident_halfedges();
         face = edge->face();
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } else 
     {
         assert(false);
@@ -623,20 +623,20 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
     if (CGAL::assign(face, result)) 
     {
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } 
     // If we are on an edge, just grad an adjacent face
     else if (CGAL::assign(edge, result)) 
     {
         face = edge->face();
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } 
     // If we are on a vertex grab an indicent edge and get its face
     else if (CGAL::assign(vertex, result)) 
     {
         edge = vertex->incident_halfedges();
         face = edge->face();
-        currentFaceID = this->arrangementFacesIdices[face];
+        currentFaceID = this->arrangement.arrangementFacesIdices[face];
     } else 
     {
         assert(false);

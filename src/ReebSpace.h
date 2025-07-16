@@ -27,14 +27,7 @@
 namespace ReebSpace
 {
 
-        // We only add upperLink/lowerLink to data, the rest of data is unchagned
-        void computeUpperLowerLink(Data *);
-        
-        // We only add upperLink/lowerLink to data, the rest of data is unchagned
-        void computeTriangleAdjacency(Data *);
 
-        // We only add data->arr, the rest of data is unchanged
-        void computeArrangement(Data *data);
 
         // Computes the correspondence between two faces given a half edge between them
         void computeTwinFacePreimageGraph(Data *data, Arrangement_2::Halfedge_const_handle &);
@@ -58,9 +51,6 @@ namespace ReebSpace
         // Helper functions
         //
 
-        // Give the edge (aIndex, bIndex), is the vertex vIndex from its link in the upper and lower link of the edge
-        // We assume that aIndex < bIndex for consistent orientation.
-        bool isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex, Data *data);
 
         // Get the upper/lower link with the orientation of the half edge with respect to the original edge.
         //std::pair<std::vector<std::set<int>>, std::vector<std::set<int>>> getMinusPlusTriangles(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data);
@@ -68,7 +58,4 @@ namespace ReebSpace
         std::pair<std::set<int>, std::set<int>> getMinusPlusTrianglesIndex(Arrangement_2::Halfedge_const_handle currentHalfEdge, Data *data);
 
         void testTraverseArrangement(Data *data);
-
-
-
 };

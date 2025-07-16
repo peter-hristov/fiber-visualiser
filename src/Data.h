@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/Arrangement.h"
 #include "src/CGALTypedefs.h"
 #include "src/TetMesh.h"
 #include <GL/gl.h>
@@ -27,6 +28,7 @@
 
 #include "./CGALTypedefs.h"
 #include "./TetMesh.h"
+#include "./Arrangement.h"
 
 class Data
 {
@@ -34,25 +36,8 @@ class Data
     Data() {}
 
     TetMesh tetMesh;
+    Arrangement arrangement;
 
-
-    // 
-    // Arrangement
-    //
-
-
-    // Reeb stuff relted content
-    Arrangement_2 arr;
-
-    // The points of the line segments that define the arrangement, does not include new intersection points
-    std::vector<Point_2> arrangementPoints;
-
-    // The inverse map of arrangementPoints, returns the index of a point
-    std::map<Point_2, int> arrangementPointsIdices;
-
-    // The integer ID of every face in the arrangement
-    std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;
-    std::vector<Arrangement_2::Face_const_handle> arrangementIndexToFace;
 
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
     //std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;

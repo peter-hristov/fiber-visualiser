@@ -319,9 +319,9 @@ void PlotWidget::drawBackground(QPainter &p)
         {
 
             // Loop through all faces to see which ones are in the sheet
-            for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+            for (auto f = data->arrangement.arr.faces_begin(); f != data->arrangement.arr.faces_end(); ++f) 
             {
-                const int currentFaceID = data->arrangementFacesIdices[f];
+                const int currentFaceID = data->arrangement.arrangementFacesIdices[f];
 
                 // For each fiber component in the face, see if one of those is in our sheet
                 for (const auto &[triangleId, fiberComponentId] : this->data->fiberSeeds[currentFaceID])

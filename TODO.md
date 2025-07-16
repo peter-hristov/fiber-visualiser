@@ -1,6 +1,9 @@
 # Refactor
 Make test vector<array>
 Move the hashes outside of Disjoint set
+Compute plus/minus triangles only once
+Update the timer for use a hashmap
+Put the Reeb space computation in a different library
 
 
 # Optomise memory:

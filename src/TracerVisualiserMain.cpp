@@ -74,17 +74,17 @@ int main(int argc, char* argv[])
     data->tetMesh.computeMinMaxRangeDomainCoordinates();
 
     // Compute the 2D arrangement
-    ReebSpace::computeArrangement(data);
+    data->arrangement.computeArrangement(data->tetMesh);
 
     //std::cout << "Press Enter to continue...";
     //std::cin.get();  // waits for Enter key
 
     Timer::start();
-    ReebSpace::computeUpperLowerLink(data);
+    data->tetMesh.computeUpperLowerLink();
     Timer::stop("Computed upper and lower link          :");
 
     Timer::start();
-    ReebSpace::computeTriangleAdjacency(data);
+    data->tetMesh.computeTriangleAdjacency();
     Timer::stop("Computed triangle adjacency            :");
 
 
@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
 
 
     Timer::start();
-    data->pl = std::make_unique<Point_location>(data->arr);
+    data->pl = std::make_unique<Point_location>(data->arrangement.arr);
     Timer::stop("Arrangement search structure           :");
 
     if (false == outputSheetFibersFolder.empty())

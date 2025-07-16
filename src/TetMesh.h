@@ -51,5 +51,16 @@ class TetMesh
     void printMesh();
     void perturbRangeValues(const float &perturbationEpsilon);
     void computeMinMaxRangeDomainCoordinates();
+
+
+
+    // We only add upperLink/lowerLink to data, the rest of data is unchagned
+    void computeUpperLowerLink();
+    // We only add upperLink/lowerLink to data, the rest of data is unchagned
+    void computeTriangleAdjacency();
+
+    // Give the edge (aIndex, bIndex), is the vertex vIndex from its link in the upper and lower link of the edge
+    // We assume that aIndex < bIndex for consistent orientation.
+    bool isUpperLinkEdgeVertex(int, int, int);
 };
 
