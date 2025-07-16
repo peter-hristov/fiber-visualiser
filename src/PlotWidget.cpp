@@ -36,7 +36,7 @@ using namespace std;
 const bool DRAW_GRIDLINES = true;
 
 
-PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
+PlotWidget::PlotWidget(QWidget* parent, Data &_data, string _interpolationType)
     : QWidget(parent)
     , data(_data)
       , interpolationType(_interpolationType)
@@ -45,8 +45,8 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
     this->setEnabled(true);
 
     // Set up polygons for drawing
-    //this->arrangementPolygons.resize(this->data->arrangementIndexToFace.size());
-    //for (auto f = data->arr.faces_begin(); f != data->arr.faces_end(); ++f) 
+    //this->arrangementPolygons.resize(this->data.arrangementIndexToFace.size());
+    //for (auto f = data.arr.faces_begin(); f != data.arr.faces_end(); ++f) 
     //{
         //if (f->is_unbounded()) 
         //{
@@ -65,8 +65,8 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             //const float v = CGAL::to_double(e->source()->point().y());
 
             //// Translate to the window frame
-            //const float u1 = (resolution / (data->maxF - data->minF)) * (u - data->minF);
-            //const float v1 = (resolution / (data->maxG - data->minG)) * (v - data->minG);
+            //const float u1 = (resolution / (data.maxF - data.minF)) * (u - data.minF);
+            //const float v1 = (resolution / (data.maxG - data.minG)) * (v - data.minG);
 
 
             //// Add to the polygon
@@ -75,7 +75,7 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
             ////std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
         //} while (++curr != circ);
 
-        //const int faceId = data->arrangementFacesIdices[f];
+        //const int faceId = data.arrangementFacesIdices[f];
         //this->arrangementPolygons[faceId] = QPolygon(points);
     //}
 }
@@ -84,19 +84,19 @@ PlotWidget::PlotWidget(QWidget* parent, Data* _data, string _interpolationType)
 PlotWidget::keyPressEvent(QKeyEvent* event)
 {
     //if (event->key() == Qt::Key_I) {
-    //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + 1);
+    //this->data.mousePoints[0].setY(this->data.mousePoints[0].y() + 1);
     //this->update();
     //}
     //if (event->key() == Qt::Key_J) {
-    //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() - 1);
+    //this->data.mousePoints[0].setX(this->data.mousePoints[0].x() - 1);
     //this->update();
     //}
     //if (event->key() == Qt::Key_K) {
-    //this->data->mousePoints[0].setY(this->data->mousePoints[0].y() - 1);
+    //this->data.mousePoints[0].setY(this->data.mousePoints[0].y() - 1);
     //this->update();
     //}
     //if (event->key() == Qt::Key_L) {
-    //this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + 1);
+    //this->data.mousePoints[0].setX(this->data.mousePoints[0].x() + 1);
     //this->update();
     //}
 }
@@ -120,7 +120,7 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
     int m = 0;
     int closestVertexPoint = 0;
 
-    auto &mousePoints = this->data->mousePoints;
+    auto &mousePoints = this->data.mousePoints;
 
     // Find out whether we're hovering on a vertex of the polygon and highlight it
     if (event->button() == Qt::NoButton) 
@@ -129,18 +129,18 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
         //
         // Old code for moving data points around
         //
-        //if (this->data->vertexCoordinatesF.size() > 0) 
+        //if (this->data.vertexCoordinatesF.size() > 0) 
         //{
 
             //// Are we close to any of the vertices of the data?
-            //for (int i = 0; i < this->data->vertexCoordinatesF.size(); i++) {
+            //for (int i = 0; i < this->data.vertexCoordinatesF.size(); i++) {
                 //QPointF point;
-                //point.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[i] - data->minF));
-                //point.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[i] - data->minG));
+                //point.setX((resolution / (data.maxF - data.minF)) * (this->data.vertexCoordinatesF[i] - data.minF));
+                //point.setY((resolution / (data.maxG - data.minG)) * (this->data.vertexCoordinatesG[i] - data.minG));
 
                 //QPointF bestPoint;
-                //bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
-                //bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
+                //bestPoint.setX((resolution / (data.maxF - data.minF)) * (this->data.vertexCoordinatesF[closestVertexPoint] - data.minF));
+                //bestPoint.setY((resolution / (data.maxG - data.minG)) * (this->data.vertexCoordinatesG[closestVertexPoint] - data.minG));
 
                 //if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, point) <
                         //tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
@@ -151,8 +151,8 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
             //}
 
             //QPointF bestPoint;
-            //bestPoint.setX((resolution / (data->maxF - data->minF)) * (this->data->vertexCoordinatesF[closestVertexPoint] - data->minF));
-            //bestPoint.setY((resolution / (data->maxG - data->minG)) * (this->data->vertexCoordinatesG[closestVertexPoint] - data->minG));
+            //bestPoint.setX((resolution / (data.maxF - data.minF)) * (this->data.vertexCoordinatesF[closestVertexPoint] - data.minF));
+            //bestPoint.setY((resolution / (data.maxG - data.minG)) * (this->data.vertexCoordinatesG[closestVertexPoint] - data.minG));
 
             //if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint) < sphereRadius * 4) {
                 //this->closePointData = closestVertexPoint;
@@ -194,13 +194,13 @@ PlotWidget::mouseMoveEvent(QMouseEvent* event)
         // Dragging a data point
         if (MouseDragMode::DataPoint == dragMode) 
         {
-            //assert(movePoint >= 0 && movePoint < this->data->vertexCoordinatesF.size());
+            //assert(movePoint >= 0 && movePoint < this->data.vertexCoordinatesF.size());
 
-            //float fValue = this->data->minF + (mouseTransformedPoint.x() / resolution) * (this->data->maxF - this->data->minF);
-            //float gValue = this->data->minG + (mouseTransformedPoint.y() / resolution) * (this->data->maxG - this->data->minG);
+            //float fValue = this->data.minF + (mouseTransformedPoint.x() / resolution) * (this->data.maxF - this->data.minF);
+            //float gValue = this->data.minG + (mouseTransformedPoint.y() / resolution) * (this->data.maxG - this->data.minG);
 
-            //this->data->vertexCoordinatesF[movePoint] = fValue;
-            //this->data->vertexCoordinatesG[movePoint] = gValue;
+            //this->data.vertexCoordinatesF[movePoint] = fValue;
+            //this->data.vertexCoordinatesG[movePoint] = gValue;
         }
 
         // Draggin a vertex
@@ -231,7 +231,7 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
     const QPointF clickPoint = event->localPos();
 #endif
 
-    auto &mousePoints = this->data->mousePoints;
+    auto &mousePoints = this->data.mousePoints;
 
     // 0 is outside the fscp, 1 in on a vertex of the fscp, 2 is inside the fscp
     enum ClickLocation
@@ -310,23 +310,23 @@ PlotWidget::mousePressEvent(QMouseEvent* event)
 void PlotWidget::drawBackground(QPainter &p)
 {
 
-    for (const auto &[sheetId, polygon] : data->reebSpace.sheetPolygon)
+    for (const auto &[sheetId, polygon] : data.reebSpace.sheetPolygon)
     {
         QVector<QPoint> points;
 
         // If the sheet is incomplete, the polygon will not be corret, just draww all the faces manually
-        if (data->reebSpace.incompleteSheets.contains(sheetId))
+        if (data.reebSpace.incompleteSheets.contains(sheetId))
         {
 
             // Loop through all faces to see which ones are in the sheet
-            for (auto f = data->arrangement.arr.faces_begin(); f != data->arrangement.arr.faces_end(); ++f) 
+            for (auto f = data.arrangement.arr.faces_begin(); f != data.arrangement.arr.faces_end(); ++f) 
             {
-                const int currentFaceID = data->arrangement.arrangementFacesIdices[f];
+                const int currentFaceID = data.arrangement.arrangementFacesIdices[f];
 
                 // For each fiber component in the face, see if one of those is in our sheet
-                for (const auto &[triangleId, fiberComponentId] : this->data->reebSpace.fiberSeeds[currentFaceID])
+                for (const auto &[triangleId, fiberComponentId] : this->data.reebSpace.fiberSeeds[currentFaceID])
                 {
-                    const int componentSheetId = data->reebSpace.reebSpace.findTriangle({currentFaceID, fiberComponentId});
+                    const int componentSheetId = data.reebSpace.reebSpace.findTriangle({currentFaceID, fiberComponentId});
 
                     // Now we can add the polygon
                     if (componentSheetId == sheetId)
@@ -341,8 +341,8 @@ void PlotWidget::drawBackground(QPainter &p)
                             const float v = CGAL::to_double(e->source()->point().y());
 
                             // Translate to the window frame
-                            const float u1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (u - data->tetMesh.minF);
-                            const float v1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (v - data->tetMesh.minG);
+                            const float u1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (u - data.tetMesh.minF);
+                            const float v1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (v - data.tetMesh.minG);
 
 
                             // Add to the polygon
@@ -365,8 +365,8 @@ void PlotWidget::drawBackground(QPainter &p)
                 const float v = point.y();
 
                 // Translate to the window frame
-                const float u1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (u - data->tetMesh.minF);
-                const float v1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (v - data->tetMesh.minG);
+                const float u1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (u - data.tetMesh.minF);
+                const float v1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (v - data.tetMesh.minG);
 
 
                 // Add to the polygon
@@ -376,26 +376,26 @@ void PlotWidget::drawBackground(QPainter &p)
 
         QPolygon qPolygon(points);
 
-        const int colourID = data->reebSpace.sheetToColour[sheetId];
-        const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+        const int colourID = data.reebSpace.sheetToColour[sheetId];
+        const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
 
         p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
         p.setPen(Qt::NoPen);
         p.drawPolygon(qPolygon);
     }
 
-    //for (int i = 0 ; i < this->data->fiberSeeds.size() ; i++) 
+    //for (int i = 0 ; i < this->data.fiberSeeds.size() ; i++) 
     //{
         //const int currentFaceID = i;
 
         //// For each fiber component
-        //for (int j = 0 ; j < this->data->fiberSeeds[i].size() ; j++) 
+        //for (int j = 0 ; j < this->data.fiberSeeds[i].size() ; j++) 
         //{
             ////const auto &[]
-            //const auto &[triangleId, fiberComponentId] = this->data->fiberSeeds[i][j];
-            //const int sheetId = this->data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
-            //const int colourID = data->sheetToColour[sheetId];
-            //const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+            //const auto &[triangleId, fiberComponentId] = this->data.fiberSeeds[i][j];
+            //const int sheetId = this->data.reebSpace.findTriangle({currentFaceID, fiberComponentId});
+            //const int colourID = data.sheetToColour[sheetId];
+            //const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
 
             //p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
             //p.setPen(Qt::NoPen);
@@ -404,18 +404,18 @@ void PlotWidget::drawBackground(QPainter &p)
     //}
 
     // We assume that the fiber seeds per face are sorted by their sheetId
-    //for (int i = 0 ; i < this->data->fiberSeeds.size() ; i++) 
+    //for (int i = 0 ; i < this->data.fiberSeeds.size() ; i++) 
     //{
         //const int currentFaceID = i;
 
         //// For each fiber component
-        //for (int j = 0 ; j < this->data->fiberSeeds[i].size() ; j++) 
+        //for (int j = 0 ; j < this->data.fiberSeeds[i].size() ; j++) 
         //{
             ////const auto &[]
-            //const auto &[triangleId, fiberComponentId] = this->data->fiberSeeds[i][j];
-            //const int sheetId = this->data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
-            //const int colourID = data->sheetToColour[sheetId];
-            //const vector<float> colorF = data->fiberColours[colourID % data->fiberColours.size()];
+            //const auto &[triangleId, fiberComponentId] = this->data.fiberSeeds[i][j];
+            //const int sheetId = this->data.reebSpace.findTriangle({currentFaceID, fiberComponentId});
+            //const int colourID = data.sheetToColour[sheetId];
+            //const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
 
             //p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
             //p.setPen(Qt::NoPen);
@@ -445,7 +445,7 @@ void PlotWidget::drawBackground(QPainter &p)
     //
     // Draw the Jacobi set
     //
-    for (const auto &[edge, type] : data->jacobiType)
+    for (const auto &[edge, type] : data.jacobiType)
     {
         if (type != 1)
         {
@@ -459,11 +459,11 @@ void PlotWidget::drawBackground(QPainter &p)
                 p.setPen(QPen(Qt::black, 0.2));
             }
 
-            float x1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.first] - data->tetMesh.minF);
-            float y1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.first] - data->tetMesh.minG);
+            float x1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.first] - data.tetMesh.minF);
+            float y1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.first] - data.tetMesh.minG);
 
-            float x2 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.second] - data->tetMesh.minF);
-            float y2 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.second] - data->tetMesh.minG);
+            float x2 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.second] - data.tetMesh.minF);
+            float y2 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.second] - data.tetMesh.minG);
 
             p.setRenderHint(QPainter::Antialiasing, true);
             p.drawLine(x1, y1, x2, y2);
@@ -471,13 +471,13 @@ void PlotWidget::drawBackground(QPainter &p)
     }
 
     // Draw all edges
-    for (const auto &[edge, type] : data->tetMesh.edges)
+    for (const auto &[edge, type] : data.tetMesh.edges)
     {
-        float x1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.first] - data->tetMesh.minF);
-        float y1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.first] - data->tetMesh.minG);
+        float x1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.first] - data.tetMesh.minF);
+        float y1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.first] - data.tetMesh.minG);
 
-        float x2 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[edge.second] - data->tetMesh.minF);
-        float y2 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[edge.second] - data->tetMesh.minG);
+        float x2 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.second] - data.tetMesh.minF);
+        float y2 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.second] - data.tetMesh.minG);
 
         if (type == 0)
         {
@@ -499,11 +499,11 @@ void PlotWidget::drawBackground(QPainter &p)
 
 
     // Draw all the vertex coordinates
-    for(size_t i = 0 ; i <  this->data->tetMesh.vertexCoordinatesF.size() ; i++)
+    for(size_t i = 0 ; i <  this->data.tetMesh.vertexCoordinatesF.size() ; i++)
     {
 
-        float x1 = (resolution / (data->tetMesh.maxF - data->tetMesh.minF)) * (this->data->tetMesh.vertexCoordinatesF[i] - data->tetMesh.minF);
-        float y1 = (resolution / (data->tetMesh.maxG - data->tetMesh.minG)) * (this->data->tetMesh.vertexCoordinatesG[i] - data->tetMesh.minG);
+        float x1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[i] - data.tetMesh.minF);
+        float y1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[i] - data.tetMesh.minG);
 
         p.setPen(QPen(Qt::black, 6, Qt::SolidLine));
         p.setBrush(Qt::white);           // Fill color
@@ -613,10 +613,10 @@ PlotWidget::drawAxisLabels(QPainter& p)
     //
     float step = resolution / 15;
 
-    float xMin = data->tetMesh.minF;
-    float yMin = data->tetMesh.minG;
-    float xMax = data->tetMesh.maxF;
-    float yMax = data->tetMesh.maxG;
+    float xMin = data.tetMesh.minF;
+    float yMin = data.tetMesh.minG;
+    float xMax = data.tetMesh.maxF;
+    float yMax = data.tetMesh.maxG;
     float xRange = xMax - xMin;
     float yRange = yMax - yMin;
     float a = 10.0;
@@ -690,8 +690,8 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Vertical (constant X)
     for (const auto number : this->verticalLineNumbers) {
-        if (data->tetMesh.minF < number && number < data->tetMesh.maxF) {
-            float ratio = (number - data->tetMesh.minF) / ((data->tetMesh.maxF - data->tetMesh.minF));
+        if (data.tetMesh.minF < number && number < data.tetMesh.maxF) {
+            float ratio = (number - data.tetMesh.minF) / ((data.tetMesh.maxF - data.tetMesh.minF));
             float plotPosition = ratio * (resolution);
             p.drawLine(plotPosition, resolution - boxOffset - 20000, plotPosition, resolution - boxOffset);
         }
@@ -699,9 +699,9 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Horizontal (constant Y)
     for (const auto number : this->horizontalLineNumbers) {
-        if (data->tetMesh.minG < number && number < data->tetMesh.maxG) {
+        if (data.tetMesh.minG < number && number < data.tetMesh.maxG) {
             // Invert the y axis
-            float ratio = 1.0 - (number - data->tetMesh.minG) / ((data->tetMesh.maxG - data->tetMesh.minG));
+            float ratio = 1.0 - (number - data.tetMesh.minG) / ((data.tetMesh.maxG - data.tetMesh.minG));
             float plotPosition = ratio * (resolution);
             p.drawLine(boxOffset, plotPosition, boxOffset + 2000, plotPosition);
         }
@@ -716,7 +716,7 @@ PlotWidget::drawAxisLabels(QPainter& p)
     // x label
     p.drawText(resolution / 2 - 30,
             resolution - boxOffset + 10,
-            QString::fromStdString(data->tetMesh.longnameF) + " (" + QString::fromStdString(data->tetMesh.units) +
+            QString::fromStdString(data.tetMesh.longnameF) + " (" + QString::fromStdString(data.tetMesh.units) +
             ")");
 
     p.translate(boxOffset - 5, resolution / 2 + 20);
@@ -724,14 +724,14 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // y label
     p.drawText(
-            0, 0, QString::fromStdString(data->tetMesh.longnameG) + " (" + QString::fromStdString(data->tetMesh.units) + ")");
+            0, 0, QString::fromStdString(data.tetMesh.longnameG) + " (" + QString::fromStdString(data.tetMesh.units) + ")");
 }
 
     void
 PlotWidget::drawAndRecomputeFS(QPainter& p)
 {
 
-    auto &mousePoints = this->data->mousePoints;
+    auto &mousePoints = this->data.mousePoints;
 
     // Only recompute the polygon if we have a new point
     polyPoints.erase(polyPoints.begin(), polyPoints.end());
@@ -789,7 +789,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
     // Leave a trail of fibers or not
     //if (dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers == true)
     //{
-        //this->data->faceFibers.clear();
+        //this->data.faceFibers.clear();
     //}
 
     // If we have selected a point in the scatterplot, compute the fiber surface
@@ -798,8 +798,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         this->recomputeFiber = false;
 
         // Reside to the original range data dimensions
-        float u = this->data->tetMesh.minF + (polyPoints[0].x() / resolution) * (this->data->tetMesh.maxF - this->data->tetMesh.minF);
-        float v = this->data->tetMesh.minG + (polyPoints[0].y() / resolution) * (this->data->tetMesh.maxG - this->data->tetMesh.minG);
+        float u = this->data.tetMesh.minF + (polyPoints[0].x() / resolution) * (this->data.tetMesh.maxF - this->data.tetMesh.minF);
+        float v = this->data.tetMesh.minG + (polyPoints[0].y() / resolution) * (this->data.tetMesh.maxG - this->data.tetMesh.minG);
 
         const int currentFiberColour = 0;
         // Compute all tet exit points
@@ -807,22 +807,22 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         qDebug() << "Computing fiber ...";
 
         //Timer::start();
-        //this->data->computeTetExitPoints(u, v, data->fiberColours[currentFiberColour]);
+        //this->data.computeTetExitPoints(u, v, data.fiberColours[currentFiberColour]);
         //Timer::stop("Computed fiber                         :");
 
         //Timer::start();
-        ////this->data->computeTetExitPoints(u, v, data->fiberColours[currentFiberColour]);
+        ////this->data.computeTetExitPoints(u, v, data.fiberColours[currentFiberColour]);
         //Timer::stop("Computed fiber old                     :");
         //qDebug() << "Next ...";
 
         //Timer::start();
-        //this->data->computeTetExitPointsNew(u, v, data->fiberColours[currentFiberColour]);
+        //this->data.computeTetExitPointsNew(u, v, data.fiberColours[currentFiberColour]);
         //Timer::stop("Computed fiber new                     :");
         //qDebug() << "Next ...";
 
         //Timer::start();
         const bool clearFibers = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers;
-        this->data->computeTetExitPointsNewNew(u, v, clearFibers, -1, data->fiberColours[currentFiberColour]);
+        this->data.computeTetExitPointsNewNew(u, v, clearFibers, -1, data.fiberColours[currentFiberColour]);
         //Timer::stop("Computed fiber new new                 :");
         //qDebug() << "......";
 

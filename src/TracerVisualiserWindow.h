@@ -14,12 +14,13 @@ class TracerVisualiserWindow : public QWidget
 {
     Q_OBJECT
   public:
-    TracerVisualiserWindow(QWidget*, Data*);
+    Data &data;
+    TracerVisualiserWindow(QWidget*, Data &);
+
     ~TracerVisualiserWindow();
 
     void keyPressEvent(QKeyEvent* event);
 
-    Data* data;
 
     PlotWidget* plotWidget;
     TracerVisualiserWidget* tracerVisualiserWidget;

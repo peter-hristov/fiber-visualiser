@@ -20,7 +20,8 @@ class TracerVisualiserWidget : public QOpenGLWidget
   Q_OBJECT 
 
   public:
-    TracerVisualiserWidget(QWidget*, QWidget*, Data*);
+    Data &data;
+    TracerVisualiserWidget(QWidget*, QWidget*, Data&);
     GLfloat scale = 0;
 
     //bool drawEdges = false;
@@ -84,7 +85,6 @@ class TracerVisualiserWidget : public QOpenGLWidget
     void keyPressEvent(QKeyEvent* event);
 
   private:
-    Data* data;
     QWidget* sibling;
 
     // Arcball stuff

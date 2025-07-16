@@ -11,7 +11,7 @@ using namespace std;
 void
 TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 {
-    if (this->data->mousePoints.empty())
+    if (this->data.mousePoints.empty())
         return;
 
     int speed = 2;
@@ -21,22 +21,22 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
     }
 
     if (event->key() == Qt::Key_I) {
-        this->data->mousePoints[0].setY(this->data->mousePoints[0].y() - speed);
+        this->data.mousePoints[0].setY(this->data.mousePoints[0].y() - speed);
         this->plotWidget->recomputeFiber = true;
         this->update();
     }
     if (event->key() == Qt::Key_J) {
-        this->data->mousePoints[0].setX(this->data->mousePoints[0].x() - speed);
+        this->data.mousePoints[0].setX(this->data.mousePoints[0].x() - speed);
         this->plotWidget->recomputeFiber = true;
         this->update();
     }
     if (event->key() == Qt::Key_K) {
-        this->data->mousePoints[0].setY(this->data->mousePoints[0].y() + speed);
+        this->data.mousePoints[0].setY(this->data.mousePoints[0].y() + speed);
         this->plotWidget->recomputeFiber = true;
         this->update();
     }
     if (event->key() == Qt::Key_L) {
-        this->data->mousePoints[0].setX(this->data->mousePoints[0].x() + speed);
+        this->data.mousePoints[0].setX(this->data.mousePoints[0].x() + speed);
         this->plotWidget->recomputeFiber = true;
         this->update();
     }
@@ -58,24 +58,22 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_C) {
         this->tracerVisualiserWidget->clearFibers = !this->tracerVisualiserWidget->clearFibers;
         this->tracerVisualiserWidget->update();
-        this->data->faceFibers.clear();
+        this->data.faceFibers.clear();
     }
 
     if (event->key() == Qt::Key_H) {
-        this->data->printSheetHistogram();
+        this->data.printSheetHistogram();
     }
     if (event->key() == Qt::Key_S) {
-        this->data->saveFibers();
+        this->data.saveFibers();
     }
 
 }
 
-TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent,
-                                               Data* _data
-                                               )
-  : QWidget(parent)
+TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent, Data &_data)
+    : QWidget(parent)
+      , data(_data)    // <-- initialize reference here
 {
-    this->data = _data;
 
     // Initialise Widgets
     plotWidget = new PlotWidget(this, data, "none");

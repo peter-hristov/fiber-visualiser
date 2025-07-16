@@ -41,6 +41,11 @@ class Data
     Arrangement arrangement;
     ReebSpace reebSpace;
 
+    Data(TetMesh&& tm, Arrangement&& a, ReebSpace&& rs): 
+        tetMesh(std::move(tm)),
+        arrangement(std::move(a)),
+        reebSpace(std::move(rs)) 
+    {}
 
     //std::set<std::pair<std::set<int>, std::vector<int>>> adjacentTriangles;
     //std::map<std::set<int>, std::vector<std::set<int>>> adjacentTriangles;

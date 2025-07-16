@@ -17,9 +17,6 @@ cmake -DCMAKE_PREFIX_PATH="/home/peter/Projects/libraries/cgal/install;/home/pet
 make
 
 
-
-
-
 # Test
 
 make && ./fv99 -f ../data/three-sheet-toy.txt

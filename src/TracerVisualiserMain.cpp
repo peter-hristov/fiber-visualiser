@@ -10,6 +10,7 @@
 #include "./ReebSpace.h"
 #include "./CGALTypedefs.h"
 #include "./utility/CLI11.hpp"
+#include "src/Arrangement.h"
 #include "src/io.h"
 
 using namespace std;
@@ -56,80 +57,38 @@ int main(int argc, char* argv[])
     //
     // Read, perturb and sort the indices of the vertices lexicographically (by their range position).
     //
-    Data *data = new Data();
-
+    //TetMesh tetMesh;
+    Data data;
     try
     {
-        data->tetMesh = io::readData(filename);
+        data.tetMesh = io::readData(filename);
     }
     catch (const std::exception &e)
     {
         std::cerr << "Error: " << e.what() << '\n';
     }
 
-    data->tetMesh.perturbRangeValues(perturbationEpsilon);
-    data->tetMesh.sortVertices();
+    data.tetMesh.perturbRangeValues(perturbationEpsilon);
+    data.tetMesh.sortVertices();
+    data.tetMesh.computeMinMaxRangeDomainCoordinates();
+    data.tetMesh.computeUpperLowerLink();
+    data.tetMesh.computeTriangleAdjacency();
 
-    // Compute bounding the box of the data in the domain and in the range.
-    data->tetMesh.computeMinMaxRangeDomainCoordinates();
+    //Arrangement arrangement;
+    data.arrangement.computeArrangement(data.tetMesh);
 
-    // Compute the 2D arrangement
-    data->arrangement.computeArrangement(data->tetMesh);
-
-    //std::cout << "Press Enter to continue...";
-    //std::cin.get();  // waits for Enter key
-
+    //ReebSpace reebSpace;
     Timer::start();
-    data->tetMesh.computeUpperLowerLink();
-    Timer::stop("Computed upper and lower link          :");
-
-    Timer::start();
-    data->tetMesh.computeTriangleAdjacency();
-    Timer::stop("Computed triangle adjacency            :");
-
-
-    //cout << "Triangles to Index " << endl;
-    //for (const auto &[triangle, triangleId] : data->triangleToIndex)
-    //{
-        //cout << "Triangle = ";
-        //for (const auto v : triangle)
-        //{
-            //cout << v << " ";
-        //}
-        //cout << "  ID = " << triangleId << endl;
-    //}
-
-    //cout << "\n\nIndex to triangle" << endl;
-    //for (int i = 0 ; i < data->indexToTriangle.size() ; i++)
-    //{
-        //cout << "  ID = " << i << " ";
-
-        //cout << "Triangle = ";
-        //for (const auto v : data->indexToTriangle[i])
-        //{
-            //cout << v << " ";
-        //}
-
-        //cout << endl;
-    //}
-
-
-    //Timer::start();
-    //ReebSpace::testTraverseArrangement(data);
-    //Timer::stop("Computed empty traversal               :");
-
-    Timer::start();
-    data->reebSpace.computePreimageGraphs(data->tetMesh, data->arrangement, discardFiberSeeds);
+    data.reebSpace.computePreimageGraphs(data.tetMesh, data.arrangement, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
 
-    //Timer::start();
-    //ReebSpace::computeCorrespondenceGraph(data);
-    //Timer::stop("Computed H                             :");
-
     std::cout << "Postprocessing..." << std::endl;
-    //Timer::start();
-    data->reebSpace.computeReebSpacePostprocess(data->tetMesh, data->arrangement);
-    //Timer::stop("Computed RS(f) Postprocess             :");
+    Timer::start();
+    data.reebSpace.computeReebSpacePostprocess(data.tetMesh, data.arrangement);
+    Timer::stop("Computed RS(f) Postprocess             :");
+
+    // Package all my data for visualisation
+    //Data data(std::move(tetMesh), std::move(arrangement), std::move(reebSpace));
 
     //std::cout << "Press Enter to continue...";
     //std::cin.get();  // waits for Enter key
@@ -147,9 +106,9 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        outFile << data->reebSpace.sheetPolygon.size() << std::endl;
+        outFile << data.reebSpace.sheetPolygon.size() << std::endl;
 
-        for (const auto &[sheetId, polygon] : data->reebSpace.sheetPolygon)
+        for (const auto &[sheetId, polygon] : data.reebSpace.sheetPolygon)
         {
             outFile << "SheetId = " << sheetId << std::endl;
 
@@ -195,12 +154,12 @@ int main(int argc, char* argv[])
 
 
     Timer::start();
-    data->pl = std::make_unique<Point_location>(data->arrangement.arr);
+    data.pl = std::make_unique<Point_location>(data.arrangement.arr);
     Timer::stop("Arrangement search structure           :");
 
     if (false == outputSheetFibersFolder.empty())
     {
-        data->generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
+        data.generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
     }
 
     //ReebSpace::countIntersectionsTypes(data);
@@ -217,7 +176,6 @@ int main(int argc, char* argv[])
     // Make the window full screen by default
     window->showMaximized();
 
-
     // Show the label
     window->show();
 
@@ -226,7 +184,6 @@ int main(int argc, char* argv[])
 
     // clean up
     delete window;
-    delete data;
 
     // return to caller
     return 0;
