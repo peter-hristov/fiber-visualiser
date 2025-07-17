@@ -229,32 +229,26 @@ void io::saveSheets(const TetMesh &tetMesh, const Arrangement &arrangement, cons
         // Compute the controid so that we can pull all verties towards it
         CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
 
-        // To make sure we don't write a comma at the end of the array
-        int pointsWritten = 0;
-
         outFile << "[";
-        for (const CartesianPoint &point : polygon) 
+        for (int i = 0 ; i < polygon.size() ; i++)
         {
-            // Get point from CGAL (and convert to double )
-            float u = point.x();
-            float v = point.y();
+            const CartesianPoint &point = polygon[i];
+            double u = point.x();
+            double v = point.y();
 
             // Interpolate closer to the centroid
-            float alpha = 0.5;
+            const double alpha = 0.5;
             u = (1 - alpha) * u + alpha * centroid.x();
-            v = (1 - alpha) * v + alpha * centroid.x();
+            v = (1 - alpha) * v + alpha * centroid.y();
 
             outFile << u << ", " << v << ", " << 0;
-            if (pointsWritten < polygon.size() - 1)
+            if (i < polygon.size() - 1)
             {
                 outFile << ", ";
 
             }
-
-            pointsWritten++;
         }
         outFile << "]" << std::endl;
-
     }
 
     outFile.close();
