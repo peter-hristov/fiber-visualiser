@@ -205,3 +205,57 @@ TetMesh io::readDataTxt(const std::string &filename)
 
     return tetMesh;
 }
+
+
+
+void io::saveSheets(const TetMesh &tetMesh, const Arrangement &arrangement, const ReebSpace &reebSpace, const std::string &outputSheetPolygonsFilename)
+{
+    // Save all the polygons
+    std::filesystem::path filePathOutput(outputSheetPolygonsFilename);
+
+    // Write to the file
+    std::ofstream outFile(filePathOutput);
+    if (!outFile) 
+    {
+        throw std::runtime_error("Error: Could not open file for writing: " + filePathOutput.string());
+    }
+
+    outFile << reebSpace.sheetPolygon.size() << std::endl;
+
+    for (const auto &[sheetId, polygon] : reebSpace.sheetPolygon)
+    {
+        outFile << "SheetId = " << sheetId << std::endl;
+
+        // Compute the controid so that we can pull all verties towards it
+        CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
+
+        // To make sure we don't write a comma at the end of the array
+        int pointsWritten = 0;
+
+        outFile << "[";
+        for (const CartesianPoint &point : polygon) 
+        {
+            // Get point from CGAL (and convert to double )
+            float u = point.x();
+            float v = point.y();
+
+            // Interpolate closer to the centroid
+            float alpha = 0.5;
+            u = (1 - alpha) * u + alpha * centroid.x();
+            v = (1 - alpha) * v + alpha * centroid.x();
+
+            outFile << u << ", " << v << ", " << 0;
+            if (pointsWritten < polygon.size() - 1)
+            {
+                outFile << ", ";
+
+            }
+
+            pointsWritten++;
+        }
+        outFile << "]" << std::endl;
+
+    }
+
+    outFile.close();
+}

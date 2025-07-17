@@ -54,9 +54,7 @@ int main(int argc, char* argv[])
         discardFiberSeeds = true;
     }
 
-    //
     // Read, perturb and sort the indices of the vertices lexicographically (by their range position).
-    //
     TetMesh tetMesh;
     try
     {
@@ -65,6 +63,7 @@ int main(int argc, char* argv[])
     catch (const std::exception &e)
     {
         std::cerr << "Error: " << e.what() << '\n';
+        return 1;
     }
 
     tetMesh.perturbRangeValues(perturbationEpsilon);
@@ -82,8 +81,8 @@ int main(int argc, char* argv[])
     arrangement.computePointLocationDataStructure();
     Timer::stop("Arrangement search structure           :");
 
-    ReebSpace reebSpace;
     Timer::start();
+    ReebSpace reebSpace;
     reebSpace.computePreimageGraphs(tetMesh, arrangement, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
 
@@ -92,62 +91,19 @@ int main(int argc, char* argv[])
     reebSpace.computeReebSpacePostprocess(tetMesh, arrangement);
     Timer::stop("Computed RS(f) Postprocess             :");
 
-    // Package all my data for visualisation
-    Data data(tetMesh, arrangement, reebSpace);
-
 
     // Save all the polygons
     if (false == outputSheetPolygonsFilename.empty())
     {
-        std::filesystem::path filePathOutput(outputSheetPolygonsFilename);
-
-        // Write to the file
-        std::ofstream outFile(filePathOutput);
-        if (!outFile) 
+        try
         {
-            std::cerr << "Error: Could not open file for writing: " << filePathOutput << std::endl;
+            io::saveSheets(tetMesh, arrangement, reebSpace, outputSheetPolygonsFilename);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Error: " << e.what() << '\n';
             return 1;
         }
-
-        outFile << data.reebSpace.sheetPolygon.size() << std::endl;
-
-        for (const auto &[sheetId, polygon] : data.reebSpace.sheetPolygon)
-        {
-            outFile << "SheetId = " << sheetId << std::endl;
-
-
-            // Compute the controid so that we can pull all verties towards it
-            CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
-
-            // To make sure we don't write a comma at the end of the array
-            int pointsWritten = 0;
-
-            outFile << "[";
-            for (const CartesianPoint &point : polygon) 
-            {
-                // Get point from CGAL (and convert to double )
-                float u = point.x();
-                float v = point.y();
-
-                // Interpolate closer to the centroid
-                float alpha = 0.5;
-                u = (1 - alpha) * u + alpha * centroid.x();
-                v = (1 - alpha) * v + alpha * centroid.x();
-
-                outFile << u << ", " << v << ", " << 0;
-                if (pointsWritten < polygon.size() - 1)
-                {
-                    outFile << ", ";
-
-                }
-
-                pointsWritten++;
-            }
-            outFile << "]" << std::endl;
-
-        }
-
-        outFile.close();
     }
 
     if (performanceRun == true)
@@ -156,6 +112,8 @@ int main(int argc, char* argv[])
     }
 
 
+    // Package all my data for visualisation
+    Data data(tetMesh, arrangement, reebSpace);
 
     if (false == outputSheetFibersFolder.empty())
     {
