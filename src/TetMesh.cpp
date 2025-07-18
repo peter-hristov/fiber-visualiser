@@ -408,7 +408,7 @@ void TetMesh::computeTriangleAdjacency()
 
     std::set<std::set<int>> allTriangles;
 
-    for (const std::vector<size_t> tet : this->tetrahedra)
+    for (const std::array<size_t, 4> tet : this->tetrahedra)
     {
         // The triangles of the tet
         std::set<std::set<int>> triangles;
@@ -444,7 +444,7 @@ void TetMesh::computeTriangleAdjacency()
 
 
     // Compute the adjacency of triangles in the mesh, two triangles are adjacent when they are the faces of the same tet
-    for (const std::vector<size_t> tet : this->tetrahedra)
+    for (const std::array<size_t, 4> tet : this->tetrahedra)
     {
         // The triangles of the tet
         std::set<std::set<int>> triangles;

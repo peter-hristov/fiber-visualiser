@@ -25,7 +25,7 @@ class TetMesh
     std::string longnameF, longnameG, units;
 
     // Tets, edges, triangles, etc
-    std::vector<std::vector<size_t>> tetrahedra;
+    std::vector<std::array<size_t, 4>> tetrahedra;
 
     std::vector<std::array<int, 2>> edges;
     std::map<std::array<int, 2>, int> edgeSingularTypes;
