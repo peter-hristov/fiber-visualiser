@@ -29,6 +29,21 @@ struct MyHash<std::pair<int, int>>
     }
 };
 
+template <std::size_t N>
+struct MyHash<std::array<int, N>>
+{
+    std::size_t operator()(const std::array<int, N>& arr) const
+    {
+        std::size_t h = 0;
+        for (int x : arr)
+        {
+            std::size_t hx = std::hash<int>{}(x);
+            h ^= hx + 0x9e3779b9 + (h << 6) + (h >> 2);
+        }
+        return h;
+    }
+};
+
 template <>
 struct MyHash<std::set<int>>
 {

@@ -135,7 +135,7 @@ void TetMesh::printMesh()
 }
 
 
-void TetMesh::computeUpperLowerLink()
+void TetMesh::computeSingularEdgeTypes()
 {
     // For every edge, save the edges in its link
     std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> linkEdges;
@@ -175,15 +175,7 @@ void TetMesh::computeUpperLowerLink()
                     // If the currect vertex is not one of two used to define the edge
                     if (vIndex != aIndex && vIndex != bIndex) 
                     {
-                        const bool isUpperLink = this->isUpperLinkEdgeVertex(aIndex, bIndex, vIndex);
-
                         linkVerticesInTet.push_back(vIndex);
-
-                        if (true == isUpperLink) {
-                            this->upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
-                        } else {
-                            this->lowerLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
-                        }
                     }
                 }
 
@@ -265,6 +257,54 @@ void TetMesh::computeUpperLowerLink()
         else
         {
             type = 2;
+        }
+    }
+
+}
+void TetMesh::computeUpperLowerLinkVertices()
+{
+    for (int i = 0 ; i <  this->tetrahedra.size() ; i++)
+    {
+        const auto &tet = this->tetrahedra[i];
+
+        // All pairs give you all six edges
+        for (int a = 0 ; a < 4 ; a++)
+        {
+            for (int b = a + 1 ; b < 4 ; b++)
+            {
+                // Get the indices of the vertices for the edge
+                int aIndex = tet[a];
+                int bIndex = tet[b];
+
+                // Make sure the vertices of the edge are in sorted order to have consistent orientation
+                if (aIndex > bIndex)
+                {
+                    std::swap(aIndex, bIndex);
+                }
+
+                const std::pair<int, int> edge = {aIndex, bIndex};
+
+                // Add to the list of edge, initially all as regular
+                this->edges[edge] = 1;
+
+                // Search though the other two unused vertices
+                for (int v = 0 ; v < 4 ; v++)
+                {
+                    const int vIndex = tet[v];
+
+                    // If the currect vertex is not one of two used to define the edge
+                    if (vIndex != aIndex && vIndex != bIndex) 
+                    {
+                        const bool isUpperLink = this->isUpperLinkEdgeVertex(aIndex, bIndex, vIndex);
+
+                        if (true == isUpperLink) {
+                            this->upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
+                        } else {
+                            this->lowerLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -58,7 +58,8 @@ class TetMesh
 
 
     // We only add upperLink/lowerLink to data, the rest of data is unchagned
-    void computeUpperLowerLink();
+    void computeUpperLowerLinkVertices();
+    void computeSingularEdgeTypes();
     // We only add upperLink/lowerLink to data, the rest of data is unchagned
     void computeTriangleAdjacency();
 
