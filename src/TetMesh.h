@@ -31,8 +31,8 @@ class TetMesh
     std::map<std::array<int, 2>, int> edgeSingularTypes;
 
 
-    std::vector<std::set<int>> indexToTriangle;
-    std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleToIndex;
+    std::vector<std::set<int>> triangles;
+    std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleIndices;
 
 
     // What does this do again?

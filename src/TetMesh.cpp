@@ -309,10 +309,10 @@ void TetMesh::computeUpperLowerLinkVertices()
 
                         if (true == isUpperLink) {
                             this->upperLink[edge].insert(vIndex);
-                            this->upperStarTriangles[edge].insert(triangleToIndex.at({aIndex, bIndex, vIndex}));
+                            this->upperStarTriangles[edge].insert(triangleIndices.at({aIndex, bIndex, vIndex}));
                         } else {
                             this->lowerLink[edge].insert(vIndex);
-                            this->lowerStarTriangles[edge].insert(triangleToIndex.at({aIndex, bIndex, vIndex}));
+                            this->lowerStarTriangles[edge].insert(triangleIndices.at({aIndex, bIndex, vIndex}));
                         }
                     }
                 }
@@ -435,8 +435,8 @@ void TetMesh::computeTriangleAdjacency()
 
     for (const std::set<int> triangle : allTriangles)
     {
-        this->indexToTriangle.push_back(triangle);
-        this->triangleToIndex[triangle] = this->indexToTriangle.size() - 1;
+        this->triangles.push_back(triangle);
+        this->triangleIndices[triangle] = this->triangles.size() - 1;
     }
 
     this->adjacentTrianglesIndex.resize(allTriangles.size());
@@ -475,8 +475,8 @@ void TetMesh::computeTriangleAdjacency()
                 // Insert the pair into the set
                 this->connectedTriangles.insert(pairOfTriangles);
 
-                int t1Index = this->triangleToIndex[t1];
-                int t2Index = this->triangleToIndex[t2];
+                int t1Index = this->triangleIndices[t1];
+                int t2Index = this->triangleIndices[t2];
 
                 this->adjacentTrianglesIndex[t1Index].push_back(t2Index);
                 this->adjacentTrianglesIndex[t2Index].push_back(t1Index);

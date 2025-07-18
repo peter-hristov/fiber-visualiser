@@ -335,7 +335,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
 
         const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetToColour[currentSheeId] % this->fiberColours.size()];
 
-        const set<int> triangleUnpacked = this->tetMesh.indexToTriangle[currentTriangleId];
+        const set<int> triangleUnpacked = this->tetMesh.triangles[currentTriangleId];
         const vector<int> triangleIndices = std::vector<int>(triangleUnpacked.begin(), triangleUnpacked.end());
 
         std::array<double, 3> barycentricCoordinatesCurrent;
@@ -367,7 +367,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
             // We can't skip visited neighbours, because there may be a fiber between us (completing a circle)
             //if (triangleColour.contains(neighbourTriagle)) { continue; }
 
-            const set<int> triangle2Unpacked = this->tetMesh.indexToTriangle[neighbourTriagleId];
+            const set<int> triangle2Unpacked = this->tetMesh.triangles[neighbourTriagleId];
             const vector<int> triangle2Indices = std::vector<int>(triangle2Unpacked.begin(), triangle2Unpacked.end());
 
 
@@ -524,8 +524,8 @@ void Data::computeTetExitPointsNew(const GLfloat u, const GLfloat v, const std::
             j++;
             if (j <= i) { continue; }
 
-            const set<int> triangleUnpacked = this->tetMesh.indexToTriangle[triangle];
-            const set<int> triangle2Unpacked = this->tetMesh.indexToTriangle[triangle2];
+            const set<int> triangleUnpacked = this->tetMesh.triangles[triangle];
+            const set<int> triangle2Unpacked = this->tetMesh.triangles[triangle2];
 
             if (this->tetMesh.connectedTriangles.contains({triangleUnpacked, triangle2Unpacked}))
             {
@@ -725,7 +725,7 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
 
                         // Which sheets does this fiber belong to?
                         // 1. Triangle -> Face ComponentID
-                        const int triangleID = this->tetMesh.triangleToIndex[std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC})];
+                        const int triangleID = this->tetMesh.triangleIndices[std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC})];
                         const int componentID = this->reebSpace.preimageGraphs[currentFaceID].findTriangle(triangleID);
                         //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
 
