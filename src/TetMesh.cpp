@@ -15,57 +15,45 @@ void TetMesh::perturbRangeValues(const float &epsilon)
     }
 }
 
-void TetMesh::computeMinMaxRangeDomainCoordinates()
+void TetMesh::computeDomainBoundingBox()
 {
-    // Compute the min/max domain coordinates
-    this->minX = this->vertexDomainCoordinates[0][0];
-    this->maxX = this->vertexDomainCoordinates[0][0];
+    assert(!vertexDomainCoordinates.empty() && vertexDomainCoordinates[0].size() == 3);
 
-    this->minY = this->vertexDomainCoordinates[0][1];
-    this->maxY = this->vertexDomainCoordinates[0][1];
+    const auto &first = vertexDomainCoordinates[0];
+    minX = maxX = first[0];
+    minY = maxY = first[1];
+    minZ = maxZ = first[2];
 
-    this->minZ = this->vertexDomainCoordinates[0][2];
-    this->maxZ = this->vertexDomainCoordinates[0][2];
-
-    for (int i = 0 ; i < this->vertexDomainCoordinates.size() ; i++)
+    for (const auto &v : vertexDomainCoordinates)
     {
-        this->minX = std::min(this->minX, this->vertexDomainCoordinates[i][0]);
-        this->maxX = std::max(this->maxX, this->vertexDomainCoordinates[i][0]);
+        minX = std::min(minX, v[0]);
+        maxX = std::max(maxX, v[0]);
 
-        this->minY = std::min(this->minY, this->vertexDomainCoordinates[i][1]);
-        this->maxY = std::max(this->maxY, this->vertexDomainCoordinates[i][1]);
+        minY = std::min(minY, v[1]);
+        maxY = std::max(maxY, v[1]);
 
-        this->minZ = std::min(this->minZ, this->vertexDomainCoordinates[i][2]);
-        this->maxZ = std::max(this->maxZ, this->vertexDomainCoordinates[i][2]);
+        minZ = std::min(minZ, v[2]);
+        maxZ = std::max(maxZ, v[2]);
     }
+}
 
+void TetMesh::computeRangeBoundingBox()
+{
+    assert(!vertexCoordinatesF.empty() && !vertexCoordinatesG.empty());
 
-    // Compute the min/max range coordinates
-    this->minF = this->vertexCoordinatesF[0];
-    this->maxF = this->vertexCoordinatesF[0];
+    const auto [minFIt, maxFIt] = std::minmax_element(vertexCoordinatesF.begin(), vertexCoordinatesF.end());
+    const auto [minGIt, maxGIt] = std::minmax_element(vertexCoordinatesG.begin(), vertexCoordinatesG.end());
 
-    this->minG = this->vertexCoordinatesG[0];
-    this->maxG = this->vertexCoordinatesG[0];
+    minF = *minFIt;
+    maxF = *maxFIt;
+    minG = *minGIt;
+    maxG = *maxGIt;
+}
 
-    for (int i = 0 ; i < this->vertexCoordinatesF.size() ; i++)
-    {
-        this->minF = std::min(this->minF, this->vertexCoordinatesF[i]);
-        this->maxF = std::max(this->maxF, this->vertexCoordinatesF[i]);
-
-        this->minG = std::min(this->minG, this->vertexCoordinatesG[i]);
-        this->maxG = std::max(this->maxG, this->vertexCoordinatesG[i]);
-    }
-
-    // Add some padding to the range coordinates for better visibility
-    //this->minF -= .2;
-    //this->maxF += .2;
-    //this->minG -= .2;
-    //this->maxG += .2;
-
-    this->minF -= 0.1 * (this->maxF - this->minF);
-    this->maxF += 0.1 * (this->maxF - this->minF);
-    this->minG -= 0.1 * (this->maxG - this->minG);
-    this->maxG += 0.1 * (this->maxG - this->minG);
+void TetMesh::computeBoundingBoxes()
+{
+    computeDomainBoundingBox();
+    computeRangeBoundingBox();
 }
 
 void TetMesh::sortVertices()

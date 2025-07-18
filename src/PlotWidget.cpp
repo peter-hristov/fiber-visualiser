@@ -44,6 +44,11 @@ PlotWidget::PlotWidget(QWidget* parent, Data &_data, string _interpolationType)
     setMouseTracking(true);
     this->setEnabled(true);
 
+    this->paddedMinF = data.tetMesh.minF - 0.1 * (data.tetMesh.maxF - data.tetMesh.minF);
+    this->paddedMaxF = data.tetMesh.maxF + 0.1 * (data.tetMesh.maxF - data.tetMesh.minF);
+    this->paddedMinG = data.tetMesh.minG - 0.1 * (data.tetMesh.maxG - data.tetMesh.minG);
+    this->paddedMaxG = data.tetMesh.maxG + 0.1 * (data.tetMesh.maxG - data.tetMesh.minG);
+
     // Set up polygons for drawing
     //this->arrangementPolygons.resize(this->data.arrangementIndexToFace.size());
     //for (auto f = data.arr.faces_begin(); f != data.arr.faces_end(); ++f) 
@@ -312,7 +317,7 @@ void PlotWidget::drawBackground(QPainter &p)
 
     for (const auto &[sheetId, polygon] : data.reebSpace.sheetPolygon)
     {
-        QVector<QPoint> points;
+        QVector<QPointF> points;
 
         // If the sheet is incomplete, the polygon will not be corret, just draww all the faces manually
         if (data.reebSpace.incompleteSheets.contains(sheetId))
@@ -340,13 +345,8 @@ void PlotWidget::drawBackground(QPainter &p)
                             const float u = CGAL::to_double(e->source()->point().x());
                             const float v = CGAL::to_double(e->source()->point().y());
 
-                            // Translate to the window frame
-                            const float u1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (u - data.tetMesh.minF);
-                            const float v1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (v - data.tetMesh.minG);
-
-
                             // Add to the polygon
-                            points << QPoint(u1, v1);
+                            points << rescalePoint(u, v);
 
                             //std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
                         } while (++curr != circ);
@@ -364,17 +364,12 @@ void PlotWidget::drawBackground(QPainter &p)
                 const float u = point.x();
                 const float v = point.y();
 
-                // Translate to the window frame
-                const float u1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (u - data.tetMesh.minF);
-                const float v1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (v - data.tetMesh.minG);
-
-
                 // Add to the polygon
-                points << QPoint(u1, v1);
+                points << rescalePoint(u, v);
             }
         }
 
-        QPolygon qPolygon(points);
+        QPolygonF qPolygon(points);
 
         const int colourID = data.reebSpace.sheetToColour[sheetId];
         const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
@@ -473,11 +468,11 @@ void PlotWidget::drawBackground(QPainter &p)
     // Draw all edges
     for (const auto &[edge, type] : data.tetMesh.edges)
     {
-        float x1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.first] - data.tetMesh.minF);
-        float y1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.first] - data.tetMesh.minG);
+        const float u1 = this->data.tetMesh.vertexCoordinatesF[edge.first];
+        const float v1 = this->data.tetMesh.vertexCoordinatesG[edge.first];
 
-        float x2 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[edge.second] - data.tetMesh.minF);
-        float y2 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[edge.second] - data.tetMesh.minG);
+        const float u2 = this->data.tetMesh.vertexCoordinatesF[edge.second];
+        const float v2 = this->data.tetMesh.vertexCoordinatesG[edge.second];
 
         if (type == 0)
         {
@@ -493,33 +488,24 @@ void PlotWidget::drawBackground(QPainter &p)
         }
 
         p.setRenderHint(QPainter::Antialiasing, true);
-        p.drawLine(x1, y1, x2, y2);
+        p.drawLine(rescalePoint(u1, v1), rescalePoint(u2, v2));
     }
-
-
 
     // Draw all the vertex coordinates
     for(size_t i = 0 ; i <  this->data.tetMesh.vertexCoordinatesF.size() ; i++)
     {
-
-        float x1 = (resolution / (data.tetMesh.maxF - data.tetMesh.minF)) * (this->data.tetMesh.vertexCoordinatesF[i] - data.tetMesh.minF);
-        float y1 = (resolution / (data.tetMesh.maxG - data.tetMesh.minG)) * (this->data.tetMesh.vertexCoordinatesG[i] - data.tetMesh.minG);
+        float u = this->data.tetMesh.vertexCoordinatesF[i];
+        float v = this->data.tetMesh.vertexCoordinatesG[i];
 
         p.setPen(QPen(Qt::black, 6, Qt::SolidLine));
         p.setBrush(Qt::white);           // Fill color
-
-        p.drawEllipse(QPointF(x1, y1), 20, 20);
-        // @TODO Figure out how to rotate the vertex numbers
-        //p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
-
+        p.drawEllipse(rescalePoint(u, v), 20, 20);
 
         QFont font = p.font();
         font.setPointSize(70);
-        // font.setWeight(20);
         p.setFont(font);
-        p.drawText(x1, y1, QString::number(i));
+        p.drawText(rescalePoint(u, v), QString::number(i));
     }
-
 }
 
 void PlotWidget::generateStaticCache()
@@ -584,6 +570,14 @@ PlotWidget::rescaleScalar(const GLfloat min, const GLfloat max, const GLfloat va
     return (this->resolution / (max - min)) * (value - min);
 }
 
+QPointF PlotWidget::rescalePoint(const float &u, const GLfloat &v)
+{
+    const float rescaledU = (resolution / (paddedMaxF - paddedMinF)) * (u - paddedMinF);
+    const float rescaledV = (resolution / (paddedMaxG - paddedMinG)) * (v - paddedMinG);
+    return QPointF(rescaledU, rescaledV);
+}
+
+
 
     void
 PlotWidget::drawAxisLabels(QPainter& p)
@@ -613,10 +607,10 @@ PlotWidget::drawAxisLabels(QPainter& p)
     //
     float step = resolution / 15;
 
-    float xMin = data.tetMesh.minF;
-    float yMin = data.tetMesh.minG;
-    float xMax = data.tetMesh.maxF;
-    float yMax = data.tetMesh.maxG;
+    float xMin = paddedMinF;
+    float yMin = paddedMinG;
+    float xMax = paddedMaxF;
+    float yMax = paddedMaxG;
     float xRange = xMax - xMin;
     float yRange = yMax - yMin;
     float a = 10.0;
@@ -690,8 +684,8 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Vertical (constant X)
     for (const auto number : this->verticalLineNumbers) {
-        if (data.tetMesh.minF < number && number < data.tetMesh.maxF) {
-            float ratio = (number - data.tetMesh.minF) / ((data.tetMesh.maxF - data.tetMesh.minF));
+        if (paddedMinF < number && number < paddedMaxF) {
+            float ratio = (number - paddedMinF) / ((paddedMaxF - paddedMinF));
             float plotPosition = ratio * (resolution);
             p.drawLine(plotPosition, resolution - boxOffset - 20000, plotPosition, resolution - boxOffset);
         }
@@ -699,9 +693,9 @@ PlotWidget::drawAxisLabels(QPainter& p)
 
     // Horizontal (constant Y)
     for (const auto number : this->horizontalLineNumbers) {
-        if (data.tetMesh.minG < number && number < data.tetMesh.maxG) {
+        if (paddedMinG < number && number < paddedMaxG) {
             // Invert the y axis
-            float ratio = 1.0 - (number - data.tetMesh.minG) / ((data.tetMesh.maxG - data.tetMesh.minG));
+            float ratio = 1.0 - (number - paddedMinG) / ((paddedMaxG - paddedMinG));
             float plotPosition = ratio * (resolution);
             p.drawLine(boxOffset, plotPosition, boxOffset + 2000, plotPosition);
         }

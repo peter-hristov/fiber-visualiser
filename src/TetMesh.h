@@ -47,11 +47,14 @@ class TetMesh
     // Tell us which triangles (as sets of IDs) are connected (part of a tetrahedron)
     std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
 
+
+    void computeBoundingBoxes();
+    void computeDomainBoundingBox();
+    void computeRangeBoundingBox();
+
     void sortVertices();
     void printMesh();
     void perturbRangeValues(const float &perturbationEpsilon);
-    void computeMinMaxRangeDomainCoordinates();
-
 
 
     // We only add upperLink/lowerLink to data, the rest of data is unchagned

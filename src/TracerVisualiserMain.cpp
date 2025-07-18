@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 
     tetMesh.perturbRangeValues(perturbationEpsilon);
     tetMesh.sortVertices();
-    tetMesh.computeMinMaxRangeDomainCoordinates();
+    tetMesh.computeBoundingBoxes();
     tetMesh.computeUpperLowerLink();
     tetMesh.computeTriangleAdjacency();
 

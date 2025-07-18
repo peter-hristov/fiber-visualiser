@@ -39,7 +39,11 @@ class PlotWidget : public QWidget
     // This is the initial point when tranclating the polygon
     QPointF initialMovePoint;
     
-    //int 
+    // Add some padding to the bounding box of the image of the domain so it does't fill the widget.
+    float paddedMinF;
+    float paddedMaxF;
+    float paddedMinG;
+    float paddedMaxG;
 
     QTransform painterCombinedTransform;
 
@@ -59,6 +63,8 @@ class PlotWidget : public QWidget
     QPointF drawLinesPoint;
 
     GLfloat rescaleScalar(const GLfloat, const GLfloat, const GLfloat);
+
+    QPointF rescalePoint(const float&, const float&);
 
     float mult = 1.0;
 
