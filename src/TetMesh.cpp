@@ -137,8 +137,15 @@ void TetMesh::printMesh()
 
 void TetMesh::computeSingularEdgeTypes()
 {
+    // Initialization
+    for (const auto &edge : this->edges)
+    {
+        this->edgeSingularTypes[edge] = {};
+    }
+
+
     // For every edge, save the edges in its link
-    std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> linkEdges;
+    std::map<std::array<int, 2>, std::vector<std::array<int, 2>>> linkEdges;
 
     // otherwise the lower and upper link flip around
     for (int i = 0 ; i <  this->tetrahedra.size() ; i++)
@@ -160,10 +167,7 @@ void TetMesh::computeSingularEdgeTypes()
                     std::swap(aIndex, bIndex);
                 }
 
-                const std::pair<int, int> edge = {aIndex, bIndex};
-
-                // Add to the list of edge, initially all as regular
-                this->edges[edge] = 1;
+                const std::array<int, 2> edge = {aIndex, bIndex};
 
                 std::vector<int> linkVerticesInTet;
 
@@ -185,13 +189,13 @@ void TetMesh::computeSingularEdgeTypes()
     }
 
     // Initialize the disjoint set for the upper and lower link 
-    std::map<std::pair<int, int>, DisjointSet<int>> upperLinkComponentsDS;
+    std::map<std::array<int, 2>, DisjointSet<int>> upperLinkComponentsDS;
     for (const auto &[edge, vertices] : this->upperLink)
     {
         upperLinkComponentsDS[edge].initialize(vertices);
     }
 
-    std::map<std::pair<int, int>, DisjointSet<int>> lowerLinkComponentsDS;
+    std::map<std::array<int, 2>, DisjointSet<int>> lowerLinkComponentsDS;
     for (const auto &[edge, vertices] : this->lowerLink)
     {
         lowerLinkComponentsDS[edge].initialize(vertices);
@@ -201,30 +205,30 @@ void TetMesh::computeSingularEdgeTypes()
 
     for (const auto &[edge, vertices] : this->upperLink)
     {
-        for (const std::pair<int, int> &linkEdge : linkEdges[edge])
+        for (const std::array<int, 2> &linkEdge : linkEdges[edge])
         {
-            if (vertices.contains(linkEdge.first) && vertices.contains(linkEdge.second))
+            if (vertices.contains(linkEdge[0]) && vertices.contains(linkEdge[1]))
             {
-                upperLinkComponentsDS[edge].union_setsTriangle(linkEdge.first, linkEdge.second);
+                upperLinkComponentsDS[edge].union_setsTriangle(linkEdge[0], linkEdge[1]);
             }
         }
     }
 
     for (const auto &[edge, vertices] : this->lowerLink)
     {
-        for (const std::pair<int, int> &linkEdge : linkEdges[edge])
+        for (const std::array<int, 2> &linkEdge : linkEdges[edge])
         {
-            if (vertices.contains(linkEdge.first) && vertices.contains(linkEdge.second))
+            if (vertices.contains(linkEdge[0]) && vertices.contains(linkEdge[1]))
             {
-                lowerLinkComponentsDS[edge].union_setsTriangle(linkEdge.first, linkEdge.second);
+                lowerLinkComponentsDS[edge].union_setsTriangle(linkEdge[0], linkEdge[1]);
             }
         }
     }
 
 
-    for (auto &[edge, type] : this->edges)
+    for (auto &[edge, type] : this->edgeSingularTypes)
     {
-        printf("Currently at the edge [%d, %d].\n", edge.first, edge.second);
+        printf("Currently at the edge [%d, %d].\n", edge[0], edge[1]);
 
         int upperLinkComponents = upperLinkComponentsDS[edge].countConnectedComponents();
         int lowerLinkComponents = lowerLinkComponentsDS[edge].countConnectedComponents();
@@ -264,7 +268,7 @@ void TetMesh::computeSingularEdgeTypes()
 void TetMesh::computeUpperLowerLinkVertices()
 {
     // Initialize all maps with the empty set, so that all edges are covered
-    for (auto &[edge, type] : this->edges)
+    for (auto &edge : this->edges)
     {
         this->upperLink[edge] = {};
         this->lowerLink[edge] = {};
@@ -291,7 +295,7 @@ void TetMesh::computeUpperLowerLinkVertices()
                     std::swap(aIndex, bIndex);
                 }
 
-                const std::pair<int, int> edge = {aIndex, bIndex};
+                const std::array<int, 2> edge = {aIndex, bIndex};
 
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
@@ -315,26 +319,6 @@ void TetMesh::computeUpperLowerLinkVertices()
             }
         }
     }
-
-
-    for (const auto &[edge, elements]: this->upperLink)
-    {
-        printf("Edge in upper link : [%d, %d]\n", edge.first, edge.second);
-    }
-    for (const auto &[edge, elements]: this->lowerLink)
-    {
-        printf("Edge in lower link : [%d, %d]\n", edge.first, edge.second);
-    }
-
-    for (const auto &[edge, elements]: this->upperStarTriangles)
-    {
-        printf("Edge in upper STAR : [%d, %d]\n", edge.first, edge.second);
-    }
-    for (const auto &[edge, elements]: this->lowerStarTriangles)
-    {
-        printf("Edge in lower STAR : [%d, %d]\n", edge.first, edge.second);
-    }
-
 }
 
 
@@ -386,6 +370,7 @@ bool TetMesh::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex)
 
 void TetMesh::computeTriangleAdjacency()
 {
+    std::set<std::array<int, 2>> allEdges;
 
     // Initialize all edges types as regular initially
     for (int i = 0 ; i <  this->tetrahedra.size() ; i++)
@@ -408,11 +393,15 @@ void TetMesh::computeTriangleAdjacency()
                 }
 
                 // Initialize edge
-                this->edges[{aIndex, bIndex}] = 1;
+                allEdges.insert({aIndex, bIndex});
             }
         }
     }
 
+    for (const auto &edge: allEdges)
+    {
+        this->edges.push_back(edge);
+    }
 
 
 

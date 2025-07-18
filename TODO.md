@@ -6,6 +6,7 @@ Update the timer for use a hashmap
 Put the Reeb space computation in a different library
 
 Is this called twice? - ReebSpace::determineCorrespondence(tetMesh, arrangement, curr); in the BFS?
+Switch to using size_t for indices
 
 
 # Optomise memory:

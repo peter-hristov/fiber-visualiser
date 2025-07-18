@@ -26,7 +26,7 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(co
     // Sanity check
     assert(aIndex < bIndex);
 
-    const std::pair<int, int> edge = {aIndex, bIndex};
+    const std::array<int, 2> edge = {aIndex, bIndex};
 
     //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
     //printf("\n");
@@ -39,14 +39,12 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(co
     // The half edge has the same direction as the original edge
     if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
     {
-
         return {tetMesh.upperStarTriangles.at(edge), tetMesh.lowerStarTriangles.at(edge)};
     }
     else
     {
         return {tetMesh.lowerStarTriangles.at(edge), tetMesh.upperStarTriangles.at(edge)};
     }
-
 }
 
 

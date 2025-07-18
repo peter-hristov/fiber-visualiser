@@ -466,13 +466,13 @@ void PlotWidget::drawBackground(QPainter &p)
     //}
 
     // Draw all edges
-    for (const auto &[edge, type] : data.tetMesh.edges)
+    for (const auto &[edge, type] : data.tetMesh.edgeSingularTypes)
     {
-        const float u1 = this->data.tetMesh.vertexCoordinatesF[edge.first];
-        const float v1 = this->data.tetMesh.vertexCoordinatesG[edge.first];
+        const float u1 = this->data.tetMesh.vertexCoordinatesF[edge[0]];
+        const float v1 = this->data.tetMesh.vertexCoordinatesG[edge[0]];
 
-        const float u2 = this->data.tetMesh.vertexCoordinatesF[edge.second];
-        const float v2 = this->data.tetMesh.vertexCoordinatesG[edge.second];
+        const float u2 = this->data.tetMesh.vertexCoordinatesF[edge[1]];
+        const float v2 = this->data.tetMesh.vertexCoordinatesG[edge[1]];
 
         if (type == 0)
         {
