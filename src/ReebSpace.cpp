@@ -14,10 +14,6 @@
 
 std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle currentHalfEdge)
 {
-    // Step 1. Initialize lists
-    std::set<int> plusTriangles;
-    std::set<int> minusTriangles;
-
     // Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
     const Segment_2 &segment = *arrangement.arr.originating_curves_begin(currentHalfEdge);
     //std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
@@ -30,6 +26,8 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(co
     // Sanity check
     assert(aIndex < bIndex);
 
+    const std::pair<int, int> edge = {aIndex, bIndex};
+
     //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
     //printf("\n");
 
@@ -41,59 +39,14 @@ std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(co
     // The half edge has the same direction as the original edge
     if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
     {
-        //std::cout << "Upper link becomes lower link." << std::endl;
 
-        //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: tetMesh.upperLink.at(std::pair<int, int>({aIndex, bIndex}))) 
-        {
-            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
-            //minusTriangles.push_back({aIndex, bIndex, v});
-            minusTriangles.insert(tetMesh.triangleToIndex.at({aIndex, bIndex, v}));
-
-            //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-            //printf("%d ", v);
-        }
-        //printf("\n");
-
-        //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: tetMesh.lowerLink.at(std::pair<int, int>({aIndex, bIndex}))) 
-        {
-            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
-            //plusTriangles.push_back({aIndex, bIndex, v});
-            plusTriangles.insert(tetMesh.triangleToIndex.at({aIndex, bIndex, v}));
-            //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-            //printf("%d ", v);
-        }
-        //printf("\n");
+        return {tetMesh.upperStarTriangles.at(edge), tetMesh.lowerStarTriangles.at(edge)};
     }
     else
     {
-        //std::cout << "Lower link becomes upper link." << std::endl;
-
-        //printf("The upper link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: tetMesh.upperLink.at(std::pair<int, int>({aIndex, bIndex}))) 
-        {
-            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
-            //plusTriangles.push_back({aIndex, bIndex, v});
-            plusTriangles.insert(tetMesh.triangleToIndex.at({aIndex, bIndex, v}));
-            //preimageGraphs[twinFaceID].insert({aIndex, bIndex, v});
-            //printf("%d ", v);
-        }
-        //printf("\n");
-
-        //printf("The lower link of (%d, %d) : ", aIndex, bIndex);
-        for (const int v: tetMesh.lowerLink.at(std::pair<int, int>({aIndex, bIndex}))) 
-        {
-            assert(tetMesh.triangleToIndex.contains({aIndex, bIndex, v}));
-            //minusTriangles.push_back({aIndex, bIndex, v});
-            minusTriangles.insert(tetMesh.triangleToIndex.at({aIndex, bIndex, v}));
-            //preimageGraphs[twinFaceID].erase({aIndex, bIndex, v});
-            //printf("%d ", v);
-        }
-        //printf("\n");
+        return {tetMesh.lowerStarTriangles.at(edge), tetMesh.upperStarTriangles.at(edge)};
     }
 
-    return {minusTriangles, plusTriangles};
 }
 
 

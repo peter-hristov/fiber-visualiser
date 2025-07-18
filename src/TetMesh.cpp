@@ -263,6 +263,15 @@ void TetMesh::computeSingularEdgeTypes()
 }
 void TetMesh::computeUpperLowerLinkVertices()
 {
+    // Initialize all maps with the empty set, so that all edges are covered
+    for (auto &[edge, type] : this->edges)
+    {
+        this->upperLink[edge] = {};
+        this->lowerLink[edge] = {};
+        this->upperStarTriangles[edge] = {};
+        this->lowerStarTriangles[edge] = {};
+    }
+
     for (int i = 0 ; i <  this->tetrahedra.size() ; i++)
     {
         const auto &tet = this->tetrahedra[i];
@@ -284,9 +293,6 @@ void TetMesh::computeUpperLowerLinkVertices()
 
                 const std::pair<int, int> edge = {aIndex, bIndex};
 
-                // Add to the list of edge, initially all as regular
-                this->edges[edge] = 1;
-
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
                 {
@@ -298,21 +304,119 @@ void TetMesh::computeUpperLowerLinkVertices()
                         const bool isUpperLink = this->isUpperLinkEdgeVertex(aIndex, bIndex, vIndex);
 
                         if (true == isUpperLink) {
-                            this->upperLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
+                            this->upperLink[edge].insert(vIndex);
+                            this->upperStarTriangles[edge].insert(triangleToIndex.at({aIndex, bIndex, vIndex}));
                         } else {
-                            this->lowerLink[std::pair<int, int>({aIndex, bIndex})].insert(vIndex);
+                            this->lowerLink[edge].insert(vIndex);
+                            this->lowerStarTriangles[edge].insert(triangleToIndex.at({aIndex, bIndex, vIndex}));
                         }
                     }
                 }
             }
         }
     }
+
+
+    for (const auto &[edge, elements]: this->upperLink)
+    {
+        printf("Edge in upper link : [%d, %d]\n", edge.first, edge.second);
+    }
+    for (const auto &[edge, elements]: this->lowerLink)
+    {
+        printf("Edge in lower link : [%d, %d]\n", edge.first, edge.second);
+    }
+
+    for (const auto &[edge, elements]: this->upperStarTriangles)
+    {
+        printf("Edge in upper STAR : [%d, %d]\n", edge.first, edge.second);
+    }
+    for (const auto &[edge, elements]: this->lowerStarTriangles)
+    {
+        printf("Edge in lower STAR : [%d, %d]\n", edge.first, edge.second);
+    }
+
+}
+
+
+bool TetMesh::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex)
+{
+    // Make sure the vertices of the edge are in sorted order to have consistent orientation
+    if (aIndex > bIndex)
+    {
+        std::swap(aIndex, bIndex);
+    }
+
+    // Define the two points that form the line
+    const Point_2 a(this->vertexCoordinatesF[aIndex], this->vertexCoordinatesG[aIndex]);
+    const Point_2 b(this->vertexCoordinatesF[bIndex], this->vertexCoordinatesG[bIndex]);
+
+    // Define the test point
+    const Point_2 v(this->vertexCoordinatesF[vIndex], this->vertexCoordinatesG[vIndex]);  // Change this to test different locations
+
+    // Determine which half-plane r is in
+    const CGAL::Orientation result = CGAL::orientation(a, b, v);
+
+    //printf("Checking line (%d, %d) against vertex %d\n", aIndex, bIndex, vIndex);
+
+    //std::cout << "a coords = " << a << std::endl;
+    //std::cout << "b coords = " << b << std::endl;
+    //std::cout << "v coords = " << v << std::endl;
+
+
+    // Upper link = left
+    if (result == CGAL::LEFT_TURN) {
+        return true;
+        //std::cout << "Point r is in the LEFT half-plane.\n";
+    // Lower link = right
+    } else if (result == CGAL::RIGHT_TURN) {
+        return false;
+        //std::cout << "Point r is in the RIGHT half-plane.\n";
+    // This should not happen for generic maps
+    } else {
+        //std::cout << "Point r is on the line.\n";
+        throw std::runtime_error("Input data is degeneate, a triangle is mapped to a line.");       
+        //assert(false);
+    }
+
+    // Paranoid assert
+    assert(false);
 }
 
 
 
 void TetMesh::computeTriangleAdjacency()
 {
+
+    // Initialize all edges types as regular initially
+    for (int i = 0 ; i <  this->tetrahedra.size() ; i++)
+    {
+        const auto &tet = this->tetrahedra[i];
+
+        // All pairs give you all six edges
+        for (int a = 0 ; a < 4 ; a++)
+        {
+            for (int b = a + 1 ; b < 4 ; b++)
+            {
+                // Get the indices of the vertices for the edge
+                int aIndex = tet[a];
+                int bIndex = tet[b];
+
+                // Make sure the vertices of the edge are in sorted order to have consistent orientation
+                if (aIndex > bIndex)
+                {
+                    std::swap(aIndex, bIndex);
+                }
+
+                // Initialize edge
+                this->edges[{aIndex, bIndex}] = 1;
+            }
+        }
+    }
+
+
+
+
+
     std::set<std::set<int>> allTriangles;
 
     for (const std::vector<size_t> tet : this->tetrahedra)
@@ -390,49 +494,4 @@ void TetMesh::computeTriangleAdjacency()
             }
         }
     }
-}
-
-
-bool TetMesh::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex)
-{
-    // Make sure the vertices of the edge are in sorted order to have consistent orientation
-    if (aIndex > bIndex)
-    {
-        std::swap(aIndex, bIndex);
-    }
-
-    // Define the two points that form the line
-    const Point_2 a(this->vertexCoordinatesF[aIndex], this->vertexCoordinatesG[aIndex]);
-    const Point_2 b(this->vertexCoordinatesF[bIndex], this->vertexCoordinatesG[bIndex]);
-
-    // Define the test point
-    const Point_2 v(this->vertexCoordinatesF[vIndex], this->vertexCoordinatesG[vIndex]);  // Change this to test different locations
-
-    // Determine which half-plane r is in
-    const CGAL::Orientation result = CGAL::orientation(a, b, v);
-
-    //printf("Checking line (%d, %d) against vertex %d\n", aIndex, bIndex, vIndex);
-
-    //std::cout << "a coords = " << a << std::endl;
-    //std::cout << "b coords = " << b << std::endl;
-    //std::cout << "v coords = " << v << std::endl;
-
-
-    // Upper link = left
-    if (result == CGAL::LEFT_TURN) {
-        return true;
-        //std::cout << "Point r is in the LEFT half-plane.\n";
-    // Lower link = right
-    } else if (result == CGAL::RIGHT_TURN) {
-        return false;
-        //std::cout << "Point r is in the RIGHT half-plane.\n";
-    // This should not happen for generic maps
-    } else {
-        //std::cout << "Point r is on the line.\n";
-        throw std::runtime_error("Input data is degeneate, a triangle is mapped to a line.");       
-        //assert(false);
-    }
-
-    // Paranoid assert
-    assert(false);
 }

@@ -69,9 +69,9 @@ int main(int argc, char* argv[])
     tetMesh.perturbRangeValues(perturbationEpsilon);
     tetMesh.sortVertices();
     tetMesh.computeBoundingBoxes();
+    tetMesh.computeTriangleAdjacency();
     tetMesh.computeUpperLowerLinkVertices();
     tetMesh.computeSingularEdgeTypes();
-    tetMesh.computeTriangleAdjacency();
 
     Timer::start();
     Arrangement arrangement;

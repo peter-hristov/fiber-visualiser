@@ -28,6 +28,8 @@ class TetMesh
 
     // Tets, edges, triangles, etc
     std::vector<std::vector<size_t>> tetrahedra;
+
+
     std::map<std::pair<int, int>, int> edges;
     std::vector<std::set<int>> indexToTriangle;
     std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleToIndex;
@@ -43,6 +45,9 @@ class TetMesh
     // Make sure to always keep the edge (u, v) such that u < v in index value,
     std::map<std::pair<int, int>, std::set<int>> upperLink;
     std::map<std::pair<int, int>, std::set<int>> lowerLink;
+
+    std::map<std::pair<int, int>, std::set<int>> upperStarTriangles;
+    std::map<std::pair<int, int>, std::set<int>> lowerStarTriangles;
 
     // Tell us which triangles (as sets of IDs) are connected (part of a tetrahedron)
     std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
