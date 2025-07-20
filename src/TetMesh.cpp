@@ -209,7 +209,6 @@ void TetMesh::computeSingularEdgeTypes()
                 upperLinkComponentsDS[edge].union_setsTriangle(linkEdge[0], linkEdge[1]);
             }
         }
-        printf("\n\n");
     }
 
     for (const auto &[edge, vertices] : this->lowerLink)

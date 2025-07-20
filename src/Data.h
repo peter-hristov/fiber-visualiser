@@ -1,9 +1,5 @@
 #pragma once
 
-#include "src/Arrangement.h"
-#include "src/CGALTypedefs.h"
-#include "src/ReebSpace.h"
-#include "src/TetMesh.h"
 #include <GL/gl.h>
 #include <unordered_map>
 #ifdef __APPLE__
@@ -21,12 +17,10 @@
 #include <string>
 #include <vector>
 
-#include "./FaceFiber.h"
-#include "./DisjointSet.h"
-
 #include <qpoint.h>
 #include <qvector.h>
 
+#include "./FaceFiber.h"
 #include "./CGALTypedefs.h"
 #include "./TetMesh.h"
 #include "./Arrangement.h"
