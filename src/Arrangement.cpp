@@ -21,18 +21,18 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh)
 
     Timer::start();
     // Make sure you don't add duplicate edge to the arrangement
-    std::map<std::set<size_t>, bool> uniqueEdges;
+    std::map<std::set<int>, bool> uniqueEdges;
     for (int i = 0 ; i < tetMesh.tetrahedra.size() ; i++)
     {
         // Bottom face
-        uniqueEdges[std::set<size_t>({tetMesh.tetrahedra[i][0], tetMesh.tetrahedra[i][1]})] = true;
-        uniqueEdges[std::set<size_t>({tetMesh.tetrahedra[i][1], tetMesh.tetrahedra[i][2]})] = true;
-        uniqueEdges[std::set<size_t>({tetMesh.tetrahedra[i][2], tetMesh.tetrahedra[i][0]})] = true;
+        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][0], tetMesh.tetrahedra[i][1]})] = true;
+        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][1], tetMesh.tetrahedra[i][2]})] = true;
+        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][2], tetMesh.tetrahedra[i][0]})] = true;
 
         // Connect bottom face to top vertex
-        uniqueEdges[std::set<size_t>({tetMesh.tetrahedra[i][0], tetMesh.tetrahedra[i][3]})] = true;
-        uniqueEdges[std::set<size_t>({tetMesh.tetrahedra[i][1], tetMesh.tetrahedra[i][3]})] = true;
-        uniqueEdges[std::set<size_t>({tetMesh.tetrahedra[i][2], tetMesh.tetrahedra[i][3]})] = true;
+        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][0], tetMesh.tetrahedra[i][3]})] = true;
+        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][1], tetMesh.tetrahedra[i][3]})] = true;
+        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][2], tetMesh.tetrahedra[i][3]})] = true;
     }
     Timer::stop("Computed unique edges                  :");
 

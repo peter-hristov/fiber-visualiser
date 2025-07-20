@@ -79,7 +79,7 @@ TetMesh io::readDataVtu(const std::string &filename)
     // Initialize all the data arrays
     tetMesh.vertexCoordinatesF = std::vector<float>(numVertices, 0);
     tetMesh.vertexCoordinatesG = std::vector<float>(numVertices, 0);
-    tetMesh.tetrahedra = std::vector<std::array<size_t, 4>>(numTets, {0, 0, 0, 0});
+    tetMesh.tetrahedra = std::vector<std::array<int, 4>>(numTets, {0, 0, 0, 0});
     tetMesh.vertexDomainCoordinates = std::vector<std::vector<float>>(numVertices, {0, 0, 0});
 
     // Print vertices
@@ -176,7 +176,7 @@ TetMesh io::readDataTxt(const std::string &filename)
     // Initialize all the data arrays
     tetMesh.vertexCoordinatesF = std::vector<float>(numVertices, 0);
     tetMesh.vertexCoordinatesG = std::vector<float>(numVertices, 0);
-    tetMesh.tetrahedra = std::vector<std::array<size_t, 4>>(numTets, {0, 0, 0, 0});
+    tetMesh.tetrahedra = std::vector<std::array<int, 4>>(numTets, {0, 0, 0, 0});
     tetMesh.vertexDomainCoordinates = std::vector<std::vector<float>>(numVertices, {0, 0, 0});
 
     // Read in the domain coordinates

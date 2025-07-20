@@ -27,7 +27,7 @@ class TetMesh
     std::string longnameF, longnameG, units;
 
     // Combinatorial structure
-    std::vector<std::array<size_t, 4>> tetrahedra;
+    std::vector<std::array<int, 4>> tetrahedra;
 
     std::vector<std::array<int, 2>> edges;
     std::map<std::array<int, 2>, int> edgeSingularTypes;

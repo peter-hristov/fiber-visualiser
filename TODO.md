@@ -5,7 +5,8 @@ Update the timer for use a hashmap
 Put the Reeb space computation in a different library
 
 Is this called twice? - ReebSpace::determineCorrespondence(tetMesh, arrangement, curr); in the BFS?
-Switch to using size_t for indices
+Switch to using size_t for indices 
+    Not as vital for now, it won't be soon that we can compute a Reeb space for a tet with over 32bit vertices.
 
 
 # Optomise memory:

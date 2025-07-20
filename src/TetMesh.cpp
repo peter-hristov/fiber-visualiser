@@ -8,7 +8,7 @@ void TetMesh::perturbRangeValues(const float &epsilon)
     static std::mt19937 gen(std::random_device{}());
     std::uniform_real_distribution<float> dist(-epsilon, epsilon);
 
-    for (size_t i = 0; i < this->vertexCoordinatesF.size(); i++) 
+    for (int i = 0; i < this->vertexCoordinatesF.size(); i++) 
     {
         this->vertexCoordinatesF[i] += dist(gen);
         this->vertexCoordinatesG[i] += dist(gen);
@@ -130,7 +130,7 @@ void TetMesh::printMesh()
     std::cout << "Tetrahedra: " << std::endl;
     for (int i = 0 ; i < this->tetrahedra.size() ; i++)
     {
-        printf("%d - (%ld, %ld, %ld, %ld)\n", i, this->tetrahedra[i][0], this->tetrahedra[i][1], this->tetrahedra[i][2], this->tetrahedra[i][3]);
+        printf("%d - (%d, %d, %d, %d)\n", i, this->tetrahedra[i][0], this->tetrahedra[i][1], this->tetrahedra[i][2], this->tetrahedra[i][3]);
     }
 }
 
@@ -400,7 +400,7 @@ void TetMesh::computeCombinatorialStructure()
     // Compute all unique triangles
     std::set<std::set<int>> allTriangles;
 
-    for (const std::array<size_t, 4> tet : this->tetrahedra)
+    for (const std::array<int, 4> tet : this->tetrahedra)
     {
         std::set<std::set<int>> triangles;
 
@@ -429,7 +429,7 @@ void TetMesh::computeCombinatorialStructure()
     // Compute which triangles are tet-adjacent (are both the faces of the same tet)
     this->tetIncidentTriangles.resize(allTriangles.size());
 
-    for (const std::array<size_t, 4> tet : this->tetrahedra)
+    for (const std::array<int, 4> tet : this->tetrahedra)
     {
         std::set<std::set<int>> triangles;
 
