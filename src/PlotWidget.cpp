@@ -42,12 +42,12 @@ PlotWidget::PlotWidget(QWidget* parent, Data &_data, string _interpolationType)
       , interpolationType(_interpolationType)
 {
     setMouseTracking(true);
-    this->setEnabled(true);
+    setEnabled(true);
 
-    this->paddedMinF = data.tetMesh.minF - 0.1 * (data.tetMesh.maxF - data.tetMesh.minF);
-    this->paddedMaxF = data.tetMesh.maxF + 0.1 * (data.tetMesh.maxF - data.tetMesh.minF);
-    this->paddedMinG = data.tetMesh.minG - 0.1 * (data.tetMesh.maxG - data.tetMesh.minG);
-    this->paddedMaxG = data.tetMesh.maxG + 0.1 * (data.tetMesh.maxG - data.tetMesh.minG);
+    paddedMinF = data.tetMesh.minF - paddingScalingFactor * (data.tetMesh.maxF - data.tetMesh.minF);
+    paddedMaxF = data.tetMesh.maxF + paddingScalingFactor * (data.tetMesh.maxF - data.tetMesh.minF);
+    paddedMinG = data.tetMesh.minG - paddingScalingFactor * (data.tetMesh.maxG - data.tetMesh.minG);
+    paddedMaxG = data.tetMesh.maxG + paddingScalingFactor * (data.tetMesh.maxG - data.tetMesh.minG);
 
     // Set up polygons for drawing
     //this->arrangementPolygons.resize(this->data.arrangementIndexToFace.size());
@@ -792,8 +792,8 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         this->recomputeFiber = false;
 
         // Reside to the original range data dimensions
-        float u = this->data.tetMesh.minF + (polyPoints[0].x() / resolution) * (this->data.tetMesh.maxF - this->data.tetMesh.minF);
-        float v = this->data.tetMesh.minG + (polyPoints[0].y() / resolution) * (this->data.tetMesh.maxG - this->data.tetMesh.minG);
+        float u = this->paddedMinF + (polyPoints[0].x() / resolution) * (this->paddedMaxF - this->paddedMinF);
+        float v = this->paddedMinG + (polyPoints[0].y() / resolution) * (this->paddedMaxG - this->paddedMinG);
 
         const int currentFiberColour = 0;
         // Compute all tet exit points

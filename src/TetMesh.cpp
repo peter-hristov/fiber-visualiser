@@ -167,23 +167,19 @@ void TetMesh::computeSingularEdgeTypes()
                     std::swap(aIndex, bIndex);
                 }
 
-                const std::array<int, 2> edge = {aIndex, bIndex};
-
                 std::vector<int> linkVerticesInTet;
 
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
                 {
-                    const int vIndex = tet[v];
-
                     // If the currect vertex is not one of two used to define the edge
-                    if (vIndex != aIndex && vIndex != bIndex) 
+                    if (v != a && v != b) 
                     {
-                        linkVerticesInTet.push_back(vIndex);
+                        linkVerticesInTet.push_back(tet[v]);
                     }
                 }
 
-                linkEdges[edge].push_back({linkVerticesInTet[0], linkVerticesInTet[1]});
+                linkEdges[{aIndex, bIndex}].push_back({linkVerticesInTet[0], linkVerticesInTet[1]});
             }
         }
     }
@@ -202,23 +198,27 @@ void TetMesh::computeSingularEdgeTypes()
     }
 
     // Add all edges to compute the connected components
-
     for (const auto &[edge, vertices] : this->upperLink)
     {
         for (const std::array<int, 2> &linkEdge : linkEdges[edge])
         {
-            if (vertices.contains(linkEdge[0]) && vertices.contains(linkEdge[1]))
+            const bool isEdgeInUpperLink = vertices.contains(linkEdge[0]) && vertices.contains(linkEdge[1]);
+
+            if (true == isEdgeInUpperLink)
             {
                 upperLinkComponentsDS[edge].union_setsTriangle(linkEdge[0], linkEdge[1]);
             }
         }
+        printf("\n\n");
     }
 
     for (const auto &[edge, vertices] : this->lowerLink)
     {
         for (const std::array<int, 2> &linkEdge : linkEdges[edge])
         {
-            if (vertices.contains(linkEdge[0]) && vertices.contains(linkEdge[1]))
+            const bool isEdgeInLowerLink = vertices.contains(linkEdge[0]) && vertices.contains(linkEdge[1]);
+
+            if (true == isEdgeInLowerLink)
             {
                 lowerLinkComponentsDS[edge].union_setsTriangle(linkEdge[0], linkEdge[1]);
             }
@@ -228,24 +228,8 @@ void TetMesh::computeSingularEdgeTypes()
 
     for (auto &[edge, type] : this->edgeSingularTypes)
     {
-        printf("Currently at the edge [%d, %d].\n", edge[0], edge[1]);
-
-        int upperLinkComponents = upperLinkComponentsDS[edge].countConnectedComponents();
-        int lowerLinkComponents = lowerLinkComponentsDS[edge].countConnectedComponents();
-
-        printf("The upper link has %d components and these vertices: ", upperLinkComponents);
-        for (const auto &v : this->upperLink[edge])
-        {
-            printf("%d ", v);
-        }
-        printf("\n");
-
-        printf("The lower link has %d components and these vertices: ", lowerLinkComponents);
-        for (const auto &v : this->lowerLink[edge])
-        {
-            printf("%d ", v);
-        }
-        printf("\n");
+        const int upperLinkComponents = upperLinkComponentsDS[edge].countConnectedComponents();
+        const int lowerLinkComponents = lowerLinkComponentsDS[edge].countConnectedComponents();
 
         // Definite edge
         if (0 == upperLinkComponents || 0 == lowerLinkComponents)
@@ -253,7 +237,7 @@ void TetMesh::computeSingularEdgeTypes()
             type = 0;
         }
         // Regular edge
-        else if (1 == upperLinkComponents || 1 == lowerLinkComponents)
+        else if (1 == upperLinkComponents && 1 == lowerLinkComponents)
         {
             type = 1;
         }
@@ -262,8 +246,23 @@ void TetMesh::computeSingularEdgeTypes()
         {
             type = 2;
         }
-    }
 
+        //printf("Currently at the edge [%d, %d].\n", edge[0], edge[1]);
+
+        //printf("The upper link has %d components and these vertices: ", upperLinkComponents);
+        //for (const auto &v : this->upperLink[edge])
+        //{
+            //printf("%d ", v);
+        //}
+        //printf("\n");
+
+        //printf("The lower link has %d components and these vertices: ", lowerLinkComponents);
+        //for (const auto &v : this->lowerLink[edge])
+        //{
+            //printf("%d ", v);
+        //}
+        //printf("\n");
+    }
 }
 void TetMesh::computeUpperLowerLinkAndStar()
 {
@@ -295,16 +294,14 @@ void TetMesh::computeUpperLowerLinkAndStar()
                     std::swap(aIndex, bIndex);
                 }
 
-                const std::array<int, 2> edge = {aIndex, bIndex};
-
                 // Search though the other two unused vertices
                 for (int v = 0 ; v < 4 ; v++)
                 {
-                    const int vIndex = tet[v];
-
                     // If the currect vertex is not one of two used to define the edge
-                    if (vIndex != aIndex && vIndex != bIndex) 
+                    if (v != a && v != b) 
                     {
+                        const int vIndex = tet[v];
+                        const std::array<int, 2> edge = {aIndex, bIndex};
                         const bool isUpperLink = this->isUpperLinkEdgeVertex(aIndex, bIndex, vIndex);
 
                         if (true == isUpperLink) {

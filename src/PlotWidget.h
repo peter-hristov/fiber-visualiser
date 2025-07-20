@@ -40,6 +40,7 @@ class PlotWidget : public QWidget
     QPointF initialMovePoint;
     
     // Add some padding to the bounding box of the image of the domain so it does't fill the widget.
+    float paddingScalingFactor = 0.1;
     float paddedMinF;
     float paddedMaxF;
     float paddedMinG;
