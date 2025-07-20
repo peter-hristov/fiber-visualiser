@@ -17,7 +17,7 @@ class Arrangement
     std::vector<Point_2> arrangementPoints;
 
     // The inverse map of arrangementPoints, returns the index of a point
-    std::map<Point_2, int> arrangementPointsIdices;
+    std::map<Point_2, int> arrangementPointIndices;
 
     // The integer ID of every face in the arrangement
     std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;

@@ -1,29 +1,10 @@
 #pragma once
 
-#include "./TetMesh.h"
-#include "./Arrangement.h"
-
 #include <vector>
 
-#include "CGALTypedefs.h"
-
-
-
-// What do I need from the arrangement?
-// Done - Compute the arrangement of a number of line segments
-// Done - Traverse the half-edge arrangement data struture (use ccb and twin)
-// Done - How to see where the segment came from? Use with_history and originating curve
-// Set up IDs for the faces (use a map for now, store ID field in data later)
-//
-// Get a running BFS
-// Lower and upper star for each edge (loop all tets, maybe we don't need a big datastruture)
-//
-//
-//
-// Later
-// - Can you tell the algo which segments have the same point? Does that help?
-// - How do we use rational numbers for precision? Robustness.
-
+#include "./TetMesh.h"
+#include "./Arrangement.h"
+#include "./CGALTypedefs.h"
 
 class ReebSpace
 {
@@ -50,11 +31,13 @@ class ReebSpace
         std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> jacobiType;
 
 
+
+
         // Computes the correspondence between two faces given a half edge between them
         void computeTwinFacePreimageGraph(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle &);
 
-        // Compute the preimage graphs Gi for each cell in the arrangement
-        void computePreimageGraphs(const TetMesh &tetMesh, const Arrangement &arrangement, const bool);
+        // Compute the preimage graphs Gi for each cell in the arrangement and their correspondence
+        void computeTraversal(const TetMesh &tetMesh, const Arrangement &arrangement, const bool);
 
         // This function is not used now, it's incorporated in computePreimageGraphs, otherwise we can't just keep seeds.
         // Computes the correspondence between two faces given a half edge between them
@@ -72,6 +55,6 @@ class ReebSpace
         //
         // Helper functions
         //
-        std::pair<std::set<int>, std::set<int>> getMinusPlusTrianglesIndex(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle currentHalfEdge);
+        std::pair<std::vector<int>, std::vector<int>> getMinusPlusTrianglesIndex(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle currentHalfEdge);
         void testTraverseArrangement(const Arrangement &arrangement);
 };

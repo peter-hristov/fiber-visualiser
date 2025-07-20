@@ -1,4 +1,10 @@
 # Refactor
+
+Done - TetMesh
+Done - Arrangement
+ReebSpace
+
+
 Make triangles vector<array>
 Move the hashes outside of Disjoint set
 Update the timer for use a hashmap

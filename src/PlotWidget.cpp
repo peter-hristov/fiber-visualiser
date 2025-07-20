@@ -22,14 +22,13 @@
 #include <qtransform.h>
 #include <utility>
 
-#include "./TracerVisualiserWindow.h"
-#include "./utility/Geometry.h"
 
-#include "PlotWidget.h"
-#include "src/CGALTypedefs.h"
-#include "src/Data.h"
+#include "./PlotWidget.h"
+#include "./Data.h"
 #include "./Timer.h"
-
+#include "./CGALTypedefs.h"
+#include "./utility/Geometry.h"
+#include "./TracerVisualiserWindow.h"
 
 using namespace std;
 

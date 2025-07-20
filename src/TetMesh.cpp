@@ -305,10 +305,10 @@ void TetMesh::computeUpperLowerLinkAndStar()
 
                         if (true == isUpperLink) {
                             this->upperLink[edge].insert(vIndex);
-                            this->upperStarTriangles[edge].insert(triangleIndices.at({aIndex, bIndex, vIndex}));
+                            this->upperStarTriangles[edge].push_back(triangleIndices.at({aIndex, bIndex, vIndex}));
                         } else {
                             this->lowerLink[edge].insert(vIndex);
-                            this->lowerStarTriangles[edge].insert(triangleIndices.at({aIndex, bIndex, vIndex}));
+                            this->lowerStarTriangles[edge].push_back(triangleIndices.at({aIndex, bIndex, vIndex}));
                         }
                     }
                 }

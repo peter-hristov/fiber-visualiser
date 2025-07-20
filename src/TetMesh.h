@@ -26,21 +26,17 @@ class TetMesh
     // (Optional) indicative names for the two scalar fields and their units
     std::string longnameF, longnameG, units;
 
-    // Combinatorial structure
+    // Combinatorial structure of the mesh
     std::vector<std::array<int, 4>> tetrahedra;
-
+    // We always assume that edge vertices are in sorted order (but index)
     std::vector<std::array<int, 2>> edges;
     std::map<std::array<int, 2>, int> edgeSingularTypes;
-    // Ideally we do want this with a proper data structure with a STAR, then there's no write conflits
-    // Make sure to always keep the edge (u, v) such that u < v in index value,
     std::map<std::array<int, 2>, std::set<int>> upperLink;
     std::map<std::array<int, 2>, std::set<int>> lowerLink;
-    std::map<std::array<int, 2>, std::set<int>> upperStarTriangles;
-    std::map<std::array<int, 2>, std::set<int>> lowerStarTriangles;
-
+    std::map<std::array<int, 2>, std::vector<int>> upperStarTriangles;
+    std::map<std::array<int, 2>, std::vector<int>> lowerStarTriangles;
     std::vector<std::set<int>> triangles;
     std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleIndices;
-    // Which triangles belong to the same tet as other triangles
     std::vector<std::vector<int>> tetIncidentTriangles;
 
 

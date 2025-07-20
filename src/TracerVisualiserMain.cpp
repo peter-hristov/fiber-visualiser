@@ -5,13 +5,12 @@
 #include <QApplication>
 
 #include "./io.h"
-#include "./TracerVisualiserWindow.h"
 #include "./Timer.h"
 #include "./ReebSpace.h"
 #include "./CGALTypedefs.h"
+#include "./Arrangement.h"
 #include "./utility/CLI11.hpp"
-#include "src/Arrangement.h"
-#include "src/io.h"
+#include "./TracerVisualiserWindow.h"
 
 using namespace std;
 
@@ -85,7 +84,7 @@ int main(int argc, char* argv[])
 
     Timer::start();
     ReebSpace reebSpace;
-    reebSpace.computePreimageGraphs(tetMesh, arrangement, discardFiberSeeds);
+    reebSpace.computeTraversal(tetMesh, arrangement, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
 
     std::cout << "Postprocessing..." << std::endl;

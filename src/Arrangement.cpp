@@ -4,8 +4,6 @@
 
 void Arrangement::computeArrangement(const TetMesh &tetMesh) 
 {
-    Timer::start();
-
     // Add in the vertices of the mesh 
     this->arrangementPoints.resize(tetMesh.vertexCoordinatesF.size());
     for (int i = 0 ; i < tetMesh.vertexCoordinatesF.size() ; i++)
@@ -15,66 +13,21 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh)
         const Point_2 point(u, v);
 
         this->arrangementPoints[i] = point;
-        this->arrangementPointsIdices[point] = i;
+        this->arrangementPointIndices[point] = i;
     };
-    Timer::stop("Converted vertices to points           :");
 
-    Timer::start();
-    // Make sure you don't add duplicate edge to the arrangement
-    std::map<std::set<int>, bool> uniqueEdges;
-    for (int i = 0 ; i < tetMesh.tetrahedra.size() ; i++)
-    {
-        // Bottom face
-        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][0], tetMesh.tetrahedra[i][1]})] = true;
-        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][1], tetMesh.tetrahedra[i][2]})] = true;
-        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][2], tetMesh.tetrahedra[i][0]})] = true;
-
-        // Connect bottom face to top vertex
-        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][0], tetMesh.tetrahedra[i][3]})] = true;
-        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][1], tetMesh.tetrahedra[i][3]})] = true;
-        uniqueEdges[std::set<int>({tetMesh.tetrahedra[i][2], tetMesh.tetrahedra[i][3]})] = true;
-    }
-    Timer::stop("Computed unique edges                  :");
-
-    Timer::start();
     // Add the unique edges as setments to the arrangement
     std::vector<Segment_2> segments;
-    for (const auto& edge : uniqueEdges) 
+    for (const auto& edge : tetMesh.edges) 
     {
-        // Put in a vector for easy access
-        std::vector<int> edgeVector(edge.first.begin(), edge.first.end());
-        assert(edgeVector.size() == 2);
-
-        segments.push_back(Segment_2(this->arrangementPoints[edgeVector[0]], this->arrangementPoints[edgeVector[1]]));
-        //std::cout << "Adding edge " << edgeVector[0] << " - " << edgeVector[1] << std::endl;
+        segments.push_back(Segment_2(this->arrangementPoints[edge[0]], this->arrangementPoints[edge[1]]));
     }
-    Timer::stop("Converted edges to segments            :");
-
-
-
-    //Timer::start();
-    //int intersections = 0;
-    //for (int i = 0 ; i < segments.size(); i++)
-    //{
-        //for (int j = i+1 ; j < segments.size(); j++)
-        //{
-            //// Check for intersection
-            //if (CGAL::do_intersect(segments[i], segments[j])) 
-            //{
-                //intersections++;
-            //}
-        //}
-    //}
-
-    //std::cout << "There are " << intersections << " out of " << segments.size() << " segments." << std::endl;
-    //Timer::stop("Checking intersections                 :");
-
 
     Timer::start();
-    // Insert all the segments into the arrangement using the range insert method
     CGAL::insert(this->arr, segments.begin(), segments.end());
     Timer::stop("Computed arrangement                   :");
 
+    // Sequential arrangement computationa
     //Timer::start();
     //Arrangement_2 arr;
     //for (const auto& segment : segments) {
@@ -82,16 +35,10 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh)
     //}
     //Timer::stop("Computed arrangement sequantially      :");
 
-
     std::cout << "The arrangement size:"
         << "   |V| = " << this->arr.number_of_vertices()
         << ",  |E| = " << this->arr.number_of_edges()
         << ",  |F| = " << this->arr.number_of_faces() << std::endl << std::endl;
-
-    //std::cout << std::endl << std::endl << "The sequantial arrangement size:\n"
-        //<< "   |V| = " << arr.number_of_vertices()
-        //<< ",  |E| = " << arr.number_of_edges()
-        //<< ",  |F| = " << arr.number_of_faces() << std::endl;
 
     // Set up the indices and their reverse lookup for all faces
     int counter = 0;

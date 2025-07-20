@@ -12,25 +12,19 @@
 #include <iterator>
 #include <unordered_map>
 
-std::pair<std::set<int>, std::set<int>> ReebSpace::getMinusPlusTrianglesIndex(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle currentHalfEdge)
+std::pair<std::vector<int>, std::vector<int>> ReebSpace::getMinusPlusTrianglesIndex(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle currentHalfEdge)
 {
-    // Step 2. Find the edge in the mesh corresponding to the segment corresponding to the half edge
     const Segment_2 &segment = *arrangement.arr.originating_curves_begin(currentHalfEdge);
     //std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
     //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
 
-    // These will always be sorted, it's how we created the segments
-    const int aIndex = arrangement.arrangementPointsIdices.at(segment.source());
-    const int bIndex = arrangement.arrangementPointsIdices.at(segment.target());
+    const int aIndex = arrangement.arrangementPointIndices.at(segment.source());
+    const int bIndex = arrangement.arrangementPointIndices.at(segment.target());
 
     // Sanity check
     assert(aIndex < bIndex);
 
     const std::array<int, 2> edge = {aIndex, bIndex};
-
-    //printf("The original indices are %d and %d", data->arrangementPointsIdices[segment.source()], data->arrangementPointsIdices[segment.target()]);
-    //printf("\n");
-
 
     // Check to see if the segment and half edge have the same orientation
     const bool isSegmentLeftToRight = segment.source() < segment.target(); 
@@ -144,10 +138,10 @@ void ReebSpace::computeTwinFacePreimageGraph(const TetMesh &tetMesh, const Arran
     Arrangement_2::Face_const_handle twinFace = twin->face();
 
     // Get ids of the current face and the twin face
-    int currentFaceID = arrangement.arrangementFacesIdices.at(currentFace);
-    int twinFaceID = arrangement.arrangementFacesIdices.at(twinFace);
+    const int currentFaceID = arrangement.arrangementFacesIdices.at(currentFace);
+    const int twinFaceID = arrangement.arrangementFacesIdices.at(twinFace);
 
-    auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(tetMesh, arrangement, currentHalfEdge);
+    const auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(tetMesh, arrangement, currentHalfEdge);
 
     //std::cout << "Computed minus/plus triangles..." << std::endl;
     //printf("The current preimage graph has %d triangles...\n", data->preimageGraphs[currentFaceID].data.size());
@@ -207,7 +201,7 @@ void ReebSpace::computeTwinFacePreimageGraph(const TetMesh &tetMesh, const Arran
     //data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
 }
 
-void ReebSpace::computePreimageGraphs(const TetMesh &tetMesh, const Arrangement &arrangement, const bool discardFiberSeedsSets)
+void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arrangement, const bool discardFiberSeedsSets)
 {
 
     using namespace indicators;
@@ -436,10 +430,10 @@ void ReebSpace::determineCorrespondence(const TetMesh &tetMesh, const Arrangemen
 
     // Get the originating edge
     const Segment_2 &segment = *arrangement.arr.originating_curves_begin(halfEdge);
-    const std::pair<int, int> originatingEdge = {arrangement.arrangementPointsIdices.at(segment.source()), arrangement.arrangementPointsIdices.at(segment.target())};
+    const std::pair<int, int> originatingEdge = {arrangement.arrangementPointIndices.at(segment.source()), arrangement.arrangementPointIndices.at(segment.target())};
 
     // The triangls that are added/removd from face -> twinFace
-    const auto& [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(tetMesh, arrangement, halfEdge);
+    const auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(tetMesh, arrangement, halfEdge);
 
     // See which of the roots (connected components) are active (contain an active triangle)
     std::set<int> activeRootsFace;
