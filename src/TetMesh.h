@@ -14,44 +14,34 @@ class TetMesh
   public:
     TetMesh() {}
 
-    // Bounding box min/max for the domain and range coordinates of all vertices
-    float minF, maxF;
-    float minG, maxG;
-    float minX, maxX;
-    float minY, maxY;
-    float minZ, maxZ;
-
-    // (Optional) indicative names for the two scalar fields and their units
-    std::string longnameF, longnameG, units;
-
-    // Tets, edges, triangles, etc
-    std::vector<std::array<size_t, 4>> tetrahedra;
-
-    std::vector<std::array<int, 2>> edges;
-    std::map<std::array<int, 2>, int> edgeSingularTypes;
-
-
-    std::vector<std::set<int>> triangles;
-    std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleIndices;
-
-
-    // What does this do again?
-    std::vector<std::vector<int>> adjacentTrianglesIndex;
-
+    // Domain and range coordinates
     std::vector<float> vertexCoordinatesF;
     std::vector<float> vertexCoordinatesG;
     std::vector<std::vector<float>> vertexDomainCoordinates;
 
+    // Bounding box min/max for the domain and range coordinates of all vertices
+    float minF, maxF, minG, maxG;
+    float minX, maxX, minY, maxY, minZ, maxZ;
+
+    // (Optional) indicative names for the two scalar fields and their units
+    std::string longnameF, longnameG, units;
+
+    // Combinatorial structure
+    std::vector<std::array<size_t, 4>> tetrahedra;
+
+    std::vector<std::array<int, 2>> edges;
+    std::map<std::array<int, 2>, int> edgeSingularTypes;
     // Ideally we do want this with a proper data structure with a STAR, then there's no write conflits
     // Make sure to always keep the edge (u, v) such that u < v in index value,
     std::map<std::array<int, 2>, std::set<int>> upperLink;
     std::map<std::array<int, 2>, std::set<int>> lowerLink;
-
     std::map<std::array<int, 2>, std::set<int>> upperStarTriangles;
     std::map<std::array<int, 2>, std::set<int>> lowerStarTriangles;
 
-    // Tell us which triangles (as sets of IDs) are connected (part of a tetrahedron)
-    std::set<std::pair<std::set<int>, std::set<int>>> connectedTriangles;
+    std::vector<std::set<int>> triangles;
+    std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleIndices;
+    // Which triangles belong to the same tet as other triangles
+    std::vector<std::vector<int>> tetIncidentTriangles;
 
 
     void computeBoundingBoxes();
@@ -64,10 +54,11 @@ class TetMesh
 
 
     // We only add upperLink/lowerLink to data, the rest of data is unchagned
-    void computeUpperLowerLinkVertices();
+    void computeUpperLowerLinkAndStar();
     void computeSingularEdgeTypes();
-    // We only add upperLink/lowerLink to data, the rest of data is unchagned
-    void computeTriangleAdjacency();
+
+    // From the tet soup, get the edges and triangles and tet-incidence of the triangles
+    void computeCombinatorialStructure();
 
     // Give the edge (aIndex, bIndex), is the vertex vIndex from its link in the upper and lower link of the edge
     // We assume that aIndex < bIndex for consistent orientation.

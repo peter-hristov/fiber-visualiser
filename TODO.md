@@ -1,7 +1,6 @@
 # Refactor
-Make test vector<array>
+Make triangles vector<array>
 Move the hashes outside of Disjoint set
-Compute plus/minus triangles only once
 Update the timer for use a hashmap
 Put the Reeb space computation in a different library
 

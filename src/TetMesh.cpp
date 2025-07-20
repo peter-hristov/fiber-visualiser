@@ -265,7 +265,7 @@ void TetMesh::computeSingularEdgeTypes()
     }
 
 }
-void TetMesh::computeUpperLowerLinkVertices()
+void TetMesh::computeUpperLowerLinkAndStar()
 {
     // Initialize all maps with the empty set, so that all edges are covered
     for (auto &edge : this->edges)
@@ -368,21 +368,19 @@ bool TetMesh::isUpperLinkEdgeVertex(int aIndex, int bIndex, int vIndex)
 
 
 
-void TetMesh::computeTriangleAdjacency()
+void TetMesh::computeCombinatorialStructure()
 {
+    // Compute all unique edges
     std::set<std::array<int, 2>> allEdges;
 
-    // Initialize all edges types as regular initially
     for (int i = 0 ; i <  this->tetrahedra.size() ; i++)
     {
         const auto &tet = this->tetrahedra[i];
 
-        // All pairs give you all six edges
         for (int a = 0 ; a < 4 ; a++)
         {
             for (int b = a + 1 ; b < 4 ; b++)
             {
-                // Get the indices of the vertices for the edge
                 int aIndex = tet[a];
                 int bIndex = tet[b];
 
@@ -392,7 +390,6 @@ void TetMesh::computeTriangleAdjacency()
                     std::swap(aIndex, bIndex);
                 }
 
-                // Initialize edge
                 allEdges.insert({aIndex, bIndex});
             }
         }
@@ -404,16 +401,13 @@ void TetMesh::computeTriangleAdjacency()
     }
 
 
-
-
+    // Compute all unique triangles
     std::set<std::set<int>> allTriangles;
 
     for (const std::array<size_t, 4> tet : this->tetrahedra)
     {
-        // The triangles of the tet
         std::set<std::set<int>> triangles;
 
-        // All pairs give you all six edges
         for (int a = 0 ; a < 4 ; a++)
         {
             for (int b = a + 1 ; b < 4 ; b++)
@@ -429,36 +423,29 @@ void TetMesh::computeTriangleAdjacency()
         }
     }
 
-    //
-    // Set up the indices for all triangles
-    //
-
     for (const std::set<int> triangle : allTriangles)
     {
         this->triangles.push_back(triangle);
         this->triangleIndices[triangle] = this->triangles.size() - 1;
     }
 
-    this->adjacentTrianglesIndex.resize(allTriangles.size());
 
+    // Compute which triangles are tet-adjacent (are both the faces of the same tet)
+    this->tetIncidentTriangles.resize(allTriangles.size());
 
-
-    // Compute the adjacency of triangles in the mesh, two triangles are adjacent when they are the faces of the same tet
     for (const std::array<size_t, 4> tet : this->tetrahedra)
     {
-        // The triangles of the tet
         std::set<std::set<int>> triangles;
 
-        // All pairs give you all six edges
         for (int a = 0 ; a < 4 ; a++)
         {
             for (int b = a + 1 ; b < 4 ; b++)
             {
                 for (int c = b + 1 ; c < 4 ; c++)
                 {
-                    int aIndex = tet[a];
-                    int bIndex = tet[b];
-                    int cIndex = tet[c];
+                    const int aIndex = tet[a];
+                    const int bIndex = tet[b];
+                    const int cIndex = tet[c];
                     triangles.insert({aIndex, bIndex, cIndex});
                 }
             }
@@ -469,17 +456,10 @@ void TetMesh::computeTriangleAdjacency()
         {
             for(const std::set<int> t2 : triangles)
             {
-                // Create a pair of sets
-                std::pair<std::set<int>, std::set<int>> pairOfTriangles = {t1, t2};
-
-                // Insert the pair into the set
-                this->connectedTriangles.insert(pairOfTriangles);
-
                 int t1Index = this->triangleIndices[t1];
                 int t2Index = this->triangleIndices[t2];
-
-                this->adjacentTrianglesIndex[t1Index].push_back(t2Index);
-                this->adjacentTrianglesIndex[t2Index].push_back(t1Index);
+                this->tetIncidentTriangles[t1Index].push_back(t2Index);
+                this->tetIncidentTriangles[t2Index].push_back(t1Index);
             }
         }
     }

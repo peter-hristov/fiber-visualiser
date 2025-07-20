@@ -65,13 +65,14 @@ int main(int argc, char* argv[])
         std::cerr << "Error: " << e.what() << '\n';
         return 1;
     }
-
+    Timer::start();
     tetMesh.perturbRangeValues(perturbationEpsilon);
     tetMesh.sortVertices();
     tetMesh.computeBoundingBoxes();
-    tetMesh.computeTriangleAdjacency();
-    tetMesh.computeUpperLowerLinkVertices();
+    tetMesh.computeCombinatorialStructure();
+    tetMesh.computeUpperLowerLinkAndStar();
     tetMesh.computeSingularEdgeTypes();
+    Timer::stop("Input mesh postprocessing              :");
 
     Timer::start();
     Arrangement arrangement;

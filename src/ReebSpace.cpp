@@ -189,7 +189,7 @@ void ReebSpace::computeTwinFacePreimageGraph(const TetMesh &tetMesh, const Arran
 
     for (const auto &[t1, id1] : this->preimageGraphs[twinFaceID].data)
     {
-        for (const auto &t2 : tetMesh.adjacentTrianglesIndex[t1])
+        for (const auto &t2 : tetMesh.tetIncidentTriangles[t1])
         {
             if (this->preimageGraphs[twinFaceID].data.contains(t2))
             {
