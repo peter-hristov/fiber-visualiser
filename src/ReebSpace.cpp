@@ -130,75 +130,44 @@ void ReebSpace::testTraverseArrangement(const Arrangement &arrangement)
 
 void ReebSpace::computeTwinFacePreimageGraph(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle &currentHalfEdge)
 {
-    // Get the face
-    Arrangement_2::Face_const_handle currentFace = currentHalfEdge->face();
-
-    // Get the twin
-    Arrangement_2::Halfedge_const_handle twin = currentHalfEdge->twin();
-    Arrangement_2::Face_const_handle twinFace = twin->face();
-
-    // Get ids of the current face and the twin face
+    Face_const_handle currentFace = currentHalfEdge->face();
     const int currentFaceID = arrangement.arrangementFacesIdices.at(currentFace);
+
+    Face_const_handle twinFace = currentHalfEdge->twin()->face();
     const int twinFaceID = arrangement.arrangementFacesIdices.at(twinFace);
 
     const auto [minusTriangles, plusTriangles] = ReebSpace::getMinusPlusTrianglesIndex(tetMesh, arrangement, currentHalfEdge);
 
-    //std::cout << "Computed minus/plus triangles..." << std::endl;
-    //printf("The current preimage graph has %d triangles...\n", data->preimageGraphs[currentFaceID].data.size());
-
-    // Set the current preimage graph to be the preimage graph of the parent
     std::set<int> preimageGraph;
     for (const auto &[t, id] : preimageGraphs[currentFaceID].data)
     {
         preimageGraph.insert(t);
     }
 
-    //printf("Minus triangles...\n");
-
-    // Add and remove triangles of the upper/lower link of the crossed edge
     for (const auto &triangle: minusTriangles)
     {
         preimageGraph.erase(triangle);
-        //std::cout << triangle << std::endl;
     }
 
-    //printf("Plus triangles...\n");
     for (const auto &triangle: plusTriangles)
     {
         preimageGraph.insert(triangle);
-        //std::cout << triangle << std::endl;
     }
 
-    //std::cout << "Computed preimage graph soup..." << std::endl;
-    //for (const auto &triangle: preimageGraph)
-    //{
-        //std::cout << triangle << std::endl;
-    //}
-
-    //
-    // Step 3. Compute disjointSets[twinFaceID]
-    //
-
     this->preimageGraphs[twinFaceID].initialize(preimageGraph);
-
     for (const auto &[t1, id1] : this->preimageGraphs[twinFaceID].data)
     {
         for (const auto &t2 : tetMesh.tetIncidentTriangles[t1])
         {
             if (this->preimageGraphs[twinFaceID].data.contains(t2))
             {
-                this->preimageGraphs[twinFaceID].union_setsTriangle(t1, t2);
+                this->preimageGraphs[twinFaceID].unionElements(t1, t2);
             }
         }
     }
 
-    //std::cout << "Unioned sets..." << std::endl;
-
     // Finaly make sure everyon points to their root
-    this->preimageGraphs[twinFaceID].update();
-
-    // Used when drawing the arrangement
-    //data->arrangementFiberComponents[twinFaceID] = data->preimageGraphs[twinFaceID].countConnectedComponents();
+    this->preimageGraphs[twinFaceID].finalise();
 }
 
 void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arrangement, const bool discardFiberSeedsSets)
@@ -372,7 +341,7 @@ void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arra
                 // Initialize the vertices of H with the connected components of the twin graph
                 for (const auto &[representative, root] : representativesAndRoots)
                 {
-                    this->reebSpace.addElements({twinFaceID, root});
+                    this->reebSpace.addElement({twinFaceID, root});
                 }
 
                 // If we want fiber computation, cache the seeds for the fiber components
@@ -439,13 +408,13 @@ void ReebSpace::determineCorrespondence(const TetMesh &tetMesh, const Arrangemen
     std::set<int> activeRootsFace;
     for (int triangle : minusTriangles)
     {
-        activeRootsFace.insert(this->preimageGraphs[faceID].findTriangle(triangle));
+        activeRootsFace.insert(this->preimageGraphs[faceID].findElement(triangle));
     }
 
     std::set<int> activeRootsTwinFace;
     for (int triangle : plusTriangles)
     {
-        activeRootsTwinFace.insert(preimageGraphs[twinFaceID].findTriangle(triangle));
+        activeRootsTwinFace.insert(preimageGraphs[twinFaceID].findElement(triangle));
 
     }
 
@@ -490,7 +459,7 @@ void ReebSpace::determineCorrespondence(const TetMesh &tetMesh, const Arrangemen
                         //});
 
 
-                this->reebSpace.union_setsTriangle({faceID, rFace}, {twinFaceID, rTwinFace});
+                this->reebSpace.unionElements({faceID, rFace}, {twinFaceID, rTwinFace});
 
 
 
@@ -513,20 +482,20 @@ void ReebSpace::determineCorrespondence(const TetMesh &tetMesh, const Arrangemen
     for (const auto &[t, id] : this->preimageGraphs[faceID].data)
     {
         // The root of the triangle in the face
-        const int triangleRootFace = this->preimageGraphs[faceID].findTriangle(t);
+        const int triangleRootFace = this->preimageGraphs[faceID].findElement(t);
 
         // We have already deal with the active fiber
         if (activeRootsFace.contains(triangleRootFace)) { continue; }
 
         // The root of the triangle in the twin face
-        const int triangleRootTwinFace = this->preimageGraphs[twinFaceID].findTriangle(t);
+        const int triangleRootTwinFace = this->preimageGraphs[twinFaceID].findElement(t);
 
         //connectedFacesAndRoots.insert(reebSpaceConnection);
         //data->edgesH.push_back({
                 //{faceID, triangleRootFace}, 
                 //{twinFaceID, triangleRootTwinFace}
                 //});
-        this->reebSpace.union_setsTriangle({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
+        this->reebSpace.unionElements({faceID, triangleRootFace}, {twinFaceID, triangleRootTwinFace});
 
         //int faceVertexHindex = data->vertexHtoIndex[{faceID, triangleRootFace}];
         //int twinFaceVertexHindex = data->vertexHtoIndex[{twinFaceID, triangleRootTwinFace}];
@@ -565,7 +534,7 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
 
     Timer::start();
     // Path compression to make sure every element of H is poiting to its root
-    this->reebSpace.update();
+    this->reebSpace.finalise();
     Timer::stop("Updating RS disjoint set               :");
 
 
@@ -575,7 +544,7 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
     {
         for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[i])
         {
-            const int sheetId = this->reebSpace.findTriangle({i, fiberComponentId});
+            const int sheetId = this->reebSpace.findElement({i, fiberComponentId});
             faceSheets[i].insert(sheetId);
         }
 
@@ -800,7 +769,7 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
                 // For each fiber component in the face, see if one of those is in our sheet
                 for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
                 {
-                    const int componentSheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
+                    const int componentSheetId = this->reebSpace.findElement({currentFaceID, fiberComponentId});
 
                     // Now we can add the polygon
                     if (componentSheetId == sheetId)

@@ -302,7 +302,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
     //vector<int> sheetIds;
     for (const auto &[triangleId, fiberComponentId] : this->reebSpace.fiberSeeds[currentFaceID])
     {
-        const int sheetId = this->reebSpace.reebSpace.findTriangle({currentFaceID, fiberComponentId});
+        const int sheetId = this->reebSpace.reebSpace.findElement({currentFaceID, fiberComponentId});
 
         if (reebSheetIdOnly == -1 || sheetId == reebSheetIdOnly)
         {
@@ -726,13 +726,13 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
                         // Which sheets does this fiber belong to?
                         // 1. Triangle -> Face ComponentID
                         const int triangleID = this->tetMesh.triangleIndices[std::set<int>({triangleVertexA, triangleVertexB, triangleVertexC})];
-                        const int componentID = this->reebSpace.preimageGraphs[currentFaceID].findTriangle(triangleID);
+                        const int componentID = this->reebSpace.preimageGraphs[currentFaceID].findElement(triangleID);
                         //printf("The face ID is %d and the component ID is = %d\n", currentFaceID, componentID);
 
                         // 2. Fac ComponentID -> Reeb Space Sheet
                         //const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
                         //const int sheetID = this->reebSpace.findTriangle(pairToHIndex);
-                        const int sheetID = this->reebSpace.reebSpace.findTriangle({currentFaceID, componentID});
+                        const int sheetID = this->reebSpace.reebSpace.findElement({currentFaceID, componentID});
 
                         //printf("The Sheet ID is = %d\n", sheetID);
 

@@ -61,7 +61,7 @@ struct MyHash<std::set<int>>
     }
 };
 
-template<typename DataType>
+template<typename ElementType>
 class DisjointSet {
 
     public:
@@ -73,8 +73,8 @@ class DisjointSet {
         //std::map<std::set<int>, int> data;
         
         // Map from the data value to it's index in the data structure
-        std::unordered_map<DataType, int, MyHash<DataType>> data;
-        //std::map<DataType, int> data;
+        std::unordered_map<ElementType, int, MyHash<ElementType>> data;
+        //std::map<ElementType, int> data;
 
 
         DisjointSet() 
@@ -82,7 +82,7 @@ class DisjointSet {
 
         }
 
-        DisjointSet(const std::set<DataType> &preimageGraph) 
+        DisjointSet(const std::set<ElementType> &preimageGraph) 
         {
             initialize(preimageGraph);
         }
@@ -96,27 +96,27 @@ class DisjointSet {
         {
             this->parent = std::vector<int>();
             this->rank = std::vector<int>();
-            this->data  = std::unordered_map<DataType, int, MyHash<DataType>>();
-            //this->data  = std::map<DataType, int>();
+            this->data  = std::unordered_map<ElementType, int, MyHash<ElementType>>();
+            //this->data  = std::map<ElementType, int>();
         }
 
         // Make sure everyone is poiting to the root
-        void update()
+        void finalise()
         {
             for (int i = 0 ; i < parent.size() ; i++)
             {
-                this->find(i);
+                this->findIndex(i);
             }
         }
 
-        std::vector<std::pair<DataType, int>> getUniqueRepresentativesAndRoots()
+        std::vector<std::pair<ElementType, int>> getUniqueRepresentativesAndRoots()
         {
             std::set<int> uniqueRoots;
-            std::vector<std::pair<DataType, int>> representativesAndRoots;
+            std::vector<std::pair<ElementType, int>> representativesAndRoots;
 
             for (const auto &[key, ufId] : this->data)
             {
-                const int root = this->find(ufId);
+                const int root = this->findIndex(ufId);
 
                 if (false == uniqueRoots.contains(root))
                 {
@@ -132,7 +132,7 @@ class DisjointSet {
         {
 
             std::set<int> uniqueRoots;
-            std::vector<DataType> representatives;
+            std::vector<ElementType> representatives;
 
             for (const auto &[key, value] : this->data)
             {
@@ -160,13 +160,13 @@ class DisjointSet {
 
             for(int i  = 0 ; i < parent.size() ; i++)
             {
-                uniqueRoots.insert(find(i));
+                uniqueRoots.insert(findIndex(i));
             }
 
             return std::vector<int>(uniqueRoots.begin(), uniqueRoots.end());
         }
 
-        void initialize(const std::set<DataType> &preimageGraph) 
+        void initialize(const std::set<ElementType> &preimageGraph) 
         {
             int n = preimageGraph.size();
 
@@ -180,7 +180,7 @@ class DisjointSet {
 
             // Map each triangle to an ID in the disjoint set
             int counter = 0;
-            for(const DataType triangle: preimageGraph)
+            for(const ElementType triangle: preimageGraph)
             {
                 data[triangle] = counter++;
             }
@@ -194,13 +194,13 @@ class DisjointSet {
 
             for(int i  = 0 ; i < parent.size() ; i++)
             {
-                roots.insert(find(i));
+                roots.insert(findIndex(i));
             }
 
             return roots.size();
         }
 
-        void addElements(const DataType triangle1)
+        void addElement(const ElementType &triangle1)
         {
             const int newElementId = parent.size();
 
@@ -210,21 +210,21 @@ class DisjointSet {
         }
 
         // Interface for triangles
-        int findTriangle(DataType triangle)
+        int findElement(const ElementType &triangle)
         {
             assert(data.contains(triangle));
-            return find(data[triangle]);
+            return findIndex(data[triangle]);
         }
 
-        void union_setsTriangle(const DataType triangle1, const DataType triangle2) 
+        void unionElements(const ElementType &triangle1, const ElementType &triangle2) 
         {
             assert(data.contains(triangle1));
             assert(data.contains(triangle2));
-            union_sets(data[triangle1], data[triangle2]);
+            unionIndices(data[triangle1], data[triangle2]);
 
         }
 
-        bool connectedTriangle(const DataType triangle1, const DataType triangle2)
+        bool connectedElements(const ElementType &triangle1, const ElementType &triangle2)
         {
             assert(data.contains(triangle1));
             assert(data.contains(triangle2));
@@ -232,19 +232,19 @@ class DisjointSet {
         }
 
         // Find with path compression
-        int find(int x) {
+        int findIndex(const int &x) {
             if (parent[x] != x) {
                 // Path compression
-                parent[x] = find(parent[x]);  
+                parent[x] = findIndex(parent[x]);  
             }
             return parent[x];
         }
 
         // Union by rank
-        void union_sets(int x, int y) 
+        void unionIndices(const int &x, const int &y) 
         {
-            int rootX = find(x);
-            int rootY = find(y);
+            const int rootX = findIndex(x);
+            const int rootY = findIndex(y);
 
             if (rootX != rootY) 
             {
@@ -265,7 +265,7 @@ class DisjointSet {
         }
 
         // Check if two nodes are connected
-        bool connected(int x, int y) {
-            return find(x) == find(y);
+        bool connectedIndex(const int &x, const int &y) {
+            return findIndex(x) == findIndex(y);
         }
 };

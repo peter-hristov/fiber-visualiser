@@ -330,7 +330,7 @@ void PlotWidget::drawBackground(QPainter &p)
                 // For each fiber component in the face, see if one of those is in our sheet
                 for (const auto &[triangleId, fiberComponentId] : this->data.reebSpace.fiberSeeds[currentFaceID])
                 {
-                    const int componentSheetId = data.reebSpace.reebSpace.findTriangle({currentFaceID, fiberComponentId});
+                    const int componentSheetId = data.reebSpace.reebSpace.findElement({currentFaceID, fiberComponentId});
 
                     // Now we can add the polygon
                     if (componentSheetId == sheetId)

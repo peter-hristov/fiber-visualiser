@@ -206,7 +206,7 @@ void TetMesh::computeSingularEdgeTypes()
 
             if (true == isEdgeInUpperLink)
             {
-                upperLinkComponentsDS[edge].union_setsTriangle(linkEdge[0], linkEdge[1]);
+                upperLinkComponentsDS[edge].unionElements(linkEdge[0], linkEdge[1]);
             }
         }
     }
@@ -219,7 +219,7 @@ void TetMesh::computeSingularEdgeTypes()
 
             if (true == isEdgeInLowerLink)
             {
-                lowerLinkComponentsDS[edge].union_setsTriangle(linkEdge[0], linkEdge[1]);
+                lowerLinkComponentsDS[edge].unionElements(linkEdge[0], linkEdge[1]);
             }
         }
     }

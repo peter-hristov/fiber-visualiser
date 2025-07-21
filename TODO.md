@@ -3,6 +3,7 @@
 Done - TetMesh
 Done - Arrangement
 ReebSpace
+Add index to faces.
 
 
 Make triangles vector<array>
