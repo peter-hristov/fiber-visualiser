@@ -24,7 +24,6 @@
 
 
 #include "./PlotWidget.h"
-#include "./Data.h"
 #include "./Timer.h"
 #include "./Fiber.h"
 #include "./CGALTypedefs.h"
@@ -47,273 +46,45 @@ PlotWidget::PlotWidget(QWidget *parent, Data &_data)
     paddedMaxF = data.tetMesh.maxF + paddingScalingFactor * (data.tetMesh.maxF - data.tetMesh.minF);
     paddedMinG = data.tetMesh.minG - paddingScalingFactor * (data.tetMesh.maxG - data.tetMesh.minG);
     paddedMaxG = data.tetMesh.maxG + paddingScalingFactor * (data.tetMesh.maxG - data.tetMesh.minG);
-
-    // Set up polygons for drawing
-    //this->arrangementPolygons.resize(this->data.arrangementIndexToFace.size());
-    //for (auto f = data.arr.faces_begin(); f != data.arr.faces_end(); ++f) 
-    //{
-        //if (f->is_unbounded()) 
-        //{
-            //continue;
-        //}
-
-        //QVector<QPoint> points;
-
-        //typename Arrangement_2::Ccb_halfedge_const_circulator circ = f->outer_ccb();
-        //typename Arrangement_2::Ccb_halfedge_const_circulator curr = circ;
-        //do {
-            //typename Arrangement_2::Halfedge_const_handle e = curr;
-
-            //// Get point from CGAL (and convert to double )
-            //const float u = CGAL::to_double(e->source()->point().x());
-            //const float v = CGAL::to_double(e->source()->point().y());
-
-            //// Translate to the window frame
-            //const float u1 = (resolution / (data.maxF - data.minF)) * (u - data.minF);
-            //const float v1 = (resolution / (data.maxG - data.minG)) * (v - data.minG);
-
-
-            //// Add to the polygon
-            //points << QPoint(u1, v1);
-
-            ////std::cout << "   (" << e->source()->point() << ")  -> " << "(" << e->target()->point() << ")" << std::endl;
-        //} while (++curr != circ);
-
-        //const int faceId = data.arrangementFacesIdices[f];
-        //this->arrangementPolygons[faceId] = QPolygon(points);
-    //}
 }
 
-    void
-PlotWidget::keyPressEvent(QKeyEvent* event)
+void PlotWidget::mousePressEvent(QMouseEvent* event)
 {
-    //if (event->key() == Qt::Key_I) {
-    //this->data.mousePoints[0].setY(this->data.mousePoints[0].y() + 1);
-    //this->update();
-    //}
-    //if (event->key() == Qt::Key_J) {
-    //this->data.mousePoints[0].setX(this->data.mousePoints[0].x() - 1);
-    //this->update();
-    //}
-    //if (event->key() == Qt::Key_K) {
-    //this->data.mousePoints[0].setY(this->data.mousePoints[0].y() - 1);
-    //this->update();
-    //}
-    //if (event->key() == Qt::Key_L) {
-    //this->data.mousePoints[0].setX(this->data.mousePoints[0].x() + 1);
-    //this->update();
-    //}
-}
-
-    void
-PlotWidget::mouseDoubleClickEvent(QMouseEvent* event)
-{}
-
-    void
-PlotWidget::mouseMoveEvent(QMouseEvent* event)
-{
-#ifdef __APPLE__
-    const QPointF clickPoint = { event->localPos().x() * 2, event->localPos().y() * 2 };
-#else
-    const QPointF clickPoint = event->localPos();
-#endif
-
-    // Transform the [res, res] grid
-    auto mouseTransformedPoint = painterCombinedTransform.inverted().map(clickPoint);
-
-    int m = 0;
-    int closestVertexPoint = 0;
-
-    auto &mousePoints = this->data.mousePoints;
-
-    // Find out whether we're hovering on a vertex of the polygon and highlight it
-    if (event->button() == Qt::NoButton) 
+    if (event->button() == Qt::LeftButton) 
     {
+        mousePointInitialPos = event->localPos();
+        mousePoint = mousePointInitialPos;
+        dragging = false;
+        recomputeFiber = true;
+        update();
+    }
+}
 
-        //
-        // Old code for moving data points around
-        //
-        //if (this->data.vertexCoordinatesF.size() > 0) 
-        //{
+void PlotWidget::mouseMoveEvent(QMouseEvent* event)
+{
+    if (event->buttons() & Qt::LeftButton)
+    {
+        QPointF currentPos = event->localPos();
 
-            //// Are we close to any of the vertices of the data?
-            //for (int i = 0; i < this->data.vertexCoordinatesF.size(); i++) {
-                //QPointF point;
-                //point.setX((resolution / (data.maxF - data.minF)) * (this->data.vertexCoordinatesF[i] - data.minF));
-                //point.setY((resolution / (data.maxG - data.minG)) * (this->data.vertexCoordinatesG[i] - data.minG));
-
-                //QPointF bestPoint;
-                //bestPoint.setX((resolution / (data.maxF - data.minF)) * (this->data.vertexCoordinatesF[closestVertexPoint] - data.minF));
-                //bestPoint.setY((resolution / (data.maxG - data.minG)) * (this->data.vertexCoordinatesG[closestVertexPoint] - data.minG));
-
-                //if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, point) <
-                        //tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint))
-                //{
-                    //// Set the closest vertex point
-                    //closestVertexPoint = i;
-                //}
-            //}
-
-            //QPointF bestPoint;
-            //bestPoint.setX((resolution / (data.maxF - data.minF)) * (this->data.vertexCoordinatesF[closestVertexPoint] - data.minF));
-            //bestPoint.setY((resolution / (data.maxG - data.minG)) * (this->data.vertexCoordinatesG[closestVertexPoint] - data.minG));
-
-            //if (tv9k::geometry::getDistancePointPoint(mouseTransformedPoint, bestPoint) < sphereRadius * 4) {
-                //this->closePointData = closestVertexPoint;
-            //} else {
-                //this->closePointData = -1;
-            //}
-        //}
-        //else
-        //{
-            //this->closePointData = -1;
-        //}
-
-
-        // Have you clicked on a mouse point - the fiber point? Drag it.
-        if (mousePoints.size() > 0 && this->closePointData == -1) 
+        if (!dragging)
         {
-            // Find the closest mouse point
-            for (int i = 0; i < mousePoints.size(); i++) 
+            if ((currentPos - mousePointInitialPos).manhattanLength() > dragThreshold)
             {
-                if (tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[i]) <
-                        tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m])) {
-                    m = i;
-                }
+                dragging = true;
             }
-
-            if (tv9k::geometry::getDistancePointPoint(clickPoint, mousePoints[m]) <= sphereRadius) {
-                closePoint = m;
-            } else {
-                closePoint = -1;
-            }
-        } else {
-            closePoint = -1;
         }
-    }
 
-    if (event->buttons() == Qt::LeftButton) 
-    {
-
-        // Dragging a data point
-        if (MouseDragMode::DataPoint == dragMode) 
+        if (dragging)
         {
-            //assert(movePoint >= 0 && movePoint < this->data.vertexCoordinatesF.size());
-
-            //float fValue = this->data.minF + (mouseTransformedPoint.x() / resolution) * (this->data.maxF - this->data.minF);
-            //float gValue = this->data.minG + (mouseTransformedPoint.y() / resolution) * (this->data.maxG - this->data.minG);
-
-            //this->data.vertexCoordinatesF[movePoint] = fValue;
-            //this->data.vertexCoordinatesG[movePoint] = gValue;
+            mousePoint = currentPos;
+            recomputeFiber = true;
+            update();
         }
-
-        // Draggin a vertex
-        if (MouseDragMode::Vertex == dragMode) {
-            assert(movePoint >= 0 && movePoint < mousePoints.size());
-            mousePoints[movePoint] = clickPoint;
-            this->recomputeFiber = true;
-        }
-
     }
-
-    this->update();
 }
 
-    void
-PlotWidget::mouseReleaseEvent(QMouseEvent* event)
+void PlotWidget::drawReebSpaceBackground(QPainter &p)
 {
-    this->dragMode = MouseDragMode::Nothing;
-}
-
-    void
-PlotWidget::mousePressEvent(QMouseEvent* event)
-{
-
-#ifdef __APPLE__
-    const QPointF clickPoint = { event->localPos().x() * 2, event->localPos().y() * 2 };
-#else
-    const QPointF clickPoint = event->localPos();
-#endif
-
-    auto &mousePoints = this->data.mousePoints;
-
-    // 0 is outside the fscp, 1 in on a vertex of the fscp, 2 is inside the fscp
-    enum ClickLocation
-    {
-        outside,
-        vertex,
-        inside,
-        dataPoint
-    } clickLocation = ClickLocation::outside;
-
-    size_t closestEdge = -1;
-    GLfloat distanceFromPolygon = -1;
-
-    if (-1 != this->closePointData) {
-        clickLocation = ClickLocation::dataPoint;
-    }
-    else if (-1 != this->closePoint)
-    {
-        clickLocation = ClickLocation::vertex;
-    }
-    else {
-        // If we at least have a triangle
-        if (mousePoints.size() >= 3) {
-            std::tie(distanceFromPolygon, closestEdge) =
-                tv9k::geometry::getDistancePointPolygon(mousePoints, QPointF(clickPoint.x(), clickPoint.y()));
-
-            if (distanceFromPolygon < 0) {
-                clickLocation = ClickLocation::inside;
-            }
-        }
-    }
-
-    if (event->button() == Qt::RightButton) {
-        if (clickLocation == ClickLocation::vertex) {
-            mousePoints.erase(mousePoints.begin() + closePoint);
-            this->polygonLocked = false;
-            this->update();
-        } else if (clickLocation == ClickLocation::inside) {
-            this->polygonLocked = true;
-        }
-    } else if (event->button() == Qt::LeftButton) {
-        if (clickLocation == ClickLocation::dataPoint)
-        {
-            this->dragMode = MouseDragMode::DataPoint;
-
-            // Set the initial location
-            this->movePoint = this->closePointData;
-        }
-        else if (clickLocation == ClickLocation::vertex) {
-            // Say we're dragging a vertex
-            this->dragMode = MouseDragMode::Vertex;
-
-            // Set the initial location
-            this->movePoint = closePoint;
-
-            this->polygonLocked = false;
-            this->update();
-        } else if (clickLocation == ClickLocation::inside) {
-            // Say we're dragging the whole thing
-            this->dragMode = MouseDragMode::Polygon;
-
-            // Set the initial move point
-            this->initialMovePoint = clickPoint;
-        } else {
-            mousePoints.clear();
-            mousePoints.insert(mousePoints.begin() + closestEdge + 1, clickPoint);
-            this->recomputeFiber = true;
-            this->polygonLocked = false;
-            this->update();
-        }
-    }
-
-    this->update();
-}
-
-void PlotWidget::drawBackground(QPainter &p)
-{
-
     for (const auto &[sheetId, polygon] : data.reebSpace.sheetPolygon)
     {
         QVector<QPointF> points;
@@ -507,35 +278,25 @@ void PlotWidget::drawBackground(QPainter &p)
     }
 }
 
-void PlotWidget::generateStaticCache()
+void PlotWidget::generateStaticReebSpaceCache()
 {
-    if (!staticCache) 
+    if (!staticReebSpaceCache) 
     {
-        staticCache = std::make_unique<QPixmap>(resolution, resolution);
-        staticCache->fill(Qt::white);
+        staticReebSpaceCache = std::make_unique<QPixmap>(resolution, resolution);
+        staticReebSpaceCache->fill(Qt::white);
         qDebug() << "Redrawing REEB SPACE ...";
-        QPainter p(staticCache.get());
-        this->drawBackground(p);
+        QPainter p(staticReebSpaceCache.get());
+        this->drawReebSpaceBackground(p);
     }
 }
 
 void PlotWidget::resizeEvent(QResizeEvent* event)
 {
-    generateStaticCache();
-    // If the widget size has changed, regenerate the static cache
-    //if (!staticCache || staticCache->size() != size()) 
-    //{
-        //generateStaticCache();
-    //}
-
-    // You can call the base resizeEvent if needed, but it's not strictly required.
-    // QWidget::resizeEvent(event); // Uncomment if needed
+    generateStaticReebSpaceCache();
 }
 
 void PlotWidget::paintEvent(QPaintEvent*)
 {
-
-
     QPainter p(this);
     p.setWindow(QRect(0, 0, resolution, resolution));
     // p.setViewport(QRect(0, 0, resolution, resolution));
@@ -544,30 +305,39 @@ void PlotWidget::paintEvent(QPaintEvent*)
     p.setTransform(QTransform(1., 0., 0., -1., 0., resolution));
     p.setPen(Qt::gray);
 
-    this->painterCombinedTransform = p.combinedTransform();
+    generateStaticReebSpaceCache();
+    p.drawPixmap(0, 0, *(this->staticReebSpaceCache));
 
-    if (!staticCache) 
+    QPointF fiberPoint = p.combinedTransform().inverted().map(mousePoint);
+
+    // Draw fiber point
+    auto penGrey = QPen(QColor(0, 0, 0, 250));
+    penGrey.setWidthF(8.0);
+    p.setPen(penGrey);
+    p.drawEllipse(QPointF(fiberPoint.x(), fiberPoint.y()), sphereRadius, sphereRadius);
+
+    // Crosshair around fiber point
+    penGrey.setWidthF(1.0);
+    p.setPen(penGrey);
+    p.drawLine(fiberPoint.x(), fiberPoint.y() - resolution, fiberPoint.x(), fiberPoint.y() + resolution);
+    p.drawLine(fiberPoint.x() - resolution, fiberPoint.y(), fiberPoint.x() + resolution, fiberPoint.y());
+
+    if (this->recomputeFiber == true)
     {
-        generateStaticCache();
+        this->recomputeFiber = false;
+
+        const float u = this->paddedMinF + (fiberPoint.x() / resolution) * (this->paddedMaxF - this->paddedMinF);
+        const float v = this->paddedMinG + (fiberPoint.y() / resolution) * (this->paddedMaxG - this->paddedMinG);
+
+        const std::vector<FiberPoint> fiber = fiber::computeFiber(data.tetMesh, data.arrangement, data.reebSpace, {u, v}, -1);
+        sibling->updateFiber(fiber);
     }
-    p.drawPixmap(0, 0, *(this->staticCache));
-
-    //this->drawBackground(p);
-
-
-    // Draw Fiber Surface Control Polygon
-    drawAndRecomputeFS(p);
 
     p.restore();
     drawAxisLabels(p);
 }
 
 
-    GLfloat
-PlotWidget::rescaleScalar(const GLfloat min, const GLfloat max, const GLfloat value)
-{
-    return (this->resolution / (max - min)) * (value - min);
-}
 
 QPointF PlotWidget::rescalePoint(const float &u, const GLfloat &v)
 {
@@ -576,10 +346,7 @@ QPointF PlotWidget::rescalePoint(const float &u, const GLfloat &v)
     return QPointF(rescaledU, rescaledV);
 }
 
-
-
-    void
-PlotWidget::drawAxisLabels(QPainter& p)
+void PlotWidget::drawAxisLabels(QPainter& p)
 {
     auto penGrey = QPen(QColor(0, 0, 0, 50));
     penGrey.setWidth(0.5);
@@ -718,83 +485,4 @@ PlotWidget::drawAxisLabels(QPainter& p)
     // y label
     p.drawText(
             0, 0, QString::fromStdString(data.tetMesh.longnameG) + " (" + QString::fromStdString(data.tetMesh.units) + ")");
-}
-
-    void
-PlotWidget::drawAndRecomputeFS(QPainter& p)
-{
-
-    auto &mousePoints = this->data.mousePoints;
-
-    // Only recompute the polygon if we have a new point
-    polyPoints.erase(polyPoints.begin(), polyPoints.end());
-
-    // Draw Fiber Surface Control Polygon (FSCP)
-    for (int i = 0; i < mousePoints.size(); i++) {
-        // Transform from the bottom left corner to be (0, 0) to the defautl QT
-        // (upper left)
-        QPointF a = p.combinedTransform().inverted().map(mousePoints[i]);
-        // cout << " The point is was " << mousePoints[i].x() << " , " <<
-        // mousePoints[i].y() << endl; cout << " The point is " << a.x() << " , " <<
-        // a.y() << endl;
-        polyPoints.push_back(a);
-    }
-
-    if (dragMode == 2) {
-        p.setPen(Qt::green);
-    } else {
-        p.setPen(Qt::black);
-    }
-    p.drawConvexPolygon(QPolygonF(polyPoints));
-
-    QPainterPath path;
-    path.addPolygon(polyPoints);
-
-    if (true == this->polygonLocked) {
-        p.fillPath(path, QColor(100, 100, 100, 100));
-    }
-
-    // Draw vertices of the FSCP
-    for (int i = 0; i < polyPoints.size(); i++) {
-        auto penGrey = QPen(QColor(0, 0, 0, 250));
-        p.setPen(penGrey);
-
-        // The current point is the one being dragged.
-        if (closePoint == i || dragMode == 2) {
-            p.setPen(Qt::green);
-        }
-
-
-        QPointF a = polyPoints[i];
-
-        p.drawEllipse(QPointF(a.x(), a.y()), sphereRadius, sphereRadius);
-
-
-        penGrey.setWidthF(1.0);
-        p.setPen(penGrey);
-
-
-
-        p.drawLine(a.x(), a.y() - resolution, a.x(), a.y() + resolution);
-        p.drawLine(a.x() - resolution, a.y(), a.x() + resolution, a.y());
-    }
-
-    // Leave a trail of fibers or not
-    //if (dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers == true)
-    //{
-        //this->data.faceFibers.clear();
-    //}
-
-    // If we have selected a point in the scatterplot, compute the fiber surface
-    if (this->recomputeFiber == true && polyPoints.size() == 1)
-    {
-        this->recomputeFiber = false;
-
-        // Reside to the original range data dimensions
-        const float u = this->paddedMinF + (polyPoints[0].x() / resolution) * (this->paddedMaxF - this->paddedMinF);
-        const float v = this->paddedMinG + (polyPoints[0].y() / resolution) * (this->paddedMaxG - this->paddedMinG);
-
-        const std::vector<FiberPoint> fiber = fiber::computeFiber(data.tetMesh, data.arrangement, data.reebSpace, {u, v}, -1);
-        sibling->updateFiber(fiber);
-    }
 }

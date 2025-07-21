@@ -1,13 +1,14 @@
 # Refactor
 
+Done - IO
 Done - TetMesh
 Done - Arrangement
 Done - ReebSpace
-Fiber computation
+Done - Fiber computation
+Done - Move the hashes outside of Disjoint set
+Simplify the 2D visualiser
 
 
-Make triangles vector<array>
-Move the hashes outside of Disjoint set
 Update the timer for use a hashmap
 Put the Reeb space computation in a different library
 

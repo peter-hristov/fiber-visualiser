@@ -26,108 +26,57 @@ class PlotWidget : public QWidget
 {
     Q_OBJECT
 
-  signals:
-    void redrawFiberSurface();
+    public:
+        PlotWidget(QWidget*, Data&);
 
-  public:
-    // Index in the mousePoints array
-    int closePoint = -1;
-    int closePointData = -1;
-    // Index in the mousePoints array
-    int movePoint = -1;
-    // Whether the fiber surface for the polygon has been rendered
-    bool polygonLocked = false;
-    // This is the initial point when tranclating the polygon
-    QPointF initialMovePoint;
-    
-    // Add some padding to the bounding box of the image of the domain so it does't fill the widget.
-    float paddingScalingFactor = 0.1;
-    float paddedMinF;
-    float paddedMaxF;
-    float paddedMinG;
-    float paddedMaxG;
+        // Add some padding to the bounding box of the image of the domain so it does't fill the widget.
+        float paddingScalingFactor = 0.1;
+        float paddedMinF;
+        float paddedMaxF;
+        float paddedMinG;
+        float paddedMaxG;
 
-    QTransform painterCombinedTransform;
+        // Cache the Reeb space so we don't have to draw it every referesh
+        std::unique_ptr<QPixmap> staticReebSpaceCache;
+        void generateStaticReebSpaceCache();
+        void drawReebSpaceBackground(QPainter &p);
 
-    std::unique_ptr<QPixmap> staticCache;
-    void generateStaticCache();
-    void drawBackground(QPainter &p);
+        // Indicates that we need to recompute the fiber, clicked/dragged the mouse/fiber point
+        bool recomputeFiber = false;
 
-    bool recomputeFiber = false;
+        Data &data;
+        TracerVisualiserWidget *sibling;
 
-    Data &data;
-    TracerVisualiserWidget *sibling;
+        const float resolution = 2000;
 
-    float varianceScale = 0;
-    const float resolution = 2000;
-    // This is the radius of the sphere around a vertex in the fscp
-    const float sphereRadius = this->resolution / 100.0;
+        QPointF rescalePoint(const float&, const float&);
 
-    QPointF drawLinesPoint;
 
-    GLfloat rescaleScalar(const GLfloat, const GLfloat, const GLfloat);
+        std::vector<float> verticalLineNumbers;
+        std::vector<float> horizontalLineNumbers;
 
-    QPointF rescalePoint(const float&, const float&);
+        void paintEvent(QPaintEvent* event);
+        void resizeEvent(QResizeEvent* event);
 
-    float mult = 1.0;
+        // Fiber point stuff
 
-    // Points on the FSCP polygon
-    QVector<QPointF> polyPoints;
+        // Initial position of where we click in the widget
+        QPointF mousePointInitialPos;
 
-    enum MouseDragMode
-    {
-        Nothing,
-        Vertex,
-        Polygon,
-        DataPoint
-    } dragMode = MouseDragMode::Nothing;
+        // Position of where we click and drag on the widget
+        QPointF mousePoint;
 
-    QVector<std::pair<QPointF, int>> points[2];
-    QVector<std::pair<QVector<QPointF>, int>> triangles[2];
+        // Whether the mouse is being dragged over the widget
+        bool dragging = false;
 
-    // Deprecated
-    // map<int, QImage> imageMap;
-    // map<int, QPainter> painterMap;
+        const qreal dragThreshold = 4.0;
 
-    // map<int, QImage> imagePointMap;
-    // map<int, QPainter> painterPointMap;
+        // This is the radius of the sphere around the fiber point
+        const float sphereRadius = this->resolution / 100.0;
 
-    // QVector<pair<QVector<QPointF>>> squares;
-
-    QVector<QVector<float>> distanceField;
-
-    //QVector<QPointF> mousePoints;
-    QVector<QVector<int>> histogram;
-
-    //PlotWidget()
-      //: QWidget()
-    //{
-        //setFocusPolicy(Qt::StrongFocus);
-    //}
-
-    PlotWidget(QWidget*, Data&);
-
-    std::vector<float> verticalLineNumbers;
-    std::vector<float> horizontalLineNumbers;
-
-    void paintEvent(QPaintEvent* event);
-    void resizeEvent(QResizeEvent* event);
-
-    //std::vector<QPolygon> arrangementPolygons;
-
-  protected:
-    void mouseMoveEvent(QMouseEvent* event);
-    void mouseReleaseEvent(QMouseEvent* event);
-    void mousePressEvent(QMouseEvent* event);
-    void mouseDoubleClickEvent(QMouseEvent* event);
-    void keyPressEvent(QKeyEvent* event);
-
-    void computeFSCPDistanceField();
-    float getFSCPDistance(float x, float y);
-    void drawInteriorPointsImages(QPainter& p);
-    void drawAxisLabels(QPainter& p);
-    void drawAndRecomputeFS(QPainter& p);
-
-    void compareImages();
-    void generateTriangleImages();
+    protected:
+        void mouseMoveEvent(QMouseEvent* event);
+        void mousePressEvent(QMouseEvent* event);
+        void drawInteriorPointsImages(QPainter& p);
+        void drawAxisLabels(QPainter& p);
 };

@@ -32,8 +32,8 @@
 using namespace std;
 
 
-void Data::printSheetHistogram()
-{
+//void Data::printSheetHistogram()
+//{
     //Timer::start();
     //if (this->currentFiberPoint.size() == 0)
     //{
@@ -65,4 +65,4 @@ void Data::printSheetHistogram()
     //}
     //std::cout << "\n";
     //Timer::stop("Computed face intersected by the line  :");
-}
+//}

@@ -330,16 +330,11 @@ TracerVisualiserWidget::drawScene()
     {
         // Draw Vertices
         {
-            //for (const auto &vertex : this->data.vertexDomainCoordinates) 
             for (int i = 0 ; i < this->data.tetMesh.vertexDomainCoordinates.size() ; i++) 
             {
                 const auto &vertex = this->data.tetMesh.vertexDomainCoordinates[i];
 
                 glColor4f(1, 1, 1, this->vertexOpacity);
-                if (dynamic_cast<PlotWidget*>(sibling)->dragMode ==  PlotWidget::MouseDragMode::DataPoint && i == dynamic_cast<PlotWidget*>(sibling)->movePoint)
-                {
-                    glColor4f(1, 0, 0, 0.2);
-                }
                 glPushMatrix();
                 {
                     glTranslatef(vertex[0], vertex[1], vertex[2]);

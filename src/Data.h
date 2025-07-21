@@ -44,19 +44,4 @@ class Data
     {}
 
     std::string outputFibersFile = "./fibers.vtp";
-
-
-
-    //
-    // Other
-    //
-    std::vector<float> currentFiberPoint;
-    void printSheetHistogram();
-    std::vector<FiberPoint> faceFibers;
-    void generatefFaceFibersForSheet(const int sheetId, const int numberOfFiberPoints);
-    void generatefFaceFibersForSheets(const int sheetOutputCount, const int numberOfFiberPoints, const std::string);
-
-
-    QVector<QPointF> mousePoints;
-
 };

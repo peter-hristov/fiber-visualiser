@@ -7,6 +7,7 @@
 #include "./io.h"
 #include "./Timer.h"
 #include "./ReebSpace.h"
+#include "./Data.h"
 #include "./CGALTypedefs.h"
 #include "./Arrangement.h"
 #include "./utility/CLI11.hpp"
