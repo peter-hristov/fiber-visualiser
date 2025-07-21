@@ -47,6 +47,12 @@ class ReebSpace
         // Compute the geometry of the sheets of the Reeb space
         void computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrangement &arrangement);
 
+        void computeSheetGeometry(const TetMesh &tetMesh, const Arrangement &arrangement);
+
+        void computeSheetArea(const TetMesh &tetMesh, const Arrangement &arrangement);
+
+        void printTopSheets(const TetMesh &tetMesh, const Arrangement &arrangement, const int &numberToPrint);
+
         //void countIntersectionsTypes(TetMesh &tetMesh, Arrangement &arrangement);
 
 

@@ -346,7 +346,7 @@ void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arra
     printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n\n", this->correspondenceGraph.data.size(), this->correspondenceGraph.getComponentRepresentatives().size());
 }
 
-void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrangement &arrangement)
+void ReebSpace::computeSheetGeometry(const TetMesh &tetMesh, const Arrangement &arrangement)
 {
     // For faster lookups cache the sheetd IDs for each face
     std::vector<std::unordered_set<int>> faceSheets(this->fiberSeeds.size());
@@ -548,15 +548,15 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
     {
         std::cout << "\nThe boundaries of all sheets are okay! No degeneracy.\n" << std::endl;
     }
+}
 
 
-    // Compute the areas of sheets
-
-
+void ReebSpace::computeSheetArea(const TetMesh &tetMesh, const Arrangement &arrangement)
+{
     Timer::start();
     for (const auto &[sheetId, polygon] : this->sheetPolygon)
     {
-        float area = 0.0;
+        double area = 0.0;
 
         // If the sheet is incomplete sum up the faces that make it
         if (this->incompleteSheets.contains(sheetId))
@@ -567,7 +567,7 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
                 const int currentFaceID = arrangement.arrangementFacesIdices.at(f);
 
                 // For each fiber component in the face, see if one of those is in our sheet
-                for (const auto &[triangleId, fiberComponentId] : this->fiberSeeds[currentFaceID])
+                for (const auto &[fiberComponentId, triangleId] : this->fiberSeeds[currentFaceID])
                 {
                     const int componentSheetId = this->correspondenceGraph.findElement({currentFaceID, fiberComponentId});
 
@@ -600,13 +600,13 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
         }
 
         this->sheetArea[sheetId] = area;
-        
-        //printf("The polygon of sheet %d has size %ld and area %f\n", sheetId, polygon.size(), area);
-        //printf("The area of sheet %d is %f \n", sheetId, area);
     }
     Timer::stop("Computing sheet areas                  :");
-    //Timer::stop("Computing sheet boundary polygons      :");
+}
 
+
+void ReebSpace::printTopSheets(const TetMesh &tetMesh, const Arrangement &arrangement, const int &numberToPrint)
+{
     Timer::start();
     // Transfer the map entries into a vector of pairs so that we can sort
     std::vector<std::pair<int, double>> sheetAreaSortVector(this->sheetArea.begin(), this->sheetArea.end());
@@ -626,11 +626,12 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
     }
     Timer::stop("Sorting sheets and labeling them       :");
 
-    std::cout << "\nHere are the top 20 sheets sorted by range area.\n";
+    const int actualNumberToPrint = std::min((size_t)30, sheetAreaSortVector.size());
+
+    std::cout << "\nHere are the top " << actualNumberToPrint << " sheets sorted by range area.\n";
     // Print to debug, at least the first new
     //for (int i = 0 ; i < sheetAreaSortVector.size() ; i++)
-    const int maxSheets = std::min((size_t)30, sheetAreaSortVector.size());
-    for (int i = 0 ; i < maxSheets ; i++)
+    for (int i = 0 ; i < actualNumberToPrint ; i++)
     {
         std::cout << i << " -- sheet " << sheetAreaSortVector[i].first << " has area " << sheetAreaSortVector[i].second << std::endl;
     }

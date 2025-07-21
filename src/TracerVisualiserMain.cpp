@@ -89,7 +89,9 @@ int main(int argc, char* argv[])
 
     std::cout << "Postprocessing..." << std::endl;
     Timer::start();
-    reebSpace.computeReebSpacePostprocess(tetMesh, arrangement);
+    reebSpace.computeSheetGeometry(tetMesh, arrangement);
+    reebSpace.computeSheetArea(tetMesh, arrangement);
+    reebSpace.printTopSheets(tetMesh, arrangement, 20);
     Timer::stop("Computed RS(f) Postprocess             :");
 
 
