@@ -26,6 +26,7 @@
 #include "./PlotWidget.h"
 #include "./Data.h"
 #include "./Timer.h"
+#include "./Fiber.h"
 #include "./CGALTypedefs.h"
 #include "./utility/Geometry.h"
 #include "./TracerVisualiserWindow.h"
@@ -35,10 +36,9 @@ using namespace std;
 const bool DRAW_GRIDLINES = true;
 
 
-PlotWidget::PlotWidget(QWidget* parent, Data &_data, string _interpolationType)
-    : QWidget(parent)
-    , data(_data)
-      , interpolationType(_interpolationType)
+PlotWidget::PlotWidget(QWidget *parent, Data &_data)
+  : QWidget(parent)
+  , data(_data)
 {
     setMouseTracking(true);
     setEnabled(true);
@@ -371,7 +371,7 @@ void PlotWidget::drawBackground(QPainter &p)
         QPolygonF qPolygon(points);
 
         const int colourID = data.reebSpace.sheetConsequitiveIndices[sheetId];
-        const array<float, 3> colorF = data.fiberColours[colourID % data.fiberColours.size()];
+        const array<float, 3> colorF = fiber::fiberColours[colourID % fiber::fiberColours.size()];
 
         p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
         p.setPen(Qt::NoPen);
@@ -791,37 +791,10 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
         this->recomputeFiber = false;
 
         // Reside to the original range data dimensions
-        float u = this->paddedMinF + (polyPoints[0].x() / resolution) * (this->paddedMaxF - this->paddedMinF);
-        float v = this->paddedMinG + (polyPoints[0].y() / resolution) * (this->paddedMaxG - this->paddedMinG);
+        const float u = this->paddedMinF + (polyPoints[0].x() / resolution) * (this->paddedMaxF - this->paddedMinF);
+        const float v = this->paddedMinG + (polyPoints[0].y() / resolution) * (this->paddedMaxG - this->paddedMinG);
 
-        const int currentFiberColour = 0;
-        // Compute all tet exit points
-
-        qDebug() << "Computing fiber ...";
-
-        //Timer::start();
-        //this->data.computeTetExitPoints(u, v, data.fiberColours[currentFiberColour]);
-        //Timer::stop("Computed fiber                         :");
-
-        //Timer::start();
-        ////this->data.computeTetExitPoints(u, v, data.fiberColours[currentFiberColour]);
-        //Timer::stop("Computed fiber old                     :");
-        //qDebug() << "Next ...";
-
-        //Timer::start();
-        //this->data.computeTetExitPointsNew(u, v, data.fiberColours[currentFiberColour]);
-        //Timer::stop("Computed fiber new                     :");
-        //qDebug() << "Next ...";
-
-        //Timer::start();
-        const bool clearFibers = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers;
-        this->data. computeTetExitPointsNewNew(u, v, clearFibers, -1);
-        //Timer::stop("Computed fiber new new                 :");
-        //qDebug() << "......";
-
-        // Display fibers
-        const auto& visualiserWidget = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget;
-        visualiserWidget->generateDisplayList();
-        visualiserWidget->update();
+        const std::vector<FiberPoint> fiber = fiber::computeFiber(data.tetMesh, data.arrangement, data.reebSpace, {u, v}, -1);
+        sibling->updateFiber(fiber);
     }
 }

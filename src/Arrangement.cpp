@@ -1,6 +1,39 @@
 #include "./Timer.h"
 #include "./Arrangement.h"
 
+Face_const_handle Arrangement::getActiveFace(const std::array<float, 2> fiberPoint)
+{
+    // The query point (u, v)
+    Point_2 query_point(fiberPoint[0], fiberPoint[1]);
+
+    // Locate the point in the arrangement
+    CGAL::Object result = pl->locate(query_point);
+
+    // Try to assign to a face, edge or a vertex
+    Arrangement_2::Face_const_handle face;
+    Arrangement_2::Halfedge_const_handle edge;
+    Arrangement_2::Vertex_const_handle vertex;
+
+    if (CGAL::assign(face, result)) 
+    {
+    } 
+    // If we are on an edge, just grad an adjacent face
+    else if (CGAL::assign(edge, result)) 
+    {
+        face = edge->face();
+    } 
+    // If we are on a vertex grab an indicent edge and get its face
+    else if (CGAL::assign(vertex, result)) 
+    {
+        edge = vertex->incident_halfedges();
+        face = edge->face();
+    } else 
+    {
+        assert(false);
+    }
+
+    return face;
+}
 
 void Arrangement::computeArrangement(const TetMesh &tetMesh) 
 {

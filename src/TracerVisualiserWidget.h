@@ -13,6 +13,7 @@
 #include <QOpenGLWidget>
 
 #include "./Data.h"
+#include "./FiberPoint.h"
 #include "./ArcBall/Ball.h"
 
 class TracerVisualiserWidget : public QOpenGLWidget
@@ -21,7 +22,7 @@ class TracerVisualiserWidget : public QOpenGLWidget
 
   public:
     Data &data;
-    TracerVisualiserWidget(QWidget*, QWidget*, Data&);
+    TracerVisualiserWidget(QWidget*, Data&);
     GLfloat scale = 0;
 
     //bool drawEdges = false;
@@ -65,11 +66,17 @@ class TracerVisualiserWidget : public QOpenGLWidget
 
     GLfloat isovalueMult = -1.0;
 
+    std::vector<FiberPoint> faceFibers;
+
+    void updateFiber(const std::vector<FiberPoint>&);
+
     int displayListIndex = 0;
     void generateDisplayList();
 
     int displayListIndexTriangles = 0;
     int displayListIndexTrianglesG = 0;
+
+    QWidget* sibling;
 
   protected:
     void initializeGL();
@@ -84,8 +91,8 @@ class TracerVisualiserWidget : public QOpenGLWidget
     void mouseDoubleClickEvent(QMouseEvent*);
     void keyPressEvent(QKeyEvent* event);
 
+
   private:
-    QWidget* sibling;
 
     // Arcball stuff
     QPointF position;

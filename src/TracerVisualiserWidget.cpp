@@ -26,11 +26,8 @@ TracerVisualiserWidget::setMaterial(GLfloat red, GLfloat green, GLfloat blue, GL
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 }
 
-TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent,
-                                               QWidget* _sibling,
-                                               Data &_data)
+TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent, Data &_data)
   : QOpenGLWidget(parent)
-  , sibling(_sibling)
   , data(_data)
 {
     // Default values for paraters
@@ -81,7 +78,7 @@ TracerVisualiserWidget::generateDisplayList()
     // Draw Fiber
     glBegin(GL_LINES);
     {
-        for(const auto &faceFiber : this->data.faceFibers)
+        for(const auto &faceFiber : this->faceFibers)
         {
             glColor3fv(faceFiber.colour.data());
             glVertex3fv(faceFiber.point.data());
@@ -533,3 +530,30 @@ TracerVisualiserWidget::mouseDoubleClickEvent(QMouseEvent* event)
     this->generateDisplayList();
     this->update();
 }
+
+void TracerVisualiserWidget::updateFiber(const std::vector<FiberPoint> &newFiberPoints)
+{
+    if (true == clearFibers)
+    {
+        this->faceFibers.clear();
+    }
+
+    this->faceFibers.insert(this->faceFibers.end(), newFiberPoints.begin(), newFiberPoints.end());
+    this->generateDisplayList();
+    this->update();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

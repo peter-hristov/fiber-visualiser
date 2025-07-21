@@ -37,6 +37,7 @@ set(SOURCES
     ./src/Data.cpp
     ./src/io.cpp
     ./src/TetMesh.cpp
+    ./src/Fiber.cpp
     ./src/Arrangement.cpp
     ./src/ReebSpace.cpp
     ./src/PlotWidget.cpp

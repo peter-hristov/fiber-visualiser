@@ -76,8 +76,11 @@ TracerVisualiserWindow::TracerVisualiserWindow(QWidget* parent, Data &_data)
 {
 
     // Initialise Widgets
-    plotWidget = new PlotWidget(this, data, "none");
-    tracerVisualiserWidget = new TracerVisualiserWidget(this, plotWidget, data);
+    plotWidget = new PlotWidget(this, data);
+    tracerVisualiserWidget = new TracerVisualiserWidget(this, data);
+
+    plotWidget->sibling = tracerVisualiserWidget;
+    tracerVisualiserWidget->sibling = plotWidget;
 
     checkboxShowVertices = new QCheckBox("Show Vertices");
     checkboxShowVertices->setChecked(true);
