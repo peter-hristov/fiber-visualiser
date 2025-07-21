@@ -2,7 +2,7 @@
 #include "./Timer.h"
 #include "./DisjointSet.h"
 #include "src/CGALTypedefs.h"
-#include "src/FaceFiber.h"
+#include "src/FiberPoint.h"
 
 #include <CGAL/enum.h>
 #include <filesystem>
@@ -48,13 +48,13 @@ void Data::saveFibers()
     colourArray->SetName("Colour");
     colourArray->SetNumberOfComponents(3);
 
-    for (const FaceFiberPoint &p : this->faceFibers)
+    for (const FiberPoint &p : this->faceFibers)
     {
         // Insert points and corresponding IDs
         points->InsertNextPoint(p.point[0], p.point[1], p.point[2]);
         idArray->InsertNextValue(p.sheetId);
 
-        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetConsequitiveIndices[p.sheetId] % this->fiberColours.size()];
+        const array<float, 3> sheetColour = this->fiberColours[this->reebSpace.sheetConsequitiveIndices[p.sheetId] % this->fiberColours.size()];
         float color[3] = {sheetColour[0], sheetColour[1], sheetColour[2]};
         colourArray->InsertNextTuple(color);
     }
@@ -223,7 +223,7 @@ void Data::printSheetHistogram()
 }
 
 
-void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bool clearFibers, const int reebSheetIdOnly, const std::vector<float> color)
+void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bool clearFibers, const int reebSheetIdOnly)
 {
     if (true == clearFibers)
     {
@@ -333,7 +333,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         const int currentSheeId = triangleSheetId[currentTriangleId];
         bfsQueue.pop();
 
-        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetConsequitiveIndices[currentSheeId] % this->fiberColours.size()];
+        const std::array<float, 3> sheetColour = this->fiberColours[this->reebSpace.sheetConsequitiveIndices[currentSheeId] % this->fiberColours.size()];
 
         const set<int> triangleUnpacked = this->tetMesh.triangles[currentTriangleId];
         const vector<int> triangleIndices = std::vector<int>(triangleUnpacked.begin(), triangleUnpacked.end());
@@ -438,17 +438,20 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
                 //
                 // Add a fiber segment
                 //
-                FaceFiberPoint fb(barycentricCoordinatesCurrent[0], barycentricCoordinatesCurrent[1], {
-                        this->tetMesh.vertexDomainCoordinates[triangleIndices[0]],
-                        this->tetMesh.vertexDomainCoordinates[triangleIndices[1]],
-                        this->tetMesh.vertexDomainCoordinates[triangleIndices[2]],
+                FiberPoint fb(
+                        barycentricCoordinatesCurrent[0], 
+                        barycentricCoordinatesCurrent[1], 
+                        {
+                            this->tetMesh.vertexDomainCoordinates[triangleIndices[0]],
+                            this->tetMesh.vertexDomainCoordinates[triangleIndices[1]],
+                            this->tetMesh.vertexDomainCoordinates[triangleIndices[2]],
                         },
                         sheetColour);
                 fb.sheetId = currentSheeId;
                 fb.triangleId = currentTriangleId;
                 this->faceFibers.push_back(fb);
 
-                FaceFiberPoint fb2(barycentricCoordinatesNeighbour[0], barycentricCoordinatesNeighbour[1], {
+                FiberPoint fb2(barycentricCoordinatesNeighbour[0], barycentricCoordinatesNeighbour[1], {
                         this->tetMesh.vertexDomainCoordinates[triangle2Indices[0]],
                         this->tetMesh.vertexDomainCoordinates[triangle2Indices[1]],
                         this->tetMesh.vertexDomainCoordinates[triangle2Indices[2]],
@@ -739,10 +742,10 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
                         const int sheetColourID = this->reebSpace.sheetConsequitiveIndices[sheetID];
 
                         // 3. Get the colou of the sheet
-                        const vector<float> sheetColour = this->fiberColours[sheetColourID];
+                        const array<float, 3> sheetColour = this->fiberColours[sheetColourID];
 
 
-                        FaceFiberPoint fb(alpha, beta, {
+                        FiberPoint fb(alpha, beta, {
                                 this->tetMesh.vertexDomainCoordinates[tet[i]],
                                 this->tetMesh.vertexDomainCoordinates[tet[j]],
                                 this->tetMesh.vertexDomainCoordinates[tet[k]],

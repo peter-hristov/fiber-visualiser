@@ -84,7 +84,7 @@ void TetMesh::sortVertices()
     // Now we can swap things around
 
     // Set up copies of the originals for the swap, otherwise editin in place causes errors
-    std::vector<std::vector<float>> vertexDomainCoordinatesOriginal = this->vertexDomainCoordinates;
+    std::vector<std::array<float, 3>> vertexDomainCoordinatesOriginal = this->vertexDomainCoordinates;
     std::vector<float> vertexCoordinatesFOriginal = this->vertexCoordinatesF;
     std::vector<float> vertexCoordinatesGOriginal = this->vertexCoordinatesG;
 

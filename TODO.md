@@ -2,8 +2,8 @@
 
 Done - TetMesh
 Done - Arrangement
-ReebSpace
-Add index to faces.
+Done - ReebSpace
+Fiber computation
 
 
 Make triangles vector<array>

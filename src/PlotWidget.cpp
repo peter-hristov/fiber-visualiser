@@ -371,7 +371,7 @@ void PlotWidget::drawBackground(QPainter &p)
         QPolygonF qPolygon(points);
 
         const int colourID = data.reebSpace.sheetConsequitiveIndices[sheetId];
-        const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
+        const array<float, 3> colorF = data.fiberColours[colourID % data.fiberColours.size()];
 
         p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
         p.setPen(Qt::NoPen);
@@ -815,7 +815,7 @@ PlotWidget::drawAndRecomputeFS(QPainter& p)
 
         //Timer::start();
         const bool clearFibers = dynamic_cast<TracerVisualiserWindow*>(this->parent())->tracerVisualiserWidget->clearFibers;
-        this->data. computeTetExitPointsNewNew(u, v, clearFibers, -1, data.fiberColours[currentFiberColour]);
+        this->data. computeTetExitPointsNewNew(u, v, clearFibers, -1);
         //Timer::stop("Computed fiber new new                 :");
         //qDebug() << "......";
 

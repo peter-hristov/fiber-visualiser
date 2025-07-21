@@ -77,10 +77,10 @@ TetMesh io::readDataVtu(const std::string &filename)
     int numTets = mesh->GetNumberOfCells();
 
     // Initialize all the data arrays
-    tetMesh.vertexCoordinatesF = std::vector<float>(numVertices, 0);
-    tetMesh.vertexCoordinatesG = std::vector<float>(numVertices, 0);
-    tetMesh.tetrahedra = std::vector<std::array<int, 4>>(numTets, {0, 0, 0, 0});
-    tetMesh.vertexDomainCoordinates = std::vector<std::vector<float>>(numVertices, {0, 0, 0});
+    tetMesh.vertexCoordinatesF = std::vector<float>(numVertices);
+    tetMesh.vertexCoordinatesG = std::vector<float>(numVertices);
+    tetMesh.tetrahedra = std::vector<std::array<int, 4>>(numTets);
+    tetMesh.vertexDomainCoordinates = std::vector<std::array<float, 3>>(numVertices);
 
     // Print vertices
     vtkSmartPointer<vtkPoints> points = mesh->GetPoints();
@@ -174,10 +174,10 @@ TetMesh io::readDataTxt(const std::string &filename)
     dataStream >> numVertices >> numTets;
 
     // Initialize all the data arrays
-    tetMesh.vertexCoordinatesF = std::vector<float>(numVertices, 0);
-    tetMesh.vertexCoordinatesG = std::vector<float>(numVertices, 0);
-    tetMesh.tetrahedra = std::vector<std::array<int, 4>>(numTets, {0, 0, 0, 0});
-    tetMesh.vertexDomainCoordinates = std::vector<std::vector<float>>(numVertices, {0, 0, 0});
+    tetMesh.vertexCoordinatesF = std::vector<float>(numVertices);
+    tetMesh.vertexCoordinatesG = std::vector<float>(numVertices);
+    tetMesh.tetrahedra = std::vector<std::array<int, 4>>(numTets);
+    tetMesh.vertexDomainCoordinates = std::vector<std::array<float, 3>>(numVertices);
 
     // Read in the domain coordinates
     for  (int i = 0 ; i < numVertices ; i++)

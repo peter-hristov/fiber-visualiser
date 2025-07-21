@@ -20,7 +20,7 @@
 #include <qpoint.h>
 #include <qvector.h>
 
-#include "./FaceFiber.h"
+#include "./FiberPoint.h"
 #include "./CGALTypedefs.h"
 #include "./TetMesh.h"
 #include "./Arrangement.h"
@@ -56,7 +56,7 @@ class Data
     std::vector<bool> tetsWithFibers;
 
     std::string fibersFile = "./fibers.vtp";
-    std::vector<FaceFiberPoint> faceFibers;
+    std::vector<FiberPoint> faceFibers;
     void saveFibers();
 
     void generatefFaceFibersForSheet(const int sheetId, const int numberOfFiberPoints);
@@ -64,27 +64,27 @@ class Data
 
     void computeTetExitPoints(const float, const float, const std::vector<float> = {1,1,1});
     void computeTetExitPointsNew(const float, const float, const std::vector<float> = {1,1,1});
-    void computeTetExitPointsNewNew(const float, const float, const bool, const int reebSheetIdOnly = -1, const std::vector<float> = {1,1,1});
+    void computeTetExitPointsNewNew(const float, const float, const bool, const int reebSheetIdOnly = -1);
 
     QVector<QPointF> mousePoints;
 
     // Colour map for Reeb space sheets and fibers
-    const std::vector<std::vector<float>> fiberColours = {
-        {1.0f, 0.0f, 0.0f, 0.392f},    // Vivid Red
-        {0.0f, 1.0f, 0.0f, 0.392f},    // Bright Green
-        {0.0f, 0.0f, 1.0f, 0.392f},    // Pure Blue
-        {1.0f, 1.0f, 0.0f, 0.392f},    // Bright Yellow
-        {0.0f, 1.0f, 1.0f, 0.392f},    // Cyan
-        {1.0f, 0.0f, 1.0f, 0.392f},    // Magenta
-        {0.58f, 0.0f, 1.0f, 0.392f},   // Deep Purple
-        {0.0f, 0.45f, 0.7f, 0.392f},   // Ocean Blue
-        {1.0f, 0.5f, 0.0f, 0.392f},    // Orange
-        {0.0f, 0.6f, 0.5f, 0.392f},    // Teal
-        {1.0f, 0.84f, 0.0f, 0.392f},   // Gold
-        {0.85f, 0.4f, 0.55f, 0.392f},  // Mauve
-        {0.4f, 0.8f, 1.0f, 0.392f},    // Sky Blue
-        {0.2f, 0.8f, 0.2f, 0.392f},    // Leaf Green
-        {0.9f, 0.3f, 0.3f, 0.392f},    // Coral Red
-        {0.6f, 0.6f, 0.0f, 0.392f}     // Olive
+    const std::vector<std::array<float, 3>> fiberColours = {
+        {1.0f, 0.0f, 0.0f},    // Vivid Red
+        {0.0f, 1.0f, 0.0f},    // Bright Green
+        {0.0f, 0.0f, 1.0f},    // Pure Blue
+        {1.0f, 1.0f, 0.0f},    // Bright Yellow
+        {0.0f, 1.0f, 1.0f},    // Cyan
+        {1.0f, 0.0f, 1.0f},    // Magenta
+        {0.58f, 0.0f, 1.0f},   // Deep Purple
+        {0.0f, 0.45f, 0.7f},   // Ocean Blue
+        {1.0f, 0.5f, 0.0f},    // Orange
+        {0.0f, 0.6f, 0.5f},    // Teal
+        {1.0f, 0.84f, 0.0f},   // Gold
+        {0.85f, 0.4f, 0.55f},  // Mauve
+        {0.4f, 0.8f, 1.0f},    // Sky Blue
+        {0.2f, 0.8f, 0.2f},    // Leaf Green
+        {0.9f, 0.3f, 0.3f},    // Coral Red
+        {0.6f, 0.6f, 0.0f}     // Olive
     };
 };

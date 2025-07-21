@@ -17,7 +17,7 @@ class TetMesh
     // Domain and range coordinates
     std::vector<float> vertexCoordinatesF;
     std::vector<float> vertexCoordinatesG;
-    std::vector<std::vector<float>> vertexDomainCoordinates;
+    std::vector<std::array<float, 3>> vertexDomainCoordinates;
 
     // Bounding box min/max for the domain and range coordinates of all vertices
     float minF, maxF, minG, maxG;
