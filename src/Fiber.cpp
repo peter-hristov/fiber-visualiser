@@ -34,7 +34,7 @@ std::vector<FiberPoint> fiber::computeFiber(const TetMesh &tetMesh, Arrangement 
         if (reebSheetIdOnly == -1 || sheetId == reebSheetIdOnly)
         {
             bfsQueue.push(triangleId);
-            std::cout << "Adding seed \n";
+            std::cout << "Adding seed for sheet ID " << sheetId << "\n";
         }
 
         //const int sheetId = reebSpace.findTriangle({activeFaceId, fiberComponentId});

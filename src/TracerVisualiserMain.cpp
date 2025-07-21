@@ -94,8 +94,11 @@ int main(int argc, char* argv[])
     reebSpace.printTopSheets(tetMesh, arrangement, 20);
     Timer::stop("Computed RS(f) Postprocess             :");
 
+    if (performanceRun == true)
+    {
+        return 0;
+    }
 
-    // Save all the polygons
     if (false == outputSheetPolygonsFilename.empty())
     {
         try
@@ -109,26 +112,27 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (performanceRun == true)
-    {
-        return 0;
-    }
-
-
-    // Package all my data for visualisation
-    Data data(tetMesh, arrangement, reebSpace);
 
     if (false == outputSheetFibersFolder.empty())
     {
-        data.generatefFaceFibersForSheets(sheetOutputCount, fiberSampling, outputSheetFibersFolder);
+        try
+        {
+            io::generatefFaceFibersForSheets(tetMesh, arrangement, reebSpace, sheetOutputCount, fiberSampling, outputSheetFibersFolder);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "Error: " << e.what() << '\n';
+            return 1;
+        }
     }
-
-    //ReebSpace::countIntersectionsTypes(data);
 
 
     // Set up QT Application
     QApplication app(argc, argv);
     glutInit(&argc, argv);
+
+    // Package all my data for visualisation
+    Data data(tetMesh, arrangement, reebSpace);
 
     // Create the widget
     TracerVisualiserWindow* window = new TracerVisualiserWindow(NULL, data);

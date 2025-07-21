@@ -43,6 +43,7 @@ class Data
         reebSpace(rs)
     {}
 
+    std::string outputFibersFile = "./fibers.vtp";
 
 
 

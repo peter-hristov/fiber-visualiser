@@ -58,15 +58,15 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
 
     if (event->key() == Qt::Key_C) {
         this->tracerVisualiserWidget->clearFibers = !this->tracerVisualiserWidget->clearFibers;
+        this->tracerVisualiserWidget->faceFibers.clear();
         this->tracerVisualiserWidget->update();
-        this->data.faceFibers.clear();
     }
 
     if (event->key() == Qt::Key_H) {
-        this->data.printSheetHistogram();
+        //this->data.printSheetHistogram();
     }
     if (event->key() == Qt::Key_S) {
-        io::saveFibers("./fibers.vtp", this->tracerVisualiserWidget->faceFibers);
+        io::saveFibers(data.outputFibersFile, this->tracerVisualiserWidget->faceFibers);
     }
 
 }

@@ -27,6 +27,7 @@
 
 #include "./io.h"
 #include "./TetMesh.h"
+#include "./Fiber.h"
 
 TetMesh io::readData(const std::string &filename)
 {
@@ -317,4 +318,94 @@ void io::saveFibers(const std::string &outputFile, const std::vector<FiberPoint>
     writer->SetFileName(outputFile.c_str());
     writer->SetInputData(polyData);
     writer->Write();
+}
+
+
+std::vector<FiberPoint> io::generatefFaceFibersForSheet(const TetMesh &tetMesh, Arrangement &arrangement, ReebSpace &reebSpace, const int sheetId, const int numberOfFiberPoints)
+{
+    CartesianPolygon_2 &polygon = reebSpace.sheetPolygon.at(sheetId);
+
+    if (polygon.size() == 0)
+    {
+        return {};
+    }
+
+    // Compute the controid so that we can pull all verties towards it
+    CartesianPoint centroid = CGAL::centroid(polygon.vertices_begin(), polygon.vertices_end());
+
+    // If need only one, get it at the center
+    if (numberOfFiberPoints == 1)
+    {
+        const std::array<float, 2> fiberPoint = {(float)centroid.x(), (float)centroid.y()};
+        const std::vector<FiberPoint> fiber = fiber::computeFiber(tetMesh, arrangement, reebSpace, fiberPoint, sheetId);
+        printf("The fiber size is %d\n", fiber.size());
+        return fiber;
+    }
+
+    std::vector<std::array<float, 2>> fiberPoints;
+
+
+    // If we need more, sample along the boundary
+    for (const CartesianPoint &point : polygon) 
+    {
+        // Get point from CGAL (and convert to double )
+        float u = point.x();
+        float v = point.y();
+
+        // Interpolate closer to the centroid to make sure we are in the sheet ( if the sheet is "convex enough")
+        const float alpha = 0.2;
+        u = (1 - alpha) * u + alpha * centroid.x();
+        v = (1 - alpha) * v + alpha * centroid.y();
+
+        fiberPoints.push_back({u, v});
+    }
+
+    std::vector<FiberPoint> sheetFibers;
+
+    // Calculate step size we only want some of the fiber points, not all
+    double step = static_cast<double>(fiberPoints.size() - 1) / (numberOfFiberPoints - 1);
+
+    for (int i = 0; i < numberOfFiberPoints; ++i) 
+    {
+        int index = static_cast<int>(i * step);
+
+        const std::array<float, 2> fiberPoint = {fiberPoints[index][0], fiberPoints[index][1]};
+        const std::vector<FiberPoint> fiber = fiber::computeFiber(tetMesh, arrangement, reebSpace, fiberPoint, sheetId);
+
+        printf("The fiber size is %d\n", fiber.size());
+        sheetFibers.insert(sheetFibers.end(), fiber.begin(), fiber.end());
+    }
+
+    return sheetFibers;
+}
+
+void io::generatefFaceFibersForSheets(const TetMesh &tetMesh, Arrangement &arrangement, ReebSpace &reebSpace, const int sheetOutputCount, const int numberOfFiberPoints, const std::string folderPath)
+{
+    namespace fs = std::filesystem;
+
+    fs::path folderPathFs(folderPath);
+    if (!fs::exists(folderPathFs)) 
+    {
+        fs::create_directory(folderPathFs);
+    }
+
+    for (const auto &[sheetId, colourId] : reebSpace.sheetConsequitiveIndices)
+    {
+        if (reebSpace.incompleteSheets.contains(sheetId))
+        {
+            printf("Skipping fiber %d, it's incomplete.",  sheetId);
+        }
+
+        if (colourId > sheetOutputCount || reebSpace.incompleteSheets.contains(sheetId))
+        {
+            continue;
+        }
+
+        std::cout << "-------------------------------------------------------------------------------------------- Generating fibers for sheet " << sheetId << "..." << std::endl;
+        const std::vector<FiberPoint> sheetFibers = io::generatefFaceFibersForSheet(tetMesh, arrangement, reebSpace, sheetId, numberOfFiberPoints);
+
+        //std::cout << "Saving fibers..." << std::endl;
+        std::string outputFile = folderPathFs.string() + "/fibers_" + std::to_string(sheetId) + ".vtp";
+        io::saveFibers(outputFile, sheetFibers);
+    }
 }
