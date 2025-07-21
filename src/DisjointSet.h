@@ -109,62 +109,62 @@ class DisjointSet {
             }
         }
 
-        std::vector<std::pair<ElementType, int>> getUniqueRepresentativesAndRoots()
+        std::vector<std::pair<int, ElementType>> getComponentRepresentatives()
         {
-            std::set<int> uniqueRoots;
-            std::vector<std::pair<ElementType, int>> representativesAndRoots;
+            std::set<int> uniqueComponetIds;
+            std::vector<std::pair<int, ElementType>> componentRepresentatives;
 
-            for (const auto &[key, ufId] : this->data)
+            for (const auto &[element, index] : this->data)
             {
-                const int root = this->findIndex(ufId);
+                const int componentId = this->findIndex(index);
 
-                if (false == uniqueRoots.contains(root))
+                if (false == uniqueComponetIds.contains(componentId))
                 {
-                    representativesAndRoots.push_back({key, root});
-                    uniqueRoots.insert(root);
+                    componentRepresentatives.push_back({componentId, element});
+                    uniqueComponetIds.insert(componentId);
                 }
             }
 
-            return representativesAndRoots;
+            return componentRepresentatives;
         }
 
-        std::vector<int> getUniqueRepresentatives()
-        {
+        //std::vector<int> getUniqueRepresentatives()
+        //{
 
-            std::set<int> uniqueRoots;
-            std::vector<ElementType> representatives;
+            //std::set<int> uniqueRoots;
+            //std::vector<ElementType> representatives;
 
-            for (const auto &[key, value] : this->data)
-            {
-                const int root = this->findTriangle(key);
+            //for (const auto &[key, value] : this->data)
+            //{
+                //const int root = this->findTriangle(key);
 
-                if (false == uniqueRoots.contains(root))
-                {
-                    representatives.push_back(key);
-                    uniqueRoots.insert(root);
-                }
-            }
+                //if (false == uniqueRoots.contains(root))
+                //{
+                    //representatives.push_back(key);
+                    //uniqueRoots.insert(root);
+                //}
+            //}
+
+            ////for(int i  = 0 ; i < parent.size() ; i++)
+            ////{
+                ////if (uniqueRoots.contains())
+                ////uniqueRoots.insert(find(i));
+            ////}
+
+            //return representatives;
+        //}
+
+        //std::vector<int> getUniqueIndices()
+        //{
+            //std::set<int> uniqueRoots;
 
             //for(int i  = 0 ; i < parent.size() ; i++)
             //{
-                //if (uniqueRoots.contains())
-                //uniqueRoots.insert(find(i));
+                //uniqueRoots.insert(findIndex(i));
             //}
 
-            return representatives;
-        }
-
-        std::vector<int> getUniqueRoots()
-        {
-            std::set<int> uniqueRoots;
-
-            for(int i  = 0 ; i < parent.size() ; i++)
-            {
-                uniqueRoots.insert(findIndex(i));
-            }
-
-            return std::vector<int>(uniqueRoots.begin(), uniqueRoots.end());
-        }
+            //return std::vector<int>(uniqueRoots.begin(), uniqueRoots.end());
+        //}
 
         void initialize(const std::set<ElementType> &preimageGraph) 
         {

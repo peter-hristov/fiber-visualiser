@@ -330,7 +330,7 @@ void PlotWidget::drawBackground(QPainter &p)
                 // For each fiber component in the face, see if one of those is in our sheet
                 for (const auto &[triangleId, fiberComponentId] : this->data.reebSpace.fiberSeeds[currentFaceID])
                 {
-                    const int componentSheetId = data.reebSpace.reebSpace.findElement({currentFaceID, fiberComponentId});
+                    const int componentSheetId = data.reebSpace.correspondenceGraph.findElement({currentFaceID, fiberComponentId});
 
                     // Now we can add the polygon
                     if (componentSheetId == sheetId)
@@ -370,7 +370,7 @@ void PlotWidget::drawBackground(QPainter &p)
 
         QPolygonF qPolygon(points);
 
-        const int colourID = data.reebSpace.sheetToColour[sheetId];
+        const int colourID = data.reebSpace.sheetConsequitiveIndices[sheetId];
         const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
 
         p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
@@ -388,7 +388,7 @@ void PlotWidget::drawBackground(QPainter &p)
             ////const auto &[]
             //const auto &[triangleId, fiberComponentId] = this->data.fiberSeeds[i][j];
             //const int sheetId = this->data.reebSpace.findTriangle({currentFaceID, fiberComponentId});
-            //const int colourID = data.sheetToColour[sheetId];
+            //const int colourID = data.sheetConsequitiveIndices[sheetId];
             //const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
 
             //p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));
@@ -408,7 +408,7 @@ void PlotWidget::drawBackground(QPainter &p)
             ////const auto &[]
             //const auto &[triangleId, fiberComponentId] = this->data.fiberSeeds[i][j];
             //const int sheetId = this->data.reebSpace.findTriangle({currentFaceID, fiberComponentId});
-            //const int colourID = data.sheetToColour[sheetId];
+            //const int colourID = data.sheetConsequitiveIndices[sheetId];
             //const vector<float> colorF = data.fiberColours[colourID % data.fiberColours.size()];
 
             //p.setBrush(QColor::fromRgbF(colorF[0], colorF[1], colorF[2], 0.392f));

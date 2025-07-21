@@ -2,7 +2,11 @@
 
 #include <iostream>
 #include <chrono>
+#include <memory>
+#include <mutex>
 #include <string>
+
+#include "./utility/indicators.hpp"
 
 class Timer {
 public:
@@ -14,6 +18,25 @@ public:
         auto end_time = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = end_time - start_time;
         std::cout << message << ": " << elapsed.count() << " s\n";
+    }
+
+    static std::unique_ptr<indicators::ProgressBar> getLoadingBar()
+    {
+        using namespace indicators;
+
+        auto bar = std::make_unique<ProgressBar>(
+                option::BarWidth{50},
+                option::Start{"["},
+                option::Fill{"■"},
+                option::Lead{"■"},
+                option::Remainder{"-"},
+                option::End{" ]"},
+                option::PostfixText{"Computing Reeb space."},
+                option::ShowPercentage{true},
+                option::ShowElapsedTime{true}
+                );
+
+        return bar;
     }
 
 private:

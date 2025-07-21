@@ -54,7 +54,7 @@ void Data::saveFibers()
         points->InsertNextPoint(p.point[0], p.point[1], p.point[2]);
         idArray->InsertNextValue(p.sheetId);
 
-        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetToColour[p.sheetId] % this->fiberColours.size()];
+        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetConsequitiveIndices[p.sheetId] % this->fiberColours.size()];
         float color[3] = {sheetColour[0], sheetColour[1], sheetColour[2]};
         colourArray->InsertNextTuple(color);
     }
@@ -107,7 +107,7 @@ void Data::generatefFaceFibersForSheets(const int sheetOutputCount, const int nu
         fs::create_directory(folderPathFs);
     }
 
-    for (const auto &[sheetId, colourId] : this->reebSpace.sheetToColour)
+    for (const auto &[sheetId, colourId] : this->reebSpace.sheetConsequitiveIndices)
     {
         if (this->reebSpace.incompleteSheets.contains(sheetId))
         {
@@ -300,9 +300,9 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
     }
 
     //vector<int> sheetIds;
-    for (const auto &[triangleId, fiberComponentId] : this->reebSpace.fiberSeeds[currentFaceID])
+    for (const auto &[fiberComponentId, triangleId] : this->reebSpace.fiberSeeds[currentFaceID])
     {
-        const int sheetId = this->reebSpace.reebSpace.findElement({currentFaceID, fiberComponentId});
+        const int sheetId = this->reebSpace.correspondenceGraph.findElement({currentFaceID, fiberComponentId});
 
         if (reebSheetIdOnly == -1 || sheetId == reebSheetIdOnly)
         {
@@ -311,14 +311,14 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         }
 
         //const int sheetId = this->reebSpace.findTriangle({currentFaceID, fiberComponentId});
-        //triangleColour[triangleId] = this->sheetToColour[sheetId] % this->fiberColours.size();
+        //triangleColour[triangleId] = this->sheetConsequitiveIndices[sheetId] % this->fiberColours.size();
         triangleSheetId[triangleId] = sheetId;
 
         //sheetIds.push_back(sheetId);
 
         if (reebSheetIdOnly == -1)
         {
-            printf("(%d, %d) ", sheetId, this->reebSpace.sheetToColour[sheetId]);
+            printf("(%d, %d) ", sheetId, this->reebSpace.sheetConsequitiveIndices[sheetId]);
         }
     }
     //std::cout << std::endl;
@@ -333,7 +333,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
         const int currentSheeId = triangleSheetId[currentTriangleId];
         bfsQueue.pop();
 
-        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetToColour[currentSheeId] % this->fiberColours.size()];
+        const vector<float> sheetColour = this->fiberColours[this->reebSpace.sheetConsequitiveIndices[currentSheeId] % this->fiberColours.size()];
 
         const set<int> triangleUnpacked = this->tetMesh.triangles[currentTriangleId];
         const vector<int> triangleIndices = std::vector<int>(triangleUnpacked.begin(), triangleUnpacked.end());
@@ -532,7 +532,7 @@ void Data::computeTetExitPointsNewNew(const GLfloat u, const GLfloat v, const bo
                 //const int componentID = this->reebSpace.preimageGraphs[currentFaceID].find(triangleId);
                 ////const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
                 //const int sheetID = this->reebSpace.reebSpace.findTriangle({currentFaceID, componentID});
-                //const int sheetColourID = this->reebSpace.sheetToColour[sheetID] % this->fiberColours.size();
+                //const int sheetColourID = this->reebSpace.sheetConsequitiveIndices[sheetID] % this->fiberColours.size();
                 //const vector<float> sheetColour = this->fiberColours[sheetColourID];
 
                 ////
@@ -732,11 +732,11 @@ void Data::computeTetExitPoints(const GLfloat u, const GLfloat v, const std::vec
                         // 2. Fac ComponentID -> Reeb Space Sheet
                         //const int pairToHIndex = this->vertexHtoIndex[{currentFaceID, componentID}];
                         //const int sheetID = this->reebSpace.findTriangle(pairToHIndex);
-                        const int sheetID = this->reebSpace.reebSpace.findElement({currentFaceID, componentID});
+                        const int sheetID = this->reebSpace.correspondenceGraph.findElement({currentFaceID, componentID});
 
                         //printf("The Sheet ID is = %d\n", sheetID);
 
-                        const int sheetColourID = this->reebSpace.sheetToColour[sheetID];
+                        const int sheetColourID = this->reebSpace.sheetConsequitiveIndices[sheetID];
 
                         // 3. Get the colou of the sheet
                         const vector<float> sheetColour = this->fiberColours[sheetColourID];
