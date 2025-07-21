@@ -10,16 +10,23 @@
 #include <random>
 #include <ranges>
 
+#include <vtkCell.h>
+#include <vtkPoints.h>
+#include <vtkPolyData.h>
+#include <vtkPolyLine.h>
+#include <vtkDataArray.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkPolyLine.h>
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
 
-#include <vtkPolyData.h>
 #include <vtkXMLPolyDataWriter.h>
+#include <vtkXMLUnstructuredGridReader.h>
 
 #include "./io.h"
-#include "src/TetMesh.h"
-
+#include "./TetMesh.h"
 
 TetMesh io::readData(const std::string &filename)
 {
@@ -252,4 +259,62 @@ void io::saveSheets(const TetMesh &tetMesh, const Arrangement &arrangement, cons
     }
 
     outFile.close();
+}
+
+
+
+void io::saveFibers(const std::string &outputFile, const std::vector<FiberPoint> &fiberPoints)
+{
+    std::cout << "Saving fibers in " << outputFile << std::endl;
+    //std::cout << "The fiber has size " << this->faceFibers.size() << std::endl;  
+
+    // 1. Create the points
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    auto idArray = vtkSmartPointer<vtkIntArray>::New();
+    auto colourArray = vtkSmartPointer<vtkFloatArray>::New();
+
+    idArray->SetName("SheetId");
+    idArray->SetNumberOfComponents(1);
+
+    colourArray->SetName("Colour");
+    colourArray->SetNumberOfComponents(3);
+
+    for (const FiberPoint &p : fiberPoints)
+    {
+        points->InsertNextPoint(p.point.data());
+        idArray->InsertNextValue(p.sheetId);
+        colourArray->InsertNextTuple(p.colour.data());
+    }
+
+    // 3. Create the cells (wrap polyline in cell array)
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    for (int i = 1 ; i < fiberPoints.size() ; i+=2)
+    {
+        if (fiberPoints[i-1].sheetId == fiberPoints[i].sheetId)
+        {
+            // One edge segment
+            auto polyLine = vtkSmartPointer<vtkPolyLine>::New();
+            polyLine->GetPointIds()->SetNumberOfIds(2);
+            polyLine->GetPointIds()->SetId(0, i-1);
+            polyLine->GetPointIds()->SetId(1, i);
+
+            cells->InsertNextCell(polyLine);
+        }
+    }
+
+    // 4. Create the polydata object
+    auto polyData = vtkSmartPointer<vtkPolyData>::New();
+    polyData->SetPoints(points);
+    polyData->SetLines(cells);
+
+    // 5. Attach the VertexID array to the point data
+    polyData->GetPointData()->AddArray(idArray);
+    polyData->GetPointData()->AddArray(colourArray);
+    polyData->GetPointData()->SetScalars(colourArray);  // optional: for coloring
+
+    // 6. Write to .vtp file (XML format)
+    auto writer = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
+    writer->SetFileName(outputFile.c_str());
+    writer->SetInputData(polyData);
+    writer->Write();
 }

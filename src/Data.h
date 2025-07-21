@@ -51,20 +51,10 @@ class Data
     //
     std::vector<float> currentFiberPoint;
     void printSheetHistogram();
-
-    // Fibers class?
-    std::vector<bool> tetsWithFibers;
-
-    std::string fibersFile = "./fibers.vtp";
     std::vector<FiberPoint> faceFibers;
-    void saveFibers();
-
     void generatefFaceFibersForSheet(const int sheetId, const int numberOfFiberPoints);
     void generatefFaceFibersForSheets(const int sheetOutputCount, const int numberOfFiberPoints, const std::string);
 
-    void computeTetExitPoints(const float, const float, const std::vector<float> = {1,1,1});
-    void computeTetExitPointsNew(const float, const float, const std::vector<float> = {1,1,1});
-    void computeTetExitPointsNewNew(const float, const float, const bool, const int reebSheetIdOnly = -1);
 
     QVector<QPointF> mousePoints;
 

@@ -5,7 +5,8 @@
 
 
 #include "./TracerVisualiserWindow.h"
-#include "src/Data.h"
+#include "./Data.h"
+#include "./io.h"
 
 using namespace std;
 void
@@ -65,7 +66,7 @@ TracerVisualiserWindow::keyPressEvent(QKeyEvent* event)
         this->data.printSheetHistogram();
     }
     if (event->key() == Qt::Key_S) {
-        this->data.saveFibers();
+        io::saveFibers("./fibers.vtp", this->tracerVisualiserWidget->faceFibers);
     }
 
 }
