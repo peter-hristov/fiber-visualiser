@@ -44,7 +44,7 @@ class ReebSpace
         // Compute the preimage graphs Gi for each cell in the arrangement and their correspondence
         void computeTraversal(const TetMesh &tetMesh, const Arrangement &arrangement, const bool);
 
-        // Compute the Reeb space from all the preimage graphs
+        // Compute the geometry of the sheets of the Reeb space
         void computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrangement &arrangement);
 
         //void countIntersectionsTypes(TetMesh &tetMesh, Arrangement &arrangement);

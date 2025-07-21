@@ -304,6 +304,7 @@ void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arra
 
                 // Initialize the vertices of H with the connected components of the twin graph
                 const std::vector<std::pair<int, int>> componentRepresentatives = this->preimageGraphs[twinFaceID].getComponentRepresentatives();
+
                 for (const auto &[componentId, triangleId] : componentRepresentatives)
                 {
                     this->correspondenceGraph.addElement({twinFaceID, componentId});
@@ -338,6 +339,8 @@ void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arra
         graphsInMemory--;
     }
 
+    this->correspondenceGraph.finalise();
+
     bar->set_progress(100); // all done
     printf("\n\nThere is an average of %f / %ld active preimage graphs.\n", averageAraphsInMemory, this->preimageGraphs.size());
     printf("The correspondence graphs has %ld vertices and the Reeb space has %ld sheets.\n\n", this->correspondenceGraph.data.size(), this->correspondenceGraph.getComponentRepresentatives().size());
@@ -345,12 +348,6 @@ void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arra
 
 void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrangement &arrangement)
 {
-    Timer::start();
-    // Path compression to make sure every element of H is poiting to its root
-    this->correspondenceGraph.finalise();
-    Timer::stop("Updating RS disjoint set               :");
-
-
     // For faster lookups cache the sheetd IDs for each face
     std::vector<std::unordered_set<int>> faceSheets(this->fiberSeeds.size());
     for (int i = 0 ; i < this->fiberSeeds.size() ; i++)
@@ -364,10 +361,9 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
     }
 
     Timer::start();
-    //
     // In order to compute the polygon of each sheet, first obtain a halfEdge of the arrangement that is on the boundary of the sheet
-    //
     std::unordered_map<int, Arrangement_2::Halfedge_const_handle> sheetSeeds;
+
     for (auto currentFaceIterator = arrangement.arr.faces_begin(); currentFaceIterator != arrangement.arr.faces_end(); ++currentFaceIterator) 
     {
         Arrangement_2::Face_const_handle currentFace = currentFaceIterator;
@@ -375,17 +371,8 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
 
         const int currentFaceID = arrangement.arrangementFacesIdices.at(currentFace);
 
-        //printf("\n\nFace %d has these sheets - ", currentFaceID);
-
         // Which sheets contain the current face
-        std::unordered_set<int> currentFaceSheetIds = faceSheets[currentFaceID];
-        //for (const auto &[triangleId, fiberComponentId] : data->fiberSeeds[currentFaceID])
-        //{
-            //const int sheetId = data->reebSpace.findTriangle({currentFaceID, fiberComponentId});
-            //currentFaceSheetIds.push_back(sheetId);
-            ////printf("%d ", sheetId);
-        //}
-        //printf("\n");
+        const std::unordered_set<int> currentFaceSheetIds = faceSheets[currentFaceID];
 
 
         Arrangement_2::Ccb_halfedge_const_circulator start = currentFace->outer_ccb();
@@ -395,7 +382,7 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
             if (twinFace->is_unbounded()) { curr++; continue; }
 
             const int twinFaceID = arrangement.arrangementFacesIdices.at(twinFace);
-            std::unordered_set<int> twinFaceSheetIds = faceSheets[twinFaceID];
+            const std::unordered_set<int> twinFaceSheetIds = faceSheets[twinFaceID];
 
             // Which sheets are in the currentFace, but NOT in the twin face
             std::vector<int> diff;
@@ -648,85 +635,3 @@ void ReebSpace::computeReebSpacePostprocess(const TetMesh &tetMesh, const Arrang
         std::cout << i << " -- sheet " << sheetAreaSortVector[i].first << " has area " << sheetAreaSortVector[i].second << std::endl;
     }
 }
-
-//void ReebSpace::countIntersectionsTypes(Data *data)
-//{
-    //int regularRegularIntersections = 0;
-    //int singularRegularIntersections = 0;
-    //int singularSingularIntersections = 0;
-    //int degenerateIntersections = 0;
-    //int maxNeihbours = 0;
-
-    //// Now loop over all vertices
-    //for (auto currentVertex = data->arrangement.arr.vertices_begin(); currentVertex != data->arrangement.arr.vertices_end(); ++currentVertex)
-    //{
-        //const Point_2& p = currentVertex->point();
-        ////std::cout << "Vertex at: " << p << std::endl;
-
-        //// Skip the vertices, we just want to count the inter intersections.
-        //if (data->arrangement.arrangementPointsIdices.contains(p))
-        //{
-            //continue;
-        //}
-
-
-        //// This loop should always finish
-        //const auto begin = currentVertex->incident_halfedges();
-        //auto circ = begin;
-
-        //int regularNeighbours = 0;
-        //int singularNeighbours = 0;
-
-        //do {
-
-            //const Segment_2 &segment = *data->arrangement.arr.originating_curves_begin(circ);
-
-            //// These will always be sorted, it's how we created the segments
-            //const int aIndex = data->arrangement.arrangementPointsIdices[segment.source()];
-            //const int bIndex = data->arrangement.arrangementPointsIdices[segment.target()];
-
-            //if (data->jacobiType[{aIndex, bIndex}] == 1)
-            //{
-                //regularNeighbours++;
-            //}
-            //else
-            //{
-                //singularNeighbours++;
-            //}
-
-            //++circ;
-        //} while (circ != begin);
-
-        //if (regularNeighbours + singularNeighbours > 4)
-        //{
-            //degenerateIntersections++;
-        //}
-
-        //maxNeihbours = std::max(maxNeihbours, regularNeighbours + singularNeighbours);
-
-
-
-        //if (regularNeighbours == 0)
-        //{
-            //singularSingularIntersections++;
-        //}
-        //else if (singularNeighbours == 0)
-        //{
-            //regularRegularIntersections++;
-        //}
-        //else
-        //{
-            //singularRegularIntersections++;
-        //}
-    //}
-
-
-    //const int totalIntersctionPoints = regularRegularIntersections + singularRegularIntersections + singularSingularIntersections;
-
-    //printf("Here is a summary of the intersections types:\n");
-    //printf("regular   - regular  intersections: %d the ratio is %.2f%%.\n", regularRegularIntersections, 100.0 * (float)regularRegularIntersections / (float)totalIntersctionPoints);
-    //printf("singular  - regular  intersections: %d the ratio is %.2f%%.\n", singularRegularIntersections, 100.0 * (float)singularRegularIntersections / (float)totalIntersctionPoints);
-    //printf("singular  - sigular  intersections: %d the ratio is %.2f%%.\n", singularSingularIntersections, 100.0 * (float)singularSingularIntersections / (float)totalIntersctionPoints);
-    //printf("The number of degenerate intersections is %d with maximum being %d.\n", degenerateIntersections, maxNeihbours);
-
-//}
