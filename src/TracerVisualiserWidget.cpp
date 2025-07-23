@@ -32,7 +32,6 @@ TracerVisualiserWidget::TracerVisualiserWidget(QWidget* parent, Data &_data)
 {
     // Default values for paraters
     this->scale = (data.tetMesh.maxZ - data.tetMesh.minZ) * 2;
-    this->scaleFactor = abs(data.tetMesh.maxZ + data.tetMesh.minZ) * this->scaleFactor;
 
     // Initialise Arcball
     Ball_Init(&theBall);
@@ -280,26 +279,48 @@ TracerVisualiserWidget::drawScene()
                 {
                     for(int j = i + 1 ; j < 4 ; j++)
                     {
-                        GLfloat pointA[3], pointB[3];
+                        // Get the indices of the vertices for the edge
+                        int aIndex = tet[i];
+                        int bIndex = tet[j];
 
-                        pointA[0] = this->data.tetMesh.vertexDomainCoordinates[tet[i]][0];
-                        pointA[1] = this->data.tetMesh.vertexDomainCoordinates[tet[i]][1];
-                        pointA[2] = this->data.tetMesh.vertexDomainCoordinates[tet[i]][2];
+                        // Make sure the vertices of the edge are in sorted order to have consistent orientation
+                        if (aIndex > bIndex)
+                        {
+                            std::swap(aIndex, bIndex);
+                        }
 
-                        pointB[0] = this->data.tetMesh.vertexDomainCoordinates[tet[j]][0];
-                        pointB[1] = this->data.tetMesh.vertexDomainCoordinates[tet[j]][1];
-                        pointB[2] = this->data.tetMesh.vertexDomainCoordinates[tet[j]][2];
+                        const int edgeType = data.tetMesh.edgeSingularTypes.at({aIndex, bIndex});
 
-                        glVertex3fv(pointA);
-                        glVertex3fv(pointB);
+                        if (edgeType == 0)
+                        {
+                            glColor3f(0.6f, 0.85f, 0.85f);
+                        }
+                        else if(edgeType == 2)
+                        {
+                            glColor3f(1.0f, 0.647f, 0.0f);
+                        }
+
+                        if (edgeType !=1)
+                        {
+                            GLfloat pointA[3], pointB[3];
+
+                            pointA[0] = this->data.tetMesh.vertexDomainCoordinates[tet[i]][0];
+                            pointA[1] = this->data.tetMesh.vertexDomainCoordinates[tet[i]][1];
+                            pointA[2] = this->data.tetMesh.vertexDomainCoordinates[tet[i]][2];
+
+                            pointB[0] = this->data.tetMesh.vertexDomainCoordinates[tet[j]][0];
+                            pointB[1] = this->data.tetMesh.vertexDomainCoordinates[tet[j]][1];
+                            pointB[2] = this->data.tetMesh.vertexDomainCoordinates[tet[j]][2];
+
+                            glVertex3fv(pointA);
+                            glVertex3fv(pointB);
+                        }
                     }
                 }
-                //cout << endl;
             }
         }
         glEnd();
     }
-
 
     glPushMatrix();
     {
@@ -433,13 +454,15 @@ TracerVisualiserWidget::paintGL()
 void
 TracerVisualiserWidget::wheelEvent(QWheelEvent* event)
 {
-    this->scale -= event->angleDelta().y() / this->scaleFactor;
+    float delta = -event->angleDelta().y();  // e.g. +120 or -120 per notch
+    float zoomFactor = 1.0f + delta * 0.001f;  // tweak 0.001f to taste
 
-    if (scale <= 0) {
-        scale = 0;
-    }
+    this->scale *= zoomFactor;
 
-    this->update();
+    if (this->scale < 1e-4f)  // Clamp to reasonable minimum
+        this->scale = 1e-4f;
+
+    update();
 }
 
 void
@@ -537,18 +560,4 @@ void TracerVisualiserWidget::updateFiber(const std::vector<FiberPoint> &newFiber
     this->generateDisplayList();
     this->update();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

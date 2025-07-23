@@ -8,6 +8,7 @@
 #include <unordered_set>
 
 #include "./DisjointSet.h"
+#include "src/Hashing.h"
 
 class TetMesh
 {
@@ -30,7 +31,7 @@ class TetMesh
     std::vector<std::array<int, 4>> tetrahedra;
     // We always assume that edge vertices are in sorted order (but index)
     std::vector<std::array<int, 2>> edges;
-    std::map<std::array<int, 2>, int> edgeSingularTypes;
+    std::unordered_map<std::array<int, 2>, int, MyHash<std::array<int, 2>>> edgeSingularTypes;
     std::map<std::array<int, 2>, std::set<int>> upperLink;
     std::map<std::array<int, 2>, std::set<int>> lowerLink;
     std::map<std::array<int, 2>, std::vector<int>> upperStarTriangles;
@@ -38,6 +39,9 @@ class TetMesh
     std::vector<std::set<int>> triangles;
     std::unordered_map<std::set<int>, int, MyHash<std::set<int>>> triangleIndices;
     std::vector<std::vector<int>> tetIncidentTriangles;
+
+    int singularEdgesNumber;
+    int regularEdgesNumber;
 
 
     void computeBoundingBoxes();

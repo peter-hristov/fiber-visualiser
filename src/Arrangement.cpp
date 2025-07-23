@@ -51,14 +51,17 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh)
 
     // Add the unique edges as setments to the arrangement
     std::vector<Segment_2> segments;
-    for (const auto& edge : tetMesh.edges) 
+    //for (const auto& edge : tetMesh.edges) 
+    for (const auto &[edge, type] : tetMesh.edgeSingularTypes) 
     {
-        segments.push_back(Segment_2(this->arrangementPoints[edge[0]], this->arrangementPoints[edge[1]]));
+        if (type != 1)
+        {
+            segments.push_back(Segment_2(this->arrangementPoints[edge[0]], this->arrangementPoints[edge[1]]));
+        }
     }
 
-    Timer::start();
     CGAL::insert(this->arr, segments.begin(), segments.end());
-    Timer::stop("Computed arrangement                   :");
+
 
     // Sequential arrangement computationa
     //Timer::start();
@@ -83,6 +86,43 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh)
         this->arrangementIndexToFace[counter] = f;
         counter++;
     }
+
+
+
+
+
+
+
+    //for (auto currentFaceIterator = arr.faces_begin(); currentFaceIterator != arr.faces_end(); ++currentFaceIterator) 
+    //{
+        //Arrangement_2::Face_const_handle face = currentFaceIterator;
+        //if (face->is_unbounded()) { continue; }
+
+        //Arrangement_2::Ccb_halfedge_const_circulator start = face->outer_ccb();
+        //Arrangement_2::Ccb_halfedge_const_circulator curr = start;
+
+        //do {
+            //// Make sure there is only one originating curve (sanity check)
+            //const Segment_2 &segment = *arr.originating_curves_begin(curr);
+
+            //const int aIndex = arrangementPointIndices.at(segment.source());
+            //const int bIndex = arrangementPointIndices.at(segment.target());
+
+            //if (tetMesh.edgeSingularTypes.at({aIndex, bIndex}) != 1)
+            //{
+                //singularFaces.insert(face);
+            //}
+
+            //++curr;
+        //} while (curr != start);
+    //}
+
+    //printf("There are %ld singular faces out of %ld faces. That is %.2f%%.\n", singularFaces.size(), arr.number_of_faces(), 100.0 * (float)singularFaces.size() / (float)arr.number_of_faces());
+
+
+
+
+
 }
 
 void Arrangement::computePointLocationDataStructure()

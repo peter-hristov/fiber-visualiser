@@ -7,11 +7,13 @@
 #include "./io.h"
 #include "./Timer.h"
 #include "./ReebSpace.h"
+#include "./ReebSpace2.h"
 #include "./Data.h"
 #include "./CGALTypedefs.h"
 #include "./Arrangement.h"
 #include "./utility/CLI11.hpp"
 #include "./TracerVisualiserWindow.h"
+#include "src/ReebSpace2.h"
 
 using namespace std;
 
@@ -58,7 +60,9 @@ int main(int argc, char* argv[])
     TetMesh tetMesh;
     try
     {
+        Timer::start();
         tetMesh = io::readData(filename);
+        Timer::stop("Reading input data                     :");
     }
     catch (const std::exception &e)
     {
@@ -67,27 +71,55 @@ int main(int argc, char* argv[])
     }
     Timer::start();
     tetMesh.perturbRangeValues(perturbationEpsilon);
+    Timer::stop("Perturbing range values                :");
+
+    Timer::start();
     tetMesh.sortVertices();
+    Timer::stop("Sorting range points                   :");
+
+    Timer::start();
     tetMesh.computeBoundingBoxes();
+    Timer::stop("Computing bounding boxes               :");
+
+    Timer::start();
     tetMesh.computeCombinatorialStructure();
+    Timer::stop("Computing edges, triangles and tets    :");
+
+    Timer::start();
     tetMesh.computeUpperLowerLinkAndStar();
+    Timer::stop("Computing upper/lower links and stars  :");
+
+    Timer::start();
     tetMesh.computeSingularEdgeTypes();
-    Timer::stop("Input mesh postprocessing              :");
+    Timer::stop("Computing singular edges               :");
 
     Timer::start();
     Arrangement arrangement;
     arrangement.computeArrangement(tetMesh);
     Timer::stop("Arrangement                            :");
 
+
     Timer::start();
     arrangement.computePointLocationDataStructure();
     Timer::stop("Arrangement search structure           :");
+
+
+    Timer::start();
+
+    ReebSpace2::compute(tetMesh, arrangement);
+
+
+    std::cout << "Press Enter to continue...";
+    std::cin.get();
+
+    return 0;
+
 
     Timer::start();
     ReebSpace reebSpace;
     reebSpace.computeTraversal(tetMesh, arrangement, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
-
+    
     std::cout << "Postprocessing..." << std::endl;
     Timer::start();
     reebSpace.computeSheetGeometry(tetMesh, arrangement);

@@ -19,16 +19,14 @@ class ReebSpace
         // For each faceID we have a number of triangle seeds, which are given in fiberComponentId
         std::vector<std::vector<std::pair<int, int>>> fiberSeeds;
 
+
+
         std::unordered_map<int, CartesianPolygon_2> sheetPolygon;
-
         std::map<int, double> sheetArea;
-
         // Which sheets are incomplete, or degenerate
         std::unordered_set<int> incompleteSheets;
-
         // Maps the IDs of the Reeb space sheets to consequitive integers, useful for colouring things
         std::unordered_map<int, int> sheetConsequitiveIndices;
-
         // Jacobi type computing from the Reeb space algorithm, for comparison with the Jacobi type computed from the mesh
         std::unordered_map<std::pair<int, int>, int, MyHash<std::pair<int, int>>> jacobiType;
 

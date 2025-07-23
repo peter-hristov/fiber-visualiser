@@ -295,6 +295,7 @@ void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arra
 
             // If the neighbour has not been visited, we queue it and compute its preimage graph
             if (-1 == order[twinFaceID])
+            //if (-1 == order[twinFaceID] && arrangement.singularFaces.contains(twinFace))
             {
                 traversalQueue.push(twinFace);
                 order[twinFaceID] = ++orderIndex;

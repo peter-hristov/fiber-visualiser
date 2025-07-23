@@ -6,14 +6,14 @@ Done - Arrangement
 Done - ReebSpace
 Done - Fiber computation
 Done - Move the hashes outside of Disjoint set
-Simplify the 2D visualiser
+Done - PlotWidet (Simplify the 2D visualiser)
+Done - TracerVisualiserWidget
 
 
-Update the timer for use a hashmap
-Put the Reeb space computation in a different library
-
-Is this called twice? - ReebSpace::determineCorrespondence(tetMesh, arrangement, curr); in the BFS?
-Switch to using size_t for indices 
+Doen - (Later) Update the timer for use a hashmap
+Done - (Later) Put the Reeb space computation in a different library
+Done - (Nope) Is this called twice? - ReebSpace::determineCorrespondence(tetMesh, arrangement, curr); in the BFS?
+Done - (Not for now) Switch to using size_t for indices 
     Not as vital for now, it won't be soon that we can compute a Reeb space for a tet with over 32bit vertices.
 
 

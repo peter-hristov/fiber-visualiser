@@ -6,6 +6,10 @@
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 typedef CGAL::Exact_predicates_exact_constructions_kernel K;
 
+#include <CGAL/box_intersection_d.h>
+#include <CGAL/Bbox_2.h>
+ 
+
 
 //#include <CGAL/Simple_cartesian.h>
 //#include <CGAL/Lazy_exact_nt.h>
@@ -28,6 +32,10 @@ typedef CGAL::Arrangement_with_history_2<Traits_2> Arrangement_2;
 typedef K::Point_2 Point_2;
 typedef K::Segment_2 Segment_2;
 typedef K::Line_2 Line_2;
+
+//typedef CGAL::Box_intersection_d::Box_d<double, 2> Box;
+typedef CGAL::Box_intersection_d::Box_with_handle_d<double, 2, const Segment_2*> Box;
+typedef CGAL::Bbox_2 Bbox;
 
 typedef CGAL::Arr_segment_2<K> Curve_2;
 
