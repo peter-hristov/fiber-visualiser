@@ -35,11 +35,13 @@ class Data
 
     TetMesh &tetMesh;
     Arrangement &arrangement;
+    Arrangement &singularArrangement;
     ReebSpace &reebSpace;
 
-    Data(TetMesh& tm, Arrangement& a, ReebSpace& rs)
+    Data(TetMesh& tm, Arrangement& a, Arrangement& sa, ReebSpace& rs)
         : tetMesh(tm),
         arrangement(a),
+        singularArrangement(sa),
         reebSpace(rs)
     {}
 

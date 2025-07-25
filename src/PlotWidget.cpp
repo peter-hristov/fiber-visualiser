@@ -277,6 +277,35 @@ void PlotWidget::drawReebSpaceBackground(QPainter &p)
         //p.setFont(font);
         //p.drawText(rescalePoint(u, v), QString::number(i));
     //}
+
+
+    for (auto vit = data.singularArrangement.arr.vertices_begin(); vit != data.singularArrangement.arr.vertices_end(); ++vit) 
+    {
+        const float u = CGAL::to_double(vit->point().x());
+        const float v = CGAL::to_double(vit->point().y());
+
+        p.setPen(QPen(Qt::black, 6, Qt::SolidLine));
+        p.setBrush(Qt::white);           // Fill color
+        p.drawEllipse(rescalePoint(u, v), 20, 20);
+
+        QFont font = p.font();
+        font.setPointSize(70);
+        p.setFont(font);
+        //p.drawText(rescalePoint(u, v), QString::number(1));
+    }
+
+    for (const auto &[halfEdge, vertices] : data.singularArrangement.halfEdgePoints)
+    {
+        for (const auto &vertex : vertices)
+        {
+            const float u = CGAL::to_double(vertex.x());
+            const float v = CGAL::to_double(vertex.y());
+
+            p.setPen(QPen(Qt::black, 5, Qt::SolidLine));
+            p.setBrush(Qt::white);           // Fill color
+            p.drawEllipse(rescalePoint(u, v), 15, 15);
+        }
+    }
 }
 
 void PlotWidget::generateStaticReebSpaceCache()

@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 
     Timer::start();
     Arrangement singularArrangement;
-    singularArrangement.computeArrangement(tetMesh, Arrangement::SegmentMode::UseAllSegments);
+    singularArrangement.computeArrangement(tetMesh, Arrangement::SegmentMode::UseSingularSegments);
     Timer::stop("Singular Arrangement                   :");
 
     ReebSpace2::compute(tetMesh, arrangement, singularArrangement);
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
     glutInit(&argc, argv);
 
     // Package all my data for visualisation
-    Data data(tetMesh, arrangement, reebSpace);
+    Data data(tetMesh, arrangement, singularArrangement, reebSpace);
 
     // Create the widget
     TracerVisualiserWindow* window = new TracerVisualiserWindow(NULL, data);
