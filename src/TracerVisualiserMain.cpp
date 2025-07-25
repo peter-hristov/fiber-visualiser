@@ -95,24 +95,28 @@ int main(int argc, char* argv[])
 
     Timer::start();
     Arrangement arrangement;
-    arrangement.computeArrangement(tetMesh);
+    arrangement.computeArrangement(tetMesh, Arrangement::SegmentMode::UseAllSegments);
     Timer::stop("Arrangement                            :");
-
 
     Timer::start();
     arrangement.computePointLocationDataStructure();
     Timer::stop("Arrangement search structure           :");
 
 
+    //Timer::start();
+
     Timer::start();
+    Arrangement singularArrangement;
+    singularArrangement.computeArrangement(tetMesh, Arrangement::SegmentMode::UseAllSegments);
+    Timer::stop("Singular Arrangement                   :");
 
-    ReebSpace2::compute(tetMesh, arrangement);
+    ReebSpace2::compute(tetMesh, arrangement, singularArrangement);
 
 
-    std::cout << "Press Enter to continue...";
-    std::cin.get();
+    //std::cout << "Press Enter to continue...";
+    //std::cin.get();
 
-    return 0;
+    //return 0;
 
 
     Timer::start();

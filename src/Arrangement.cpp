@@ -35,7 +35,7 @@ Face_const_handle Arrangement::getActiveFace(const std::array<float, 2> fiberPoi
     return face;
 }
 
-void Arrangement::computeArrangement(const TetMesh &tetMesh) 
+void Arrangement::computeArrangement(const TetMesh &tetMesh, const SegmentMode &segmentMode) 
 {
     // Add in the vertices of the mesh 
     this->arrangementPoints.resize(tetMesh.vertexCoordinatesF.size());
@@ -54,7 +54,15 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh)
     //for (const auto& edge : tetMesh.edges) 
     for (const auto &[edge, type] : tetMesh.edgeSingularTypes) 
     {
-        if (type != 1)
+        if (segmentMode == SegmentMode::UseSingularSegments)
+        {
+            if (type != 1)
+            {
+                segments.push_back(Segment_2(this->arrangementPoints[edge[0]], this->arrangementPoints[edge[1]]));
+            }
+
+        }
+        else
         {
             segments.push_back(Segment_2(this->arrangementPoints[edge[0]], this->arrangementPoints[edge[1]]));
         }

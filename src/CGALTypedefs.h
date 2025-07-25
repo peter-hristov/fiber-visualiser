@@ -33,9 +33,6 @@ typedef K::Point_2 Point_2;
 typedef K::Segment_2 Segment_2;
 typedef K::Line_2 Line_2;
 
-//typedef CGAL::Box_intersection_d::Box_d<double, 2> Box;
-typedef CGAL::Box_intersection_d::Box_with_handle_d<double, 2, const Segment_2*> Box;
-typedef CGAL::Bbox_2 Bbox;
 
 typedef CGAL::Arr_segment_2<K> Curve_2;
 
@@ -50,6 +47,25 @@ typedef Arrangement_2::Face_const_iterator Face_const_iterator;
 //typedef CGAL::Arrangement_2<Traits_2> Arrangement_2;
 typedef Arrangement_2::Halfedge_const_handle Halfedge_const_handle;
 typedef Arrangement_2::Face_const_handle Face_const_handle;
+
+
+
+
+struct MySegment_2
+{
+    Segment_2 seg;
+    std::optional<Halfedge_handle> originatingHalfEdge;
+
+    MySegment_2(const Segment_2& s, std::optional<Halfedge_handle> he = std::nullopt)
+        : seg(s), originatingHalfEdge(he) {}
+};
+
+
+//typedef CGAL::Box_intersection_d::Box_d<double, 2> Box;
+typedef CGAL::Box_intersection_d::Box_with_handle_d<double, 2, const MySegment_2*> Box;
+typedef CGAL::Bbox_2 Bbox;
+
+
 
 // Used to find which face a point is in 
 //#include <CGAL/Arr_trapezoid_ric_point_location.h>

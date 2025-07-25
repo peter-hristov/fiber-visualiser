@@ -11,6 +11,18 @@ class Arrangement
 {
     public:
 
+    // Singular stuff
+    enum class SegmentMode
+    {
+        UseSingularSegments,
+        UseAllSegments
+    };
+
+    // Regular points along each half-edge
+    std::map<Halfedge_const_handle, std::vector<Point_2>> halfEdgePoints;
+
+    // Previous stuff
+
     Arrangement_2 arr;
 
     // The points of the line segments that define the arrangement, does not include new intersection points
@@ -32,6 +44,8 @@ class Arrangement
     std::unique_ptr<Point_location> pl;  // nullptr by default
 
     // We only add data->arr, the rest of data is unchanged
-    void computeArrangement(const TetMesh&);
+    void computeArrangement(const TetMesh&, const SegmentMode&);
     void computePointLocationDataStructure();
+
+
 };

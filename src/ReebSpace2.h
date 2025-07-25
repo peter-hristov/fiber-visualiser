@@ -6,5 +6,5 @@
 
 namespace ReebSpace2
 {
-    void compute(const TetMesh &tetMesh, const Arrangement &arrangement);
+    void compute(const TetMesh &tetMesh, Arrangement &regularArrangement, Arrangement &singularArrangement);
 };
