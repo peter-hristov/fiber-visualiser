@@ -251,7 +251,7 @@ void PlotWidget::drawReebSpaceBackground(QPainter &p)
         else if (type == 1)
         {
             //p.setPen(QPen(Qt::black, 3.2, Qt::SolidLine));
-            p.setPen(QPen(Qt::black, 0.0, Qt::SolidLine));
+            p.setPen(QPen(Qt::black, 5.0, Qt::SolidLine));
         }
         else
         {
@@ -263,20 +263,20 @@ void PlotWidget::drawReebSpaceBackground(QPainter &p)
     }
 
     // Draw all the vertex coordinates
-    //for(size_t i = 0 ; i <  this->data.tetMesh.vertexCoordinatesF.size() ; i++)
-    //{
-        //float u = this->data.tetMesh.vertexCoordinatesF[i];
-        //float v = this->data.tetMesh.vertexCoordinatesG[i];
+    for(size_t i = 0 ; i <  this->data.tetMesh.vertexCoordinatesF.size() ; i++)
+    {
+        float u = this->data.tetMesh.vertexCoordinatesF[i];
+        float v = this->data.tetMesh.vertexCoordinatesG[i];
 
-        //p.setPen(QPen(Qt::black, 6, Qt::SolidLine));
-        //p.setBrush(Qt::white);           // Fill color
-        //p.drawEllipse(rescalePoint(u, v), 20, 20);
+        p.setPen(QPen(Qt::black, 6, Qt::SolidLine));
+        p.setBrush(Qt::white);           // Fill color
+        p.drawEllipse(rescalePoint(u, v), 20, 20);
 
-        //QFont font = p.font();
-        //font.setPointSize(70);
-        //p.setFont(font);
-        //p.drawText(rescalePoint(u, v), QString::number(i));
-    //}
+        QFont font = p.font();
+        font.setPointSize(70);
+        p.setFont(font);
+        p.drawText(rescalePoint(u, v), QString::number(i));
+    }
 
 
     for (auto vit = data.singularArrangement.arr.vertices_begin(); vit != data.singularArrangement.arr.vertices_end(); ++vit) 
@@ -358,6 +358,8 @@ void PlotWidget::paintEvent(QPaintEvent*)
 
         const float u = this->paddedMinF + (fiberPoint.x() / resolution) * (this->paddedMaxF - this->paddedMinF);
         const float v = this->paddedMinG + (fiberPoint.y() / resolution) * (this->paddedMaxG - this->paddedMinG);
+
+        qDebug() << "Computing fiber (" << u << ", " << v << ")";
 
         const std::vector<FiberPoint> fiber = fiber::computeFiber(data.tetMesh, data.arrangement, data.reebSpace, {u, v}, -1);
         sibling->updateFiber(fiber);

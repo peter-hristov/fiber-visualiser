@@ -8,7 +8,7 @@
 #include <unordered_set>
 
 #include "./DisjointSet.h"
-#include "src/Hashing.h"
+#include "./Hashing.h"
 
 class TetMesh
 {

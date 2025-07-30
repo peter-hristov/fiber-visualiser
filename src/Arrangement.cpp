@@ -47,6 +47,7 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh, const SegmentMode &
 
         this->arrangementPoints[i] = point;
         this->arrangementPointIndices[point] = i;
+
     };
 
     // Add the unique edges as setments to the arrangement
@@ -95,10 +96,11 @@ void Arrangement::computeArrangement(const TetMesh &tetMesh, const SegmentMode &
         counter++;
     }
 
-
-
-
-
+    for (auto vit = this->arr.vertices_begin(); vit != this->arr.vertices_end(); ++vit)
+    {
+        Vertex_const_handle vertexHandle = vit;
+        arrangementPointHandles[vertexHandle->point()] = vertexHandle;
+    }
 
 
     //for (auto currentFaceIterator = arr.faces_begin(); currentFaceIterator != arr.faces_end(); ++currentFaceIterator) 

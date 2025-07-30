@@ -1,10 +1,9 @@
+#include "./CGALTypedefs.h"
 #include "./Data.h"
 #include "./Timer.h"
-#include "./CGALTypedefs.h"
 #include "./FiberPoint.h"
 #include "./Fiber.h"
 
-#include <CGAL/enum.h>
 #include <filesystem>
 #include <cassert>
 #include <fstream>
@@ -13,21 +12,6 @@
 #include <utility>
 #include <queue>
 
-#include <vtkSmartPointer.h>
-#include <vtkXMLUnstructuredGridReader.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkPoints.h>
-#include <vtkCell.h>
-#include <vtkDataArray.h>
-#include <vtkPointData.h>
-#include <ranges>
-
-#include <vtkPolyLine.h>
-#include <vtkCellArray.h>
-#include <vtkFloatArray.h>
-
-#include <vtkPolyData.h>
-#include <vtkXMLPolyDataWriter.h>
 
 using namespace std;
 

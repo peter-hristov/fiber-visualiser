@@ -1,10 +1,10 @@
 #pragma once
 
-#include <map>
-#include <vector>
-
 #include "./CGALTypedefs.h"
 #include "./TetMesh.h"
+
+#include <map>
+#include <vector>
 
 // This is mostly a wrapper for the CGAL arrangement class
 class Arrangement
@@ -32,6 +32,8 @@ class Arrangement
 
     // The inverse map of arrangementPoints, returns the index of a point
     std::map<Point_2, int> arrangementPointIndices;
+
+    std::map<Point_2, Vertex_const_handle> arrangementPointHandles;
 
     // The integer ID of every face in the arrangement
     std::map<Arrangement_2::Face_const_handle, int> arrangementFacesIdices;

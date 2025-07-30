@@ -1,6 +1,6 @@
-#include "./TetMesh.h"
 #include "./CGALTypedefs.h"
 
+#include "./TetMesh.h"
 #include <random>
 
 void TetMesh::perturbRangeValues(const float &epsilon)
