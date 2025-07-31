@@ -23,3 +23,9 @@ make -j 8 && ./fv99 -f ../data/three-sheet-toy.txt
 make -j 8 && ./fv99 -f ~/Projects/data/reeb-space-test-data/data.vtu
 make -j 8 && ./fv99 -f ~/Projects/data/reeb-space-test-data/torus/torus-factor-50-tets-320.vtu -e 1e-3
 make -j 8 && ./fv99 -f ~/Projects/data/reeb-space-test-data/ttk/downsample-20-300.vtu
+
+
+make -j 8 && ./fv99 -f ~/Projects/data/reeb-space-test-data/torus/torus-factor-40-tets-625.vtu  
+make -j 8 && ./fv99 -f ~/Projects/data/reeb-space-test-data/ttk/downsample-18-400.vtu 
+make -j 8 && ./fv99 -f ~/Projects/data/reeb-space-test-data/isabel/isabel1.40.90.vtu 
+make -j 8 && ./fv99 -f ~/Projects/data/reeb-space-test-data/isabel/isabel1.30.240.vtu 

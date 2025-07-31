@@ -55,9 +55,10 @@ struct MySegment_2
 {
     Segment_2 seg;
     std::optional<Halfedge_handle> originatingHalfEdge;
+    int originatingEdge;
 
-    MySegment_2(const Segment_2& s, std::optional<Halfedge_handle> he = std::nullopt)
-        : seg(s), originatingHalfEdge(he) {}
+    MySegment_2(const Segment_2& s, std::optional<Halfedge_handle> he = std::nullopt, int originatingEdge = -1)
+        : seg(s), originatingHalfEdge(he), originatingEdge(originatingEdge) {}
 };
 
 
@@ -97,3 +98,4 @@ typedef CartesianKernel::Line_2 CartesianLine;
 typedef CGAL::Polygon_2<CartesianKernel> CartesianPolygon_2;
 
 #include <CGAL/centroid.h>
+#include <CGAL/enum.h>

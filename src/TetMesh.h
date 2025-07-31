@@ -31,7 +31,9 @@ class TetMesh
     std::vector<std::array<int, 4>> tetrahedra;
     // We always assume that edge vertices are in sorted order (but index)
     std::vector<std::array<int, 2>> edges;
+    std::unordered_map<std::array<int, 2>, int, MyHash<std::array<int, 2>>> edgeIndices;
     std::unordered_map<std::array<int, 2>, int, MyHash<std::array<int, 2>>> edgeSingularTypes;
+
     std::map<std::array<int, 2>, std::set<int>> upperLink;
     std::map<std::array<int, 2>, std::set<int>> lowerLink;
     std::map<std::array<int, 2>, std::vector<int>> upperStarTriangles;

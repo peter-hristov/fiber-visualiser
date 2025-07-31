@@ -383,6 +383,7 @@ void TetMesh::computeCombinatorialStructure()
     for (const auto &edge: allEdges)
     {
         this->edges.push_back(edge);
+        this->edgeIndices[edge] = this->edges.size() - 1;
     }
 
 

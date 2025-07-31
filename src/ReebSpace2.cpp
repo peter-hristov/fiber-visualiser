@@ -2,9 +2,9 @@
 
 #include "./Timer.h"
 #include "./ReebSpace2.h"
-#include <CGAL/enum.h>
+#include <utility>
 
-bool areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<const Segment_2*>>& a, const std::map<Halfedge_const_handle, std::set<const Segment_2*>>& b)
+bool areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<int>>& a, const std::map<Halfedge_const_handle, std::set<int>>& b)
 {
     if (a.size() != b.size())
     {
@@ -21,7 +21,7 @@ bool areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<c
             return false;
         }
 
-        const std::set<const Segment_2*>& setB = itB->second;
+        const std::set<int>& setB = itB->second;
         if (setA.size() != setB.size())
         {
             std::cerr << "Sets for the same key do not match in size.\n";
@@ -196,13 +196,19 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
     {
         if (type == 1)
         {
-            regularSegments.emplace_back(Segment_2(singularArrangement.arrangementPoints[edge[0]], singularArrangement.arrangementPoints[edge[1]]), std::nullopt);
+            const std::array<int, 2> &edgeConst = edge;
+
+            regularSegments.emplace_back(
+                    Segment_2(singularArrangement.arrangementPoints[edge[0]], singularArrangement.arrangementPoints[edge[1]]), 
+                    std::nullopt, 
+                    tetMesh.edgeIndices.at(edgeConst)
+                    );
             regularBoxes.emplace_back(regularSegments.back().seg.bbox(), &regularSegments.back());
         }
     }
 
 
-    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeEdgeRegionSegments;
+    std::map<Halfedge_const_handle, std::set<int>> halfEdgeEdgeRegionSegments;
 
     int intersections = 0;
     int falsePositives = 0;
@@ -225,7 +231,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
             Halfedge_const_handle he = *(singularSegmentHandle.originatingHalfEdge); 
             singularArrangement.halfEdgePoints[he].push_back(ip);
 
-            halfEdgeEdgeRegionSegments[he].insert(&(regularSegmentHandle.seg));
+            halfEdgeEdgeRegionSegments[he].insert(regularSegmentHandle.originatingEdge);
 
             //singularArrangement.arr.split_edge(*(singularSegmentHandle.originatingHalfEdge), ip);
 
@@ -267,33 +273,43 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
 
 
-    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeVertexRegionSegments;
+    std::map<Halfedge_const_handle, std::set<int>> halfEdgeVertexRegionSegments;
 
     for (const MySegment_2 &mySegment : regularSegments)
     {
         const Segment_2 &segment = mySegment.seg;
 
-        const int aIndex = singularArrangement.arrangementPointIndices.at(segment.source());
-        const int bIndex = singularArrangement.arrangementPointIndices.at(segment.target());
+        //const int aIndex = singularArrangement.arrangementPointIndices.at(segment.source());
+        //const int bIndex = singularArrangement.arrangementPointIndices.at(segment.target());
         //printf("-----------------------------------------------------  At segment [%d, %d].\n", aIndex, bIndex);
+        //std::cout << "The current segment is from " << segment.source() << " to " << segment.target() << std::endl;
 
         const auto itSource = singularArrangement.arrangementPointHandles.find(segment.source());
         if (itSource != singularArrangement.arrangementPointHandles.end())
         {
             //std::cout << "The source point is : " << itSource->second->point() << " | " << singularArrangement.arrangementPointIndices.at(itSource->second->point()) << std::endl;
             Halfedge_const_handle regionHalfEdgeHandle = getSegmentRegion(itSource->second, segment);
-            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(&segment);
+            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(mySegment.originatingEdge);
+
+            //std::cout << "Added segment [" << tetMesh.edges[mySegment.originatingEdge][0] << ", " << tetMesh.edges[mySegment.originatingEdge][1] << "]\n";
+            //std::cout << "Between " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << " and " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << std::endl;
         }
 
 
         const auto itTarget = singularArrangement.arrangementPointHandles.find(segment.target());
         if (itTarget != singularArrangement.arrangementPointHandles.end())
         {
-            //std::cout << "\n\nThe target point is : " << itTarget->second->point() << " | " <<  singularArrangement.arrangementPointIndices.at(itTarget->second->point()) << std::endl;
+            //std::cout << "The target point is : " << itTarget->second->point() << " | " <<  singularArrangement.arrangementPointIndices.at(itTarget->second->point()) << std::endl;
             Halfedge_const_handle regionHalfEdgeHandle = getSegmentRegion(itTarget->second, segment);
-            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(&segment);
+            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(mySegment.originatingEdge);
+
+            //std::cout << "Added segment [" << tetMesh.edges[mySegment.originatingEdge][0] << ", " << tetMesh.edges[mySegment.originatingEdge][1] << "]\n";
+            //std::cout << "Between " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << " and " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << std::endl;
         }
+
+        //printf("\n\n");
     }
+
 
 
 
@@ -312,7 +328,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
     // Make sure we have compute all intersections correctly
     Timer::start();
-    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeEdgeRegionSegmentsUnitTest;
+    std::map<Halfedge_const_handle, std::set<int>> halfEdgeEdgeRegionSegmentsUnitTest;
 
     for (const auto &myRegularSegment : regularSegments)
     {
@@ -329,7 +345,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
                 Halfedge_const_handle he = *(mySingularSegment.originatingHalfEdge); 
 
-                halfEdgeEdgeRegionSegmentsUnitTest[he].insert(&(myRegularSegment.seg));
+                halfEdgeEdgeRegionSegmentsUnitTest[he].insert(myRegularSegment.originatingEdge);
             }
         }
     }
@@ -343,7 +359,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
     // halfEdgeVertexRegionSegments;
 
 
-    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeVertexRegionSegmentsUnitTest;
+    std::map<Halfedge_const_handle, std::set<int>> halfEdgeVertexRegionSegmentsUnitTest;
 
     // Iterate over the halfedges of every vertex
     for (auto v = regularArrangement.arr.vertices_begin(); v != regularArrangement.arr.vertices_end(); ++v)
@@ -387,14 +403,13 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
         Arrangement_2::Halfedge_const_handle currentSingularHalfEdge;
         do 
         {
-            // If the edge is singular
             const Segment_2 &segment = *regularArrangement.arr.originating_curves_begin(curr);
-
-
             
             const int aIndex = regularArrangement.arrangementPointIndices.at(segment.source());
             const int bIndex = regularArrangement.arrangementPointIndices.at(segment.target());
             const int edgeType = tetMesh.edgeSingularTypes.at({aIndex, bIndex});
+
+            // If the edge is singular
             if  (edgeType != 1)
             {
                 currentHalfEdge = curr;
@@ -428,27 +443,28 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
                 //std::cout << "---------- Adding regular edge " << curr->source()->point() << " to " << curr->target()->point() << "\n";
 
-                const Segment_2 *nonTempSegment;
+                //int nonTempSegmentId;
 
-                bool nonTempSegmentFound = false;
-                for (const MySegment_2 &mySegment : regularSegments)
-                {
-                    if (mySegment.seg.source() == segment.source() && mySegment.seg.target() == segment.target())
-                    {
-                        nonTempSegment = &mySegment.seg;
-                        nonTempSegmentFound = true;
-                    }
-                }
+                //bool nonTempSegmentFound = false;
+                //for (const MySegment_2 &mySegment : regularSegments)
+                //{
+                    //if (mySegment.seg.source() == segment.source() && mySegment.seg.target() == segment.target())
+                    //{
+                        //nonTempSegment = &mySegment.seg;
+                        //nonTempSegmentFound = true;
+                    //}
+                //}
 
-                assert (nonTempSegmentFound);
-
-
+                //assert (nonTempSegmentFound);
 
 
 
 
 
-                halfEdgeVertexRegionSegmentsUnitTest[currentSingularHalfEdge].insert(nonTempSegment);
+                const int edgeId = tetMesh.edgeIndices.at({aIndex, bIndex});
+
+
+                halfEdgeVertexRegionSegmentsUnitTest[currentSingularHalfEdge].insert(edgeId);
                 // The current half edge is equal to which half-edge in the singular arrangement?
 
 
@@ -492,15 +508,4 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
     Timer::stop("Vertex regions unit test               :");
     Timer::stop("Segment intersection unit test         :");
-
-
-
-
-
-
-
-
-
-
-
 }
