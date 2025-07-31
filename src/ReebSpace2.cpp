@@ -507,5 +507,153 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
 
     Timer::stop("Vertex regions unit test               :");
-    Timer::stop("Segment intersection unit test         :");
+
+
+    Timer::start();
+
+
+    // Set up the plus/minus triangles for each halfedge around a vertex
+    std::map<Halfedge_const_handle, std::set<int>> edgeRegionMinusTriangles;
+    std::map<Halfedge_const_handle, std::set<int>> edgeRegionPlusTriangles;
+
+    for (const auto [halfEdge, segmentIds] : halfEdgeEdgeRegionSegments)
+    {
+        // Each vertex is guaratneed to be in the singular arrangement
+        const Point_2 &a = halfEdge->source()->point();
+        const Point_2 &b = halfEdge->target()->point();
+
+
+        std::set<int> minusTrianglesSet;
+        std::set<int> plusTrianglesSet;
+
+        for (const auto &segmentId : segmentIds)
+        {
+            const std::array<int, 2> edge = tetMesh.edges[segmentId];
+            const int segmentSourceId = edge[0];
+            const Point_2 &c = singularArrangement.arrangementPoints[segmentSourceId];
+
+            std::vector<int> minusTriangles;
+            std::vector<int> plusTriangles;
+
+            //
+            //   (regular segment)
+            //          d 
+            //           \
+            //            \
+            // a ----------\--------- b (singular segment)
+            //              \
+            //               \
+            //                c
+            //
+            if (CGAL::orientation(a, b, c) == CGAL::RIGHT_TURN)
+            {
+                minusTriangles = tetMesh.upperStarTriangles.at(edge);
+                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
+            }
+
+            //
+            //   (regular segment)
+            //          c 
+            //           \
+            //            \
+            // a ----------\--------- b (singular segment)
+            //              \
+            //               \
+            //                d
+            //
+            else if (CGAL::orientation(a, b, c) == CGAL::LEFT_TURN)
+            {
+                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
+                plusTriangles = tetMesh.upperStarTriangles.at(edge);
+            }
+
+            // Non-robust predicate issue
+            else
+            {
+                assert(false);
+            }
+
+
+            minusTrianglesSet.insert(minusTriangles.begin(), minusTriangles.end());
+            plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
+        }
+    }
+
+    Timer::stop("Edge regions plus/minus triangles      :");
+
+
+
+
+
+
+
+    Timer::start();
+
+    // Set up the plus/minus triangles for each halfedge around a vertex
+    std::map<Halfedge_const_handle, std::set<int>> vertexRegionMinusTriangles;
+    std::map<Halfedge_const_handle, std::set<int>> vertexRegionPlusTriangles;
+    for (const auto [halfEdge, segmentIds] : halfEdgeVertexRegionSegments)
+    {
+
+        // Each vertex is guaratneed to be in the singular arrangement
+        const Point_2 &vertex = halfEdge->target()->point();
+        const int vertexMeshId = singularArrangement.arrangementPointIndices[vertex];
+
+        std::set<int> minusTrianglesSet;
+        std::set<int> plusTrianglesSet;
+
+        for (const auto &segmentId : segmentIds)
+        {
+            const std::array<int, 2> edge = tetMesh.edges[segmentId];
+
+            std::vector<int> minusTriangles;
+            std::vector<int> plusTriangles;
+
+            // Crossing ab in a CCW direction goes from the lower to the lower star
+            // Remember that we assume that a < b, so if a = v, then b is in the set BiggerThan(a).
+            // The set BiggerThan(a) = {x \ in R^2 : x > a} has a closed boundary (|) above a.y and open boundary bellow (.) a.y.
+            //
+            //      |  b
+            //      | /
+            //      |/
+            //      a
+            //      .
+            //      . 
+            //      .
+            //      
+            if (edge[0] == vertexMeshId)
+            {
+                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
+                plusTriangles = tetMesh.upperStarTriangles.at(edge);
+            }
+            // Crossing ab in a CCW direction goes from the upper to the lower star
+            // Remember that we assume that a < b, so if b = v, then a is in the set SmallerThan(b).
+            // The set SmallerThan(b) = {x \ in R^2 : x > a} has an open boundary (.) above b.y and closed boundary bellow (|) b.y
+            //      .
+            //      .
+            //      .
+            //      b
+            //     /|
+            //    / | 
+            //   a  |
+            //      
+            else if (edge[1] == vertexMeshId)
+            {
+                minusTriangles = tetMesh.upperStarTriangles.at(edge);
+                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
+            }
+            else
+            {
+                assert(false);
+            }
+
+            minusTrianglesSet.insert(minusTriangles.begin(), minusTriangles.end());
+            plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
+        }
+
+        vertexRegionMinusTriangles[halfEdge] = minusTrianglesSet;
+        vertexRegionPlusTriangles[halfEdge] = plusTrianglesSet;
+    }
+
+    Timer::stop("Vertex regions plus/minus triangles      :");
 }
