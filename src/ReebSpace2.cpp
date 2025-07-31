@@ -4,7 +4,46 @@
 #include "./ReebSpace2.h"
 #include <CGAL/enum.h>
 
+bool areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<const Segment_2*>>& a, const std::map<Halfedge_const_handle, std::set<const Segment_2*>>& b)
+{
+    if (a.size() != b.size())
+    {
+        std::cerr << "Size is not equal.\n";
+        return false;
+    }
 
+    for (const auto& [key, setA] : a)
+    {
+        auto itB = b.find(key);
+        if (itB == b.end())
+        {
+            std::cerr << "Second map does not have a key.\n";
+            return false;
+        }
+
+        const std::set<const Segment_2*>& setB = itB->second;
+        if (setA.size() != setB.size())
+        {
+            std::cerr << "Sets for the same key do not match in size.\n";
+            return false;
+        }
+
+        if (setA != setB)
+        {
+            std::cerr << "Set elements for the same key do not match.\n";
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool doSegmentEndpointsOverlap(const Segment_2 &s1, const Segment_2 &s2)
+{
+    return 
+        s1.source() == s2.source() || s1.source() == s2.target() ||
+        s1.target() == s2.source() || s1.target() == s2.target();
+}
 
 bool ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circulator &halfEdgeCirculator, const Segment_2 &segment)
 {
@@ -50,7 +89,7 @@ bool ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circu
     // o----c
     else if (CGAL::orientation(o, a, c) == CGAL::RIGHT_TURN)
     {
-        //printf("Returning not right, right");
+        //std::cout << "Return not right, right " << CGAL::orientation(o, a, b) << ", " << CGAL::orientation(o, b, c) << std::endl;
         return ! (CGAL::orientation(o, a, b) == CGAL::RIGHT_TURN && CGAL::orientation(o, b, c) == CGAL::RIGHT_TURN);
     }
     else
@@ -70,11 +109,11 @@ Halfedge_const_handle getSegmentRegion(Vertex_const_handle &vertexHandle, const 
     // Iterate in a CCW fashion to keep things consistent (faces are iterated in a CCW fashion too)
     do 
     {
-        std::cout << "  Halfedge from " << current->source()->point() << " to " << current->target()->point() << "\n";
+        //std::cout << "  Halfedge from " << current->source()->point() << " to " << current->target()->point() << "\n";
 
         if (ifSegmentInHalfEdgeRegion(current, segment))
         {
-            std::cout << "Found its rightful place.\n";
+            //std::cout << "Found its rightful place.\n";
             return current;
         }
 
@@ -163,6 +202,8 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
     }
 
 
+    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeEdgeRegionSegments;
+
     int intersections = 0;
     int falsePositives = 0;
 
@@ -171,37 +212,30 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
         const auto &regularSegmentHandle = *regularSegmentBox.handle();
         const auto &singularSegmentHandle  = *singularSegmentBox.handle();
 
+        if (doSegmentEndpointsOverlap(regularSegmentHandle.seg, singularSegmentHandle.seg)) { return; }
 
         std::optional<std::variant<Point_2, Segment_2>> result = CGAL::intersection(regularSegmentHandle.seg, singularSegmentHandle.seg);
 
 
-        if (result)
+        if (result && std::holds_alternative<Point_2>(*result))
         {
-            if (std::holds_alternative<Point_2>(*result))
-            {
-                Point_2 ip = std::get<Point_2>(*result);
-                intersections++;
+            Point_2 ip = std::get<Point_2>(*result);
+            intersections++;
 
-                if (ip != singularSegmentHandle.seg.source() && ip != singularSegmentHandle.seg.target())
-                {
-                    Halfedge_const_handle he = *(singularSegmentHandle.originatingHalfEdge); 
-                    singularArrangement.halfEdgePoints[he].push_back(ip);
-                }
+            Halfedge_const_handle he = *(singularSegmentHandle.originatingHalfEdge); 
+            singularArrangement.halfEdgePoints[he].push_back(ip);
 
-                //singularArrangement.arr.split_edge(*(singularSegmentHandle.originatingHalfEdge), ip);
+            halfEdgeEdgeRegionSegments[he].insert(&(regularSegmentHandle.seg));
 
-                //const int aIndex = singularArrangement.arrangementPointIndices.at(singularSegmentHandle.seg.source());
-                //const int bIndex = singularArrangement.arrangementPointIndices.at(singularSegmentHandle.seg.target());
+            //singularArrangement.arr.split_edge(*(singularSegmentHandle.originatingHalfEdge), ip);
+
+            //const int aIndex = singularArrangement.arrangementPointIndices.at(singularSegmentHandle.seg.source());
+            //const int bIndex = singularArrangement.arrangementPointIndices.at(singularSegmentHandle.seg.target());
 
 
-                //intersectionPoints[{aIndex, bIndex}].push_back(ip);
+            //intersectionPoints[{aIndex, bIndex}].push_back(ip);
 
-                //std::cout << "Intersection point: " << ip << "\n";
-            }
-            else
-            {
-                std::cout << "Segments overlap (result is a segment).\n";
-            }
+            //std::cout << "Intersection point: " << ip << "\n";
         }
         else
         {
@@ -233,7 +267,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
 
 
-    std::map<Halfedge_const_handle, std::vector<const Segment_2*>> halfEdgeRegionSegments;
+    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeVertexRegionSegments;
 
     for (const MySegment_2 &mySegment : regularSegments)
     {
@@ -241,23 +275,232 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
         const int aIndex = singularArrangement.arrangementPointIndices.at(segment.source());
         const int bIndex = singularArrangement.arrangementPointIndices.at(segment.target());
-        printf("-----------------------------------------------------  At segment [%d, %d].\n", aIndex, bIndex);
+        //printf("-----------------------------------------------------  At segment [%d, %d].\n", aIndex, bIndex);
 
         const auto itSource = singularArrangement.arrangementPointHandles.find(segment.source());
         if (itSource != singularArrangement.arrangementPointHandles.end())
         {
-            std::cout << "The source point is : " << itSource->second->point() << " | " << singularArrangement.arrangementPointIndices.at(itSource->second->point()) << std::endl;
+            //std::cout << "The source point is : " << itSource->second->point() << " | " << singularArrangement.arrangementPointIndices.at(itSource->second->point()) << std::endl;
             Halfedge_const_handle regionHalfEdgeHandle = getSegmentRegion(itSource->second, segment);
-            halfEdgeRegionSegments[regionHalfEdgeHandle].push_back(&segment);
+            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(&segment);
         }
 
 
         const auto itTarget = singularArrangement.arrangementPointHandles.find(segment.target());
         if (itTarget != singularArrangement.arrangementPointHandles.end())
         {
-            std::cout << "\n\nThe target point is : " << itTarget->second->point() << " | " <<  singularArrangement.arrangementPointIndices.at(itTarget->second->point()) << std::endl;
+            //std::cout << "\n\nThe target point is : " << itTarget->second->point() << " | " <<  singularArrangement.arrangementPointIndices.at(itTarget->second->point()) << std::endl;
             Halfedge_const_handle regionHalfEdgeHandle = getSegmentRegion(itTarget->second, segment);
-            halfEdgeRegionSegments[regionHalfEdgeHandle].push_back(&segment);
+            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(&segment);
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Make sure we have compute all intersections correctly
+    Timer::start();
+    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeEdgeRegionSegmentsUnitTest;
+
+    for (const auto &myRegularSegment : regularSegments)
+    {
+        for (const auto &mySingularSegment : singularSegments)
+        {
+            if (doSegmentEndpointsOverlap(myRegularSegment.seg, mySingularSegment.seg)) { continue; }
+
+            std::optional<std::variant<Point_2, Segment_2>> result = CGAL::intersection(myRegularSegment.seg, mySingularSegment.seg);
+
+            if (result && std::holds_alternative<Point_2>(*result))
+            {
+                Point_2 ip = std::get<Point_2>(*result);
+                intersections++;
+
+                Halfedge_const_handle he = *(mySingularSegment.originatingHalfEdge); 
+
+                halfEdgeEdgeRegionSegmentsUnitTest[he].insert(&(myRegularSegment.seg));
+            }
+        }
+    }
+
+    assert(areHalfEdgeRegionMapsEqual(halfEdgeEdgeRegionSegments, halfEdgeEdgeRegionSegmentsUnitTest));
+    Timer::stop("Segment intersection unit test         :");
+
+    Timer::start();
+
+
+    // halfEdgeVertexRegionSegments;
+
+
+    std::map<Halfedge_const_handle, std::set<const Segment_2*>> halfEdgeVertexRegionSegmentsUnitTest;
+
+    // Iterate over the halfedges of every vertex
+    for (auto v = regularArrangement.arr.vertices_begin(); v != regularArrangement.arr.vertices_end(); ++v)
+    {
+        if (v->is_isolated() || false == regularArrangement.arrangementPointIndices.contains(v->point())) 
+        {
+            continue;
+        }
+
+        //std::cout << "At vertex " << v->point() << std::endl;
+
+        Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
+        first = curr = v->incident_halfedges();
+
+        bool singularEdgeFound = false;
+
+        // Go to the first singular edge you find.
+        do 
+        {
+            // If the edge is singular
+            const Segment_2 &segment = *regularArrangement.arr.originating_curves_begin(curr);
+
+            const int aIndex = regularArrangement.arrangementPointIndices.at(segment.source());
+            const int bIndex = regularArrangement.arrangementPointIndices.at(segment.target());
+            const int edgeType = tetMesh.edgeSingularTypes.at({aIndex, bIndex});
+            if  (edgeType != 1)
+            {
+                first  = curr;
+                singularEdgeFound = true;
+                break;
+            }
+
+        } while (--curr != first);
+
+        if (false == singularEdgeFound) { continue; }
+
+
+        //std::cout << "Starting half-edge at " << curr->source()->point() << " to " << curr->target()->point() << "\n";
+
+        Arrangement_2::Halfedge_const_handle currentHalfEdge;
+        Arrangement_2::Halfedge_const_handle currentSingularHalfEdge;
+        do 
+        {
+            // If the edge is singular
+            const Segment_2 &segment = *regularArrangement.arr.originating_curves_begin(curr);
+
+
+            
+            const int aIndex = regularArrangement.arrangementPointIndices.at(segment.source());
+            const int bIndex = regularArrangement.arrangementPointIndices.at(segment.target());
+            const int edgeType = tetMesh.edgeSingularTypes.at({aIndex, bIndex});
+            if  (edgeType != 1)
+            {
+                currentHalfEdge = curr;
+
+                bool singularHalfEdgeFound = false;
+
+                for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangement.arr.halfedges_end(); ++he)
+                {
+                    const Segment_2 &singularSegment = *singularArrangement.arr.originating_curves_begin(he);
+
+                    if (he->target()->point() == v->point() && segment == singularSegment)
+                    {
+
+                        currentSingularHalfEdge = he;
+                        singularHalfEdgeFound = true;
+                    }
+                }
+
+                assert(singularHalfEdgeFound);
+
+
+
+
+
+                //std::cout << "---- Singular region start at " << curr->source()->point() << " to " << curr->target()->point() << "\n";
+                //std::cout << "---- Singular region start at singular " << currentSingularHalfEdge->source()->point() << " to " << currentSingularHalfEdge->target()->point() << "\n";
+                //std::cout << std::endl;
+            }
+            else
+            {
+
+                //std::cout << "---------- Adding regular edge " << curr->source()->point() << " to " << curr->target()->point() << "\n";
+
+                const Segment_2 *nonTempSegment;
+
+                bool nonTempSegmentFound = false;
+                for (const MySegment_2 &mySegment : regularSegments)
+                {
+                    if (mySegment.seg.source() == segment.source() && mySegment.seg.target() == segment.target())
+                    {
+                        nonTempSegment = &mySegment.seg;
+                        nonTempSegmentFound = true;
+                    }
+                }
+
+                assert (nonTempSegmentFound);
+
+
+
+
+
+
+
+                halfEdgeVertexRegionSegmentsUnitTest[currentSingularHalfEdge].insert(nonTempSegment);
+                // The current half edge is equal to which half-edge in the singular arrangement?
+
+
+            }
+
+
+        } while (--curr != first);
+    }
+
+
+    assert(areHalfEdgeRegionMapsEqual(halfEdgeVertexRegionSegments, halfEdgeVertexRegionSegmentsUnitTest));
+    //areHalfEdgeRegionMapsEqual(halfEdgeVertexRegionSegments, halfEdgeVertexRegionSegmentsUnitTest);
+
+
+
+    //printf("Printing the  singular vertex regions ... \n");
+    //for (const auto& [halfEdge, segments] : halfEdgeVertexRegionSegments)
+    //{
+        //std::cout << "At half edge " << halfEdge->source()->point() << " to " << halfEdge->target()->point() << "\n";
+        //for (const auto &segment : segments)
+        //{
+            //std::cout << "----" << segment->source() << " to " << segment->target() << "\n";
+
+        //}
+
+    //}
+
+    //printf("\n\nPrinting the singular vertex regions from the unit test... \n");
+    //for (const auto& [halfEdge, segments] : halfEdgeVertexRegionSegmentsUnitTest)
+    //{
+        //std::cout << "At half edge " << halfEdge->source()->point() << " to " << halfEdge->target()->point() << "\n";
+        //for (const auto &segment : segments)
+        //{
+            //std::cout << "----" << segment->source() << " to " << segment->target() << "\n";
+
+        //}
+
+    //}
+
+
+
+    Timer::stop("Vertex regions unit test               :");
+    Timer::stop("Segment intersection unit test         :");
+
+
+
+
+
+
+
+
+
+
+
 }

@@ -13,24 +13,24 @@ for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangem
 }
 
 // Iterate over the halfedges of every vertex
-for (auto vit = singularArrangement.arr.vertices_begin(); vit != singularArrangement.arr.vertices_end(); ++vit)
+for (auto v = regularArrangement.arr.vertices_begin(); v != regularArrangement.arr.vertices_end(); ++v)
 {
-    auto circ = vit->incident_halfedges();
-
-    if (circ != nullptr) {
-        auto start = circ;
-
-        std::cout << "Vertex at " << vit->point() << " incident halfedges:\n";
-        do {
-            Halfedge_const_handle heHandle = circ;
-
-            std::cout << "  Halfedge from " << circ->source()->point()
-                << " to " << heHandle->target()->point() << "\n";
-            ++circ;
-        } while (circ != start);
-    } else {
-        std::cout << "Vertex at " << vit->point() << " has no incident halfedges.\n";
+    if (v->is_isolated()) 
+    {
+        std::cout << "The vertex (" << v->point() << ") is isolated\n";
+        return;
     }
+
+    Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
+    first = curr = v->incident_halfedges();
+
+    std::cout << "The neighbors of the vertex (" << v->point() << ") are:";
+    do 
+    {
+        std::cout << " (" << curr->source()->point() << ")";
+    } while (++curr != first);
+
+    std::cout << std::endl;
 }
 
 
@@ -61,3 +61,19 @@ for (auto fit = singularArrangement.arr.faces_begin(); fit != singularArrangemen
         ++circ;
     } while (circ != start);
 }
+
+
+
+
+// Get originating segment
+const Segment_2 &segment = *arrangement.arr.originating_curves_begin(currentHalfEdge);
+//std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
+//std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+
+const int aIndex = arrangement.arrangementPointIndices.at(segment.source());
+const int bIndex = arrangement.arrangementPointIndices.at(segment.target());
+
+// Sanity check
+assert(aIndex < bIndex);
+
+const std::array<int, 2> edge = {aIndex, bIndex};

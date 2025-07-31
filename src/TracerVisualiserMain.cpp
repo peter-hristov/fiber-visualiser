@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
     //std::cout << "Press Enter to continue...";
     //std::cin.get();
 
-    //return 0;
+    return 0;
 
 
     Timer::start();
