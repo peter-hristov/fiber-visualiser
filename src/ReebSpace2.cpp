@@ -4,7 +4,7 @@
 #include "./ReebSpace2.h"
 #include <utility>
 
-bool areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<int>>& a, const std::map<Halfedge_const_handle, std::set<int>>& b)
+bool ReebSpace2::areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<int>>& a, const std::map<Halfedge_const_handle, std::set<int>>& b)
 {
     if (a.size() != b.size())
     {
@@ -38,14 +38,14 @@ bool areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<i
     return true;
 }
 
-bool doSegmentEndpointsOverlap(const Segment_2 &s1, const Segment_2 &s2)
+bool ReebSpace2::doSegmentEndpointsOverlap(const Segment_2 &s1, const Segment_2 &s2)
 {
     return 
         s1.source() == s2.source() || s1.source() == s2.target() ||
         s1.target() == s2.source() || s1.target() == s2.target();
 }
 
-bool ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circulator &halfEdgeCirculator, const Segment_2 &segment)
+bool ReebSpace2::ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circulator &halfEdgeCirculator, const Segment_2 &segment)
 {
     assert(halfEdgeCirculator != nullptr); 
 
@@ -98,7 +98,7 @@ bool ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circu
     }
 }
 
-Halfedge_const_handle getSegmentRegion(Vertex_const_handle &vertexHandle, const Segment_2 &segment)
+Halfedge_const_handle ReebSpace2::getSegmentRegion(Vertex_const_handle &vertexHandle, const Segment_2 &segment)
 {
     assert(segment.source() == vertexHandle->point() || segment.target() == vertexHandle->point());
     assert(false == vertexHandle->is_isolated());
@@ -124,15 +124,8 @@ Halfedge_const_handle getSegmentRegion(Vertex_const_handle &vertexHandle, const 
 }
 
 
-
-void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement, Arrangement &singularArrangement)
+void ReebSpace2::computeEdgeRegionSegments(const TetMesh &tetMesh, Arrangement &singularArrangement)
 {
-    Timer::start();
-
-
-
-
-
     //std::vector<Segment_2> regularSegments;
     //regularSegments.reserve(tetMesh.regularEdgesNumber);
 
@@ -158,14 +151,6 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
             //singularBoxes.emplace_back(singularSegments.back().bbox(), &singularSegments.back());
         //}
     //}
-
-
-
-
-
-
-
-
 
 
 
@@ -207,9 +192,6 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
         }
     }
 
-
-    std::map<Halfedge_const_handle, std::set<int>> halfEdgeEdgeRegionSegments;
-
     int intersections = 0;
     int falsePositives = 0;
 
@@ -231,7 +213,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
             Halfedge_const_handle he = *(singularSegmentHandle.originatingHalfEdge); 
             singularArrangement.halfEdgePoints[he].push_back(ip);
 
-            halfEdgeEdgeRegionSegments[he].insert(regularSegmentHandle.originatingEdge);
+            edgeRegionSegments[he].insert(regularSegmentHandle.originatingEdge);
 
             //singularArrangement.arr.split_edge(*(singularSegmentHandle.originatingHalfEdge), ip);
 
@@ -267,13 +249,34 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
 
 
-    Timer::stop("Computed red/blud intersetions         :");
     printf("There were %d intersections with %d false positives.\n", intersections, falsePositives);
 
 
 
+}
 
-    std::map<Halfedge_const_handle, std::set<int>> halfEdgeVertexRegionSegments;
+
+
+void ReebSpace2::computeVertexRegionSegments(const TetMesh &tetMesh, Arrangement &singularArrangement)
+{
+
+    std::vector<MySegment_2> regularSegments;
+    regularSegments.reserve(tetMesh.regularEdgesNumber);
+
+    for (const auto &[edge, type] : tetMesh.edgeSingularTypes) 
+    {
+        if (type == 1)
+        {
+            const std::array<int, 2> &edgeConst = edge;
+
+            regularSegments.emplace_back(
+                    Segment_2(singularArrangement.arrangementPoints[edge[0]], singularArrangement.arrangementPoints[edge[1]]), 
+                    std::nullopt, 
+                    tetMesh.edgeIndices.at(edgeConst)
+                    );
+        }
+    }
+
 
     for (const MySegment_2 &mySegment : regularSegments)
     {
@@ -289,7 +292,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
         {
             //std::cout << "The source point is : " << itSource->second->point() << " | " << singularArrangement.arrangementPointIndices.at(itSource->second->point()) << std::endl;
             Halfedge_const_handle regionHalfEdgeHandle = getSegmentRegion(itSource->second, segment);
-            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(mySegment.originatingEdge);
+            vertexRegionSegments[regionHalfEdgeHandle].insert(mySegment.originatingEdge);
 
             //std::cout << "Added segment [" << tetMesh.edges[mySegment.originatingEdge][0] << ", " << tetMesh.edges[mySegment.originatingEdge][1] << "]\n";
             //std::cout << "Between " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << " and " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << std::endl;
@@ -301,13 +304,190 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
         {
             //std::cout << "The target point is : " << itTarget->second->point() << " | " <<  singularArrangement.arrangementPointIndices.at(itTarget->second->point()) << std::endl;
             Halfedge_const_handle regionHalfEdgeHandle = getSegmentRegion(itTarget->second, segment);
-            halfEdgeVertexRegionSegments[regionHalfEdgeHandle].insert(mySegment.originatingEdge);
+            vertexRegionSegments[regionHalfEdgeHandle].insert(mySegment.originatingEdge);
 
             //std::cout << "Added segment [" << tetMesh.edges[mySegment.originatingEdge][0] << ", " << tetMesh.edges[mySegment.originatingEdge][1] << "]\n";
             //std::cout << "Between " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << " and " << singularArrangement.arrangementPoints[tetMesh.edges[mySegment.originatingEdge][0]] << std::endl;
         }
 
         //printf("\n\n");
+    }
+
+
+}
+
+
+
+
+
+
+void ReebSpace2::computeEdgeRegionMinusPlusTriangles(const TetMesh &tetMesh, Arrangement &singularArrangement)
+{
+    for (const auto [halfEdge, segmentIds] : edgeRegionSegments)
+    {
+        // Each vertex is guaratneed to be in the singular arrangement
+        const Point_2 &a = halfEdge->source()->point();
+        const Point_2 &b = halfEdge->target()->point();
+
+
+        std::set<int> minusTrianglesSet;
+        std::set<int> plusTrianglesSet;
+
+        for (const auto &segmentId : segmentIds)
+        {
+            const std::array<int, 2> edge = tetMesh.edges[segmentId];
+            const int segmentSourceId = edge[0];
+            const Point_2 &c = singularArrangement.arrangementPoints[segmentSourceId];
+
+            std::vector<int> minusTriangles;
+            std::vector<int> plusTriangles;
+
+            //
+            //   (regular segment)
+            //          d 
+            //           \
+            //            \
+            // a ----------\--------- b (singular segment)
+            //              \
+            //               \
+            //                c
+            //
+            if (CGAL::orientation(a, b, c) == CGAL::RIGHT_TURN)
+            {
+                minusTriangles = tetMesh.upperStarTriangles.at(edge);
+                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
+            }
+
+            //
+            //   (regular segment)
+            //          c 
+            //           \
+            //            \
+            // a ----------\--------- b (singular segment)
+            //              \
+            //               \
+            //                d
+            //
+            else if (CGAL::orientation(a, b, c) == CGAL::LEFT_TURN)
+            {
+                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
+                plusTriangles = tetMesh.upperStarTriangles.at(edge);
+            }
+
+            // Non-robust predicate issue
+            else
+            {
+                assert(false);
+            }
+
+
+            minusTrianglesSet.insert(minusTriangles.begin(), minusTriangles.end());
+            plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
+        }
+    }
+}
+
+void ReebSpace2::computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, Arrangement &singularArrangement)
+{
+    for (const auto [halfEdge, segmentIds] : vertexRegionSegments)
+    {
+        // Each vertex is guaratneed to be in the singular arrangement
+        const Point_2 &vertex = halfEdge->target()->point();
+        const int vertexMeshId = singularArrangement.arrangementPointIndices[vertex];
+
+        std::set<int> minusTrianglesSet;
+        std::set<int> plusTrianglesSet;
+
+        for (const auto &segmentId : segmentIds)
+        {
+            const std::array<int, 2> edge = tetMesh.edges[segmentId];
+
+            std::vector<int> minusTriangles;
+            std::vector<int> plusTriangles;
+
+            // Crossing ab in a CCW direction goes from the lower to the upper star
+            // Remember that we assume that a < b, so if a = v, then b is in the set BiggerThan(a).
+            // The set BiggerThan(a) = {x \ in R^2 : x > a} has a closed boundary (|) above a.y and open boundary bellow (.) a.y.
+            //
+            //      |  b
+            //      | /
+            //      |/
+            //      a
+            //      .
+            //      . 
+            //      .
+            //      
+            if (edge[0] == vertexMeshId)
+            {
+                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
+                plusTriangles = tetMesh.upperStarTriangles.at(edge);
+            }
+            // Crossing ab in a CCW direction goes from the upper to the lower star
+            // Remember that we assume that a < b, so if b = v, then a is in the set SmallerThan(b).
+            // The set SmallerThan(b) = {x \ in R^2 : x > a} has an open boundary (.) above b.y and closed boundary bellow (|) b.y
+            //      .
+            //      .
+            //      .
+            //      b
+            //     /|
+            //    / | 
+            //   a  |
+            //      
+            else if (edge[1] == vertexMeshId)
+            {
+                minusTriangles = tetMesh.upperStarTriangles.at(edge);
+                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
+            }
+            else
+            {
+                assert(false);
+            }
+
+            minusTrianglesSet.insert(minusTriangles.begin(), minusTriangles.end());
+            plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
+        }
+
+        vertexRegionMinusTriangles[halfEdge] = minusTrianglesSet;
+        vertexRegionPlusTriangles[halfEdge] = plusTrianglesSet;
+    }
+}
+
+void ReebSpace2::unitTest(const TetMesh &tetMesh, Arrangement &singularArrangement, Arrangement &regularArrangement)
+{
+    std::vector<MySegment_2> singularSegments;
+    singularSegments.reserve(singularArrangement.arr.number_of_edges());
+
+    std::vector<Box> singularBoxes;
+    singularBoxes.reserve(singularArrangement.arr.number_of_edges());
+
+    for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangement.arr.halfedges_end(); ++he)
+    {
+        if (he < he->twin())
+        {
+            singularSegments.emplace_back(Segment_2(he->source()->point(), he->target()->point()), he);
+            singularBoxes.emplace_back(singularSegments.back().seg.bbox(), &singularSegments.back());
+        }
+    }
+
+    std::vector<MySegment_2> regularSegments;
+    regularSegments.reserve(tetMesh.regularEdgesNumber);
+
+    std::vector<Box> regularBoxes; 
+    regularBoxes.reserve(tetMesh.regularEdgesNumber);
+
+    for (const auto &[edge, type] : tetMesh.edgeSingularTypes) 
+    {
+        if (type == 1)
+        {
+            const std::array<int, 2> &edgeConst = edge;
+
+            regularSegments.emplace_back(
+                    Segment_2(singularArrangement.arrangementPoints[edge[0]], singularArrangement.arrangementPoints[edge[1]]), 
+                    std::nullopt, 
+                    tetMesh.edgeIndices.at(edgeConst)
+                    );
+            regularBoxes.emplace_back(regularSegments.back().seg.bbox(), &regularSegments.back());
+        }
     }
 
 
@@ -318,16 +498,7 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
 
 
 
-
-
-
-
-
-
-
-
     // Make sure we have compute all intersections correctly
-    Timer::start();
     std::map<Halfedge_const_handle, std::set<int>> halfEdgeEdgeRegionSegmentsUnitTest;
 
     for (const auto &myRegularSegment : regularSegments)
@@ -341,7 +512,6 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
             if (result && std::holds_alternative<Point_2>(*result))
             {
                 Point_2 ip = std::get<Point_2>(*result);
-                intersections++;
 
                 Halfedge_const_handle he = *(mySingularSegment.originatingHalfEdge); 
 
@@ -350,10 +520,8 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
         }
     }
 
-    assert(areHalfEdgeRegionMapsEqual(halfEdgeEdgeRegionSegments, halfEdgeEdgeRegionSegmentsUnitTest));
-    Timer::stop("Segment intersection unit test         :");
+    assert(areHalfEdgeRegionMapsEqual(edgeRegionSegments, halfEdgeEdgeRegionSegmentsUnitTest));
 
-    Timer::start();
 
 
     // halfEdgeVertexRegionSegments;
@@ -475,185 +643,5 @@ void ReebSpace2::compute(const TetMesh &tetMesh, Arrangement &regularArrangement
     }
 
 
-    assert(areHalfEdgeRegionMapsEqual(halfEdgeVertexRegionSegments, halfEdgeVertexRegionSegmentsUnitTest));
-    //areHalfEdgeRegionMapsEqual(halfEdgeVertexRegionSegments, halfEdgeVertexRegionSegmentsUnitTest);
-
-
-
-    //printf("Printing the  singular vertex regions ... \n");
-    //for (const auto& [halfEdge, segments] : halfEdgeVertexRegionSegments)
-    //{
-        //std::cout << "At half edge " << halfEdge->source()->point() << " to " << halfEdge->target()->point() << "\n";
-        //for (const auto &segment : segments)
-        //{
-            //std::cout << "----" << segment->source() << " to " << segment->target() << "\n";
-
-        //}
-
-    //}
-
-    //printf("\n\nPrinting the singular vertex regions from the unit test... \n");
-    //for (const auto& [halfEdge, segments] : halfEdgeVertexRegionSegmentsUnitTest)
-    //{
-        //std::cout << "At half edge " << halfEdge->source()->point() << " to " << halfEdge->target()->point() << "\n";
-        //for (const auto &segment : segments)
-        //{
-            //std::cout << "----" << segment->source() << " to " << segment->target() << "\n";
-
-        //}
-
-    //}
-
-
-
-    Timer::stop("Vertex regions unit test               :");
-
-
-    Timer::start();
-
-
-    // Set up the plus/minus triangles for each halfedge around a vertex
-    std::map<Halfedge_const_handle, std::set<int>> edgeRegionMinusTriangles;
-    std::map<Halfedge_const_handle, std::set<int>> edgeRegionPlusTriangles;
-
-    for (const auto [halfEdge, segmentIds] : halfEdgeEdgeRegionSegments)
-    {
-        // Each vertex is guaratneed to be in the singular arrangement
-        const Point_2 &a = halfEdge->source()->point();
-        const Point_2 &b = halfEdge->target()->point();
-
-
-        std::set<int> minusTrianglesSet;
-        std::set<int> plusTrianglesSet;
-
-        for (const auto &segmentId : segmentIds)
-        {
-            const std::array<int, 2> edge = tetMesh.edges[segmentId];
-            const int segmentSourceId = edge[0];
-            const Point_2 &c = singularArrangement.arrangementPoints[segmentSourceId];
-
-            std::vector<int> minusTriangles;
-            std::vector<int> plusTriangles;
-
-            //
-            //   (regular segment)
-            //          d 
-            //           \
-            //            \
-            // a ----------\--------- b (singular segment)
-            //              \
-            //               \
-            //                c
-            //
-            if (CGAL::orientation(a, b, c) == CGAL::RIGHT_TURN)
-            {
-                minusTriangles = tetMesh.upperStarTriangles.at(edge);
-                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
-            }
-
-            //
-            //   (regular segment)
-            //          c 
-            //           \
-            //            \
-            // a ----------\--------- b (singular segment)
-            //              \
-            //               \
-            //                d
-            //
-            else if (CGAL::orientation(a, b, c) == CGAL::LEFT_TURN)
-            {
-                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
-                plusTriangles = tetMesh.upperStarTriangles.at(edge);
-            }
-
-            // Non-robust predicate issue
-            else
-            {
-                assert(false);
-            }
-
-
-            minusTrianglesSet.insert(minusTriangles.begin(), minusTriangles.end());
-            plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
-        }
-    }
-
-    Timer::stop("Edge regions plus/minus triangles      :");
-
-
-
-
-
-
-
-    Timer::start();
-
-    // Set up the plus/minus triangles for each halfedge around a vertex
-    std::map<Halfedge_const_handle, std::set<int>> vertexRegionMinusTriangles;
-    std::map<Halfedge_const_handle, std::set<int>> vertexRegionPlusTriangles;
-    for (const auto [halfEdge, segmentIds] : halfEdgeVertexRegionSegments)
-    {
-
-        // Each vertex is guaratneed to be in the singular arrangement
-        const Point_2 &vertex = halfEdge->target()->point();
-        const int vertexMeshId = singularArrangement.arrangementPointIndices[vertex];
-
-        std::set<int> minusTrianglesSet;
-        std::set<int> plusTrianglesSet;
-
-        for (const auto &segmentId : segmentIds)
-        {
-            const std::array<int, 2> edge = tetMesh.edges[segmentId];
-
-            std::vector<int> minusTriangles;
-            std::vector<int> plusTriangles;
-
-            // Crossing ab in a CCW direction goes from the lower to the lower star
-            // Remember that we assume that a < b, so if a = v, then b is in the set BiggerThan(a).
-            // The set BiggerThan(a) = {x \ in R^2 : x > a} has a closed boundary (|) above a.y and open boundary bellow (.) a.y.
-            //
-            //      |  b
-            //      | /
-            //      |/
-            //      a
-            //      .
-            //      . 
-            //      .
-            //      
-            if (edge[0] == vertexMeshId)
-            {
-                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
-                plusTriangles = tetMesh.upperStarTriangles.at(edge);
-            }
-            // Crossing ab in a CCW direction goes from the upper to the lower star
-            // Remember that we assume that a < b, so if b = v, then a is in the set SmallerThan(b).
-            // The set SmallerThan(b) = {x \ in R^2 : x > a} has an open boundary (.) above b.y and closed boundary bellow (|) b.y
-            //      .
-            //      .
-            //      .
-            //      b
-            //     /|
-            //    / | 
-            //   a  |
-            //      
-            else if (edge[1] == vertexMeshId)
-            {
-                minusTriangles = tetMesh.upperStarTriangles.at(edge);
-                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
-            }
-            else
-            {
-                assert(false);
-            }
-
-            minusTrianglesSet.insert(minusTriangles.begin(), minusTriangles.end());
-            plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
-        }
-
-        vertexRegionMinusTriangles[halfEdge] = minusTrianglesSet;
-        vertexRegionPlusTriangles[halfEdge] = plusTrianglesSet;
-    }
-
-    Timer::stop("Vertex regions plus/minus triangles      :");
+    assert(areHalfEdgeRegionMapsEqual(vertexRegionSegments, halfEdgeVertexRegionSegmentsUnitTest));
 }

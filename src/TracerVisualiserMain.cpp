@@ -110,7 +110,33 @@ int main(int argc, char* argv[])
     singularArrangement.computeArrangement(tetMesh, Arrangement::SegmentMode::UseSingularSegments);
     Timer::stop("Singular Arrangement                   :");
 
-    ReebSpace2::compute(tetMesh, arrangement, singularArrangement);
+
+
+
+    // New computation
+    ReebSpace2 reebSpace2;
+
+    Timer::start();
+    reebSpace2.computeEdgeRegionSegments(tetMesh, singularArrangement);
+    Timer::stop("Computed red/blud intersetions         :");
+
+    Timer::start();
+    reebSpace2.computeVertexRegionSegments(tetMesh, singularArrangement);
+    Timer::stop("Computed vertex regions                :");
+
+    Timer::start();
+    reebSpace2.computeEdgeRegionMinusPlusTriangles(tetMesh, singularArrangement);
+    Timer::stop("Edge regions plus/minus triangles      :");
+
+    Timer::start();
+    reebSpace2.computeVertexRegionMinusPlusTriangles(tetMesh, singularArrangement);
+    Timer::stop("Vertex regions plus/minus triangles    :");
+
+    Timer::start();
+    reebSpace2.unitTest(tetMesh, singularArrangement, arrangement);
+    Timer::stop("Geometric computation unit tests       :");
+    
+
 
 
     //std::cout << "Press Enter to continue...";
