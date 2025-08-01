@@ -26,12 +26,18 @@ class ReebSpace2
 
 
 
-        std::map<Halfedge_const_handle, std::set<int>> edgeRegionMinusTriangles;
-        std::map<Halfedge_const_handle, std::set<int>> edgeRegionPlusTriangles;
-        std::map<Halfedge_const_handle, std::set<int>> vertexRegionMinusTriangles;
-        std::map<Halfedge_const_handle, std::set<int>> vertexRegionPlusTriangles;
+        std::map<Halfedge_const_handle, std::vector<int>> edgeRegionMinusTriangles;
+        std::map<Halfedge_const_handle, std::vector<int>> edgeRegionPlusTriangles;
+
+        std::map<Halfedge_const_handle, std::vector<int>> edgeCrossingMinusTriangles;
+        std::map<Halfedge_const_handle, std::vector<int>> edgeCrossingPlusTriangles;
+
+        std::map<Halfedge_const_handle, std::vector<int>> vertexRegionMinusTriangles;
+        std::map<Halfedge_const_handle, std::vector<int>> vertexRegionPlusTriangles;
+
 
         void computeEdgeRegionMinusPlusTriangles(const TetMesh &tetMesh, Arrangement &singularArrangement);
+        void computeEdgeCrossingMinusPlusTriangles(const TetMesh &tetMesh, Arrangement &singularArrangement);
         void computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, Arrangement &singularArrangement);
 
         bool areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<int>>& a, const std::map<Halfedge_const_handle, std::set<int>>& b);

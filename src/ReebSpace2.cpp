@@ -384,6 +384,60 @@ void ReebSpace2::computeEdgeRegionMinusPlusTriangles(const TetMesh &tetMesh, Arr
             minusTrianglesSet.insert(minusTriangles.begin(), minusTriangles.end());
             plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
         }
+
+        auto &minusVec = edgeRegionMinusTriangles[halfEdge];
+        minusVec.insert(minusVec.end(), minusTrianglesSet.begin(), minusTrianglesSet.end());
+
+        auto &plusVec = edgeRegionPlusTriangles[halfEdge];
+        plusVec.insert(plusVec.end(), plusTrianglesSet.begin(), plusTrianglesSet.end());
+
+        // These are reversed for the twin edge
+        edgeRegionMinusTriangles[halfEdge->twin()] = plusVec;
+        edgeRegionPlusTriangles[halfEdge->twin()] = minusVec;
+    }
+}
+
+
+void ReebSpace2::computeEdgeCrossingMinusPlusTriangles(const TetMesh &tetMesh, Arrangement &singularArrangement)
+{
+    for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangement.arr.halfedges_end(); ++he)
+    {
+        // If we have computed this for the twin, just swap them around
+        if (false == edgeCrossingMinusTriangles.at(he->twin()).empty())
+        {
+            edgeCrossingMinusTriangles[he] = edgeCrossingPlusTriangles[he->twin()];
+            edgeCrossingPlusTriangles[he] = edgeCrossingMinusTriangles[he->twin()];
+        }
+        else
+        {
+            const Segment_2 &segment = *singularArrangement.arr.originating_curves_begin(he);
+            //std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
+            //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
+
+            const int aIndex = singularArrangement.arrangementPointIndices.at(segment.source());
+            const int bIndex = singularArrangement.arrangementPointIndices.at(segment.target());
+
+            // Sanity check
+            assert(aIndex < bIndex);
+
+            const std::array<int, 2> edge = {aIndex, bIndex};
+
+            // Check to see if the segment and half edge have the same orientation
+            const bool isSegmentLeftToRight = segment.source() < segment.target(); 
+            const bool isCurrentHalfEdgeLeftToRight = (he->direction() == CGAL::ARR_LEFT_TO_RIGHT);
+
+            // The half edge has the same direction as the original edge
+            if (isSegmentLeftToRight == isCurrentHalfEdgeLeftToRight)
+            {
+                edgeCrossingMinusTriangles[he] = tetMesh.upperStarTriangles.at(edge);
+                edgeCrossingPlusTriangles[he] = tetMesh.lowerStarTriangles.at(edge);
+            }
+            else
+            {
+                edgeCrossingMinusTriangles[he] = tetMesh.lowerStarTriangles.at(edge);
+                edgeCrossingPlusTriangles[he] = tetMesh.upperStarTriangles.at(edge);
+            }
+        }
     }
 }
 
@@ -447,10 +501,11 @@ void ReebSpace2::computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, A
             plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
         }
 
-        vertexRegionMinusTriangles[halfEdge] = minusTrianglesSet;
-        vertexRegionPlusTriangles[halfEdge] = plusTrianglesSet;
+        vertexRegionMinusTriangles[halfEdge] = std::vector<int>(minusTrianglesSet.begin(), minusTrianglesSet.end());
+        vertexRegionPlusTriangles[halfEdge] = std::vector<int>(plusTrianglesSet.begin(), plusTrianglesSet.end());
     }
 }
+
 
 void ReebSpace2::unitTest(const TetMesh &tetMesh, Arrangement &singularArrangement, Arrangement &regularArrangement)
 {
