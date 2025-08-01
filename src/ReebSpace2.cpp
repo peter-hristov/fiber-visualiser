@@ -45,83 +45,6 @@ bool ReebSpace2::doSegmentEndpointsOverlap(const Segment_2 &s1, const Segment_2 
         s1.target() == s2.source() || s1.target() == s2.target();
 }
 
-bool ReebSpace2::ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circulator &halfEdgeCirculator, const Segment_2 &segment)
-{
-    assert(halfEdgeCirculator != nullptr); 
-
-    const auto halfEdge = halfEdgeCirculator;
-
-    auto halfEdgeCirculatorPrevious = halfEdgeCirculator;
-    const auto halfEdgeNext = --halfEdgeCirculatorPrevious;
-
-
-    // The image of the vertex is o, the endpoints of the half-edges are a and b and the other endpoints of the segment is b
-    // See bellow for pictures
-    const Point_2 &o = halfEdge->target()->point();
-    const Point_2 &a = halfEdge->source()->point();
-    const Point_2 &b = segment.source() == o ? segment.target() : segment.source();
-    const Point_2 &c = halfEdgeNext->source()->point();
-
-    //std::cout << "o = " << o << "\na = " << a << "\nb = " << b << "\nc = " << c << std::endl;
-
-    // Case 1. 
-    //
-    //      a
-    //  b   |
-    //   \  |
-    //    \ |
-    //     \|
-    // c----o
-    if (CGAL::orientation(o, a, c) == CGAL::LEFT_TURN)
-    {
-        //printf("Returning left, left");
-        //std::cout << "Return left, left " << CGAL::orientation(o, a, b) << ", " << CGAL::orientation(o, b, c) << std::endl;
-
-        return CGAL::orientation(o, a, b) == CGAL::LEFT_TURN && CGAL::orientation(o, b, c) == CGAL::LEFT_TURN;
-    }
-    // Case 2. This is the only case where c \notin the region a-b, we need the negation of this case.
-    //
-    // a
-    // |   b
-    // |  /
-    // | /
-    // |/
-    // o----c
-    else if (CGAL::orientation(o, a, c) == CGAL::RIGHT_TURN)
-    {
-        //std::cout << "Return not right, right " << CGAL::orientation(o, a, b) << ", " << CGAL::orientation(o, b, c) << std::endl;
-        return ! (CGAL::orientation(o, a, b) == CGAL::RIGHT_TURN && CGAL::orientation(o, b, c) == CGAL::RIGHT_TURN);
-    }
-    else
-    {
-        assert(false);
-    }
-}
-
-Halfedge_const_handle ReebSpace2::getSegmentRegion(Vertex_const_handle &vertexHandle, const Segment_2 &segment)
-{
-    assert(segment.source() == vertexHandle->point() || segment.target() == vertexHandle->point());
-    assert(false == vertexHandle->is_isolated());
-
-    const auto first = vertexHandle->incident_halfedges();
-    auto current = first;
-
-    // Iterate in a CCW fashion to keep things consistent (faces are iterated in a CCW fashion too)
-    do 
-    {
-        //std::cout << "  Halfedge from " << current->source()->point() << " to " << current->target()->point() << "\n";
-
-        if (ifSegmentInHalfEdgeRegion(current, segment))
-        {
-            //std::cout << "Found its rightful place.\n";
-            return current;
-        }
-
-    } while (--current != first);
-
-    // Something has gone terribly wrong if we are here.
-    assert(false);
-}
 
 
 void ReebSpace2::computeEdgeRegionSegments(const TetMesh &tetMesh, Arrangement &singularArrangement)
@@ -255,11 +178,89 @@ void ReebSpace2::computeEdgeRegionSegments(const TetMesh &tetMesh, Arrangement &
 
 }
 
+bool ReebSpace2::ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circulator &halfEdgeCirculator, const Segment_2 &segment)
+{
+    assert(halfEdgeCirculator != nullptr); 
+
+    const auto halfEdge = halfEdgeCirculator;
+
+    auto halfEdgeCirculatorPrevious = halfEdgeCirculator;
+    const auto halfEdgeNext = ++halfEdgeCirculatorPrevious;
+
+
+    // The image of the vertex is o, the endpoints of the half-edges are a and b and the other endpoints of the segment is b
+    // See bellow for pictures
+    const Point_2 &o = halfEdge->target()->point();
+    const Point_2 &a = halfEdge->source()->point();
+    const Point_2 &b = segment.source() == o ? segment.target() : segment.source();
+    const Point_2 &c = halfEdgeNext->source()->point();
+
+    //std::cout << "o = " << o << "\na = " << a << "\nb = " << b << "\nc = " << c << std::endl;
+
+    // Case 1. 
+    //
+    //      a
+    //      |   b
+    //      |  /
+    //      | /
+    //      |/
+    //      o-----c
+    if (CGAL::orientation(o, a, c) == CGAL::RIGHT_TURN)
+    {
+        //printf("Returning left, left");
+        //std::cout << "Return left, left " << CGAL::orientation(o, a, b) << ", " << CGAL::orientation(o, b, c) << std::endl;
+
+        return CGAL::orientation(o, a, b) == CGAL::RIGHT_TURN && CGAL::orientation(o, b, c) == CGAL::RIGHT_TURN;
+    }
+
+    // Case 2. 
+    //
+    //       a
+    //   b   |
+    //    \  |
+    //     \ |
+    //      \|
+    // c-----o
+    else if (CGAL::orientation(o, a, c) == CGAL::LEFT_TURN)
+    {
+        //std::cout << "Return not right, right " << CGAL::orientation(o, a, b) << ", " << CGAL::orientation(o, b, c) << std::endl;
+        return ! (CGAL::orientation(o, a, b) == CGAL::LEFT_TURN && CGAL::orientation(o, b, c) == CGAL::LEFT_TURN);
+    }
+    else
+    {
+        assert(false);
+    }
+}
+
+Halfedge_const_handle ReebSpace2::getSegmentRegion(Vertex_const_handle &vertexHandle, const Segment_2 &segment)
+{
+    assert(segment.source() == vertexHandle->point() || segment.target() == vertexHandle->point());
+    assert(false == vertexHandle->is_isolated());
+
+    const auto first = vertexHandle->incident_halfedges();
+    auto current = first;
+
+    // Iterate in a CCW fashion to keep things consistent (faces are iterated in a CCW fashion too)
+    do 
+    {
+        //std::cout << "  Halfedge from " << current->source()->point() << " to " << current->target()->point() << "\n";
+
+        if (ifSegmentInHalfEdgeRegion(current, segment))
+        {
+            //std::cout << "Found its rightful place.\n";
+            return current;
+        }
+
+    } while (++current != first);
+
+    // Something has gone terribly wrong if we are here.
+    assert(false);
+}
+
 
 
 void ReebSpace2::computeVertexRegionSegments(const TetMesh &tetMesh, Arrangement &singularArrangement)
 {
-
     std::vector<MySegment_2> regularSegments;
     regularSegments.reserve(tetMesh.regularEdgesNumber);
 
@@ -459,7 +460,7 @@ void ReebSpace2::computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, A
             std::vector<int> minusTriangles;
             std::vector<int> plusTriangles;
 
-            // Crossing ab in a CCW direction goes from the lower to the upper star
+            // Crossing ab in a CW direction goes from the lower to the upper star
             // Remember that we assume that a < b, so if a = v, then b is in the set BiggerThan(a).
             // The set BiggerThan(a) = {x \ in R^2 : x > a} has a closed boundary (|) above a.y and open boundary bellow (.) a.y.
             //
@@ -473,10 +474,10 @@ void ReebSpace2::computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, A
             //      
             if (edge[0] == vertexMeshId)
             {
-                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
-                plusTriangles = tetMesh.upperStarTriangles.at(edge);
+                minusTriangles = tetMesh.upperStarTriangles.at(edge);
+                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
             }
-            // Crossing ab in a CCW direction goes from the upper to the lower star
+            // Crossing ab in a CW direction goes from the upper to the lower star
             // Remember that we assume that a < b, so if b = v, then a is in the set SmallerThan(b).
             // The set SmallerThan(b) = {x \ in R^2 : x > a} has an open boundary (.) above b.y and closed boundary bellow (|) b.y
             //      .
@@ -489,8 +490,8 @@ void ReebSpace2::computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, A
             //      
             else if (edge[1] == vertexMeshId)
             {
-                minusTriangles = tetMesh.upperStarTriangles.at(edge);
-                plusTriangles = tetMesh.lowerStarTriangles.at(edge);
+                minusTriangles = tetMesh.lowerStarTriangles.at(edge);
+                plusTriangles = tetMesh.upperStarTriangles.at(edge);
             }
             else
             {
@@ -513,6 +514,15 @@ void ReebSpace2::computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, A
                 std::back_inserter(vertexRegionPlusTriangles[halfEdge]));
     }
 }
+
+
+
+
+
+
+
+
+
 
 
 void ReebSpace2::unitTest(const TetMesh &tetMesh, Arrangement &singularArrangement, Arrangement &regularArrangement)
@@ -623,7 +633,7 @@ void ReebSpace2::unitTest(const TetMesh &tetMesh, Arrangement &singularArrangeme
                 break;
             }
 
-        } while (--curr != first);
+        } while (++curr != first);
 
         if (false == singularEdgeFound) { continue; }
 
@@ -702,7 +712,7 @@ void ReebSpace2::unitTest(const TetMesh &tetMesh, Arrangement &singularArrangeme
             }
 
 
-        } while (--curr != first);
+        } while (++curr != first);
     }
 
 
