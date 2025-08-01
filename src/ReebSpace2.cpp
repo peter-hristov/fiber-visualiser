@@ -9,7 +9,6 @@
 
 
 
-
 DisjointSet<int> computePreimageGraph(const TetMesh &tetMesh, const std::vector<int> &minusTriangles, const std::vector<int> &plusTriangles, const DisjointSet<int> &preimageGraphPrevious)
 {
     std::set<int> preimageGraph;
@@ -46,42 +45,42 @@ DisjointSet<int> computePreimageGraph(const TetMesh &tetMesh, const std::vector<
 }
 
 // The halfEdge is in the twin face, it's second is our initial preimage graph
-void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &seedHalfEdge)
+void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &initialHalfEdge, std::queue<Halfedge_const_handle> &traversalQueue, std::set<Halfedge_const_handle> &visited)
 {
-    Halfedge_const_handle currentHalfEdge = seedHalfEdge->twin();
-
-    this->preimageGraphs[currentHalfEdge].first = computePreimageGraph(
+    this->preimageGraphs[initialHalfEdge].first = computePreimageGraph(
             tetMesh, 
-            this->edgeCrossingMinusTriangles[seedHalfEdge], 
-            this->edgeCrossingPlusTriangles[seedHalfEdge], 
-            this->preimageGraphs[seedHalfEdge].second
+            this->edgeCrossingMinusTriangles[initialHalfEdge->twin()], 
+            this->edgeCrossingPlusTriangles[initialHalfEdge->twin()], 
+            this->preimageGraphs[initialHalfEdge->twin()].second
             );
 
-    this->preimageGraphs[currentHalfEdge].second = computePreimageGraph(
+    this->preimageGraphs[initialHalfEdge].second = computePreimageGraph(
             tetMesh, 
-            this->edgeRegionMinusTriangles[currentHalfEdge], 
-            this->edgeRegionPlusTriangles[currentHalfEdge], 
-            this->preimageGraphs[currentHalfEdge].first
+            this->edgeRegionMinusTriangles[initialHalfEdge], 
+            this->edgeRegionPlusTriangles[initialHalfEdge], 
+            this->preimageGraphs[initialHalfEdge].first
             );
+
+    visited.insert(initialHalfEdge);
 
 
     printf("\n------------------------------------------------------------------------------------\n");
-    std::cout << "Half-edge is [" << currentHalfEdge->source()->point() << "] -> [" << currentHalfEdge->target()->point() << "]";
+    std::cout << "Half-edge is [" << initialHalfEdge->source()->point() << "] -> [" << initialHalfEdge->target()->point() << "]";
     printf("\n------------------------------------------------------------------------------------\n");
     std::cout << "Firt preimage graph is: \n";
-    this->preimageGraphs[currentHalfEdge].first.print([&](const int &triangleId) {
+    this->preimageGraphs[initialHalfEdge].first.print([&](const int &triangleId) {
             io::printTriangle(tetMesh, triangleId);
             });
 
     std::cout << "Second preimage graph is: \n";
-    this->preimageGraphs[currentHalfEdge].second.print([&](const int &triangleId) {
+    this->preimageGraphs[initialHalfEdge].second.print([&](const int &triangleId) {
             io::printTriangle(tetMesh, triangleId);
             });
 
 
 
     // Go the the next one
-    currentHalfEdge = currentHalfEdge->next();
+    Halfedge_const_handle currentHalfEdge = initialHalfEdge->next();
 
     do
     {
@@ -100,6 +99,20 @@ void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &s
                 this->edgeRegionPlusTriangles[currentHalfEdge], 
                 this->preimageGraphs[currentHalfEdge].first
                 );
+
+        visited.insert(currentHalfEdge);
+
+        if (false == visited.contains(currentHalfEdge->twin()) && false == currentHalfEdge->twin()->face()->is_unbounded())
+        {
+            std::cout<< "----------------------------------------------------------- ADDIG" << std::endl;
+            printf("\n------------------------------------------------------------------------------------\n");
+            std::cout << "Queue Half-edge is [" << currentHalfEdge->twin()->source()->point() << "] -> [" << currentHalfEdge->twin()->target()->point() << "]";
+            printf("\n------------------------------------------------------------------------------------\n");
+            traversalQueue.push(currentHalfEdge->twin());
+        }
+
+
+
 
         printf("\n------------------------------------------------------------------------------------\n");
         std::cout << "Half-edge is [" << currentHalfEdge->source()->point() << "] -> [" << currentHalfEdge->target()->point() << "]";
@@ -121,7 +134,7 @@ void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &s
 
 
 
-    } while (currentHalfEdge != seedHalfEdge->twin());
+    } while (currentHalfEdge != initialHalfEdge);
 
      
 }
@@ -159,13 +172,27 @@ void ReebSpace2::traverse(const TetMesh &tetMesh, Arrangement &singularArrangeme
 
     // Make the first preimage graph
 
-    loopFace(tetMesh, startingHalfedge);
-
-    loopFace(tetMesh, startingHalfedge->twin()->prev());
-
+    //loopFace(tetMesh, startingHalfedge);
+    //loopFace(tetMesh, startingHalfedge->twin()->prev());
 
 
+    std::queue<Halfedge_const_handle> traversalQueue;
+    std::set<Halfedge_const_handle> visited;
 
+    traversalQueue.push(startingHalfedge->twin());
+    visited.insert(startingHalfedge->twin());
+
+
+    while (false == traversalQueue.empty())
+    {
+        Arrangement_2::Halfedge_const_handle currentHalfEdge = traversalQueue.front();
+        traversalQueue.pop();
+
+        //if (false == visited.contains(currentHalfEdge))
+        {
+            loopFace(tetMesh, currentHalfEdge, traversalQueue, visited);
+        }
+    }
 
     //preimageGraphFirst.print([&](const int &triangleId) {
             //io::printTriangle(tetMesh, triangleId);

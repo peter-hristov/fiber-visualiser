@@ -14,7 +14,7 @@
 #include "./Arrangement.h"
 #include "./utility/CLI11.hpp"
 #include "./TracerVisualiserWindow.h"
-#include "src/ReebSpace2.h"
+#include "./ReebSpace2.h"
 
 using namespace std;
 

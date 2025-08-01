@@ -2,6 +2,7 @@
 
 #include "./TetMesh.h"
 #include "./Arrangement.h"
+#include <queue>
 
 class ReebSpace2
 {
@@ -22,7 +23,8 @@ class ReebSpace2
         Halfedge_const_handle getSegmentRegion(Vertex_const_handle &vertexHandle, const Segment_2 &segment);
 
 
-        void loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &halfEdgeSeed);
+        //void loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &halfEdgeSeed);
+        void loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &seedHalfEdge, std::queue<Halfedge_const_handle> &traversalQueue, std::set<Halfedge_const_handle> &visited);
         void traverse(const TetMesh &tetMesh, Arrangement &singularArrangement);
 
 
