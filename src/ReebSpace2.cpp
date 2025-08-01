@@ -403,7 +403,7 @@ void ReebSpace2::computeEdgeCrossingMinusPlusTriangles(const TetMesh &tetMesh, A
     for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangement.arr.halfedges_end(); ++he)
     {
         // If we have computed this for the twin, just swap them around
-        if (false == edgeCrossingMinusTriangles.at(he->twin()).empty())
+        if (edgeCrossingMinusTriangles.contains(he->twin()))
         {
             edgeCrossingMinusTriangles[he] = edgeCrossingPlusTriangles[he->twin()];
             edgeCrossingPlusTriangles[he] = edgeCrossingMinusTriangles[he->twin()];
@@ -411,7 +411,7 @@ void ReebSpace2::computeEdgeCrossingMinusPlusTriangles(const TetMesh &tetMesh, A
         else
         {
             const Segment_2 &segment = *singularArrangement.arr.originating_curves_begin(he);
-            //std::cout << "Half-edge   from: " << currentHalfEdge->source()->point() << " to " << currentHalfEdge->target()->point() << std::endl;
+            //std::cout << "Half-edge   from: " << he->source()->point() << " to " << he->target()->point() << std::endl;
             //std::cout << "Source-edge from: " << segment.source() << " to " << segment.target() << std::endl;
 
             const int aIndex = singularArrangement.arrangementPointIndices.at(segment.source());
@@ -501,8 +501,16 @@ void ReebSpace2::computeVertexRegionMinusPlusTriangles(const TetMesh &tetMesh, A
             plusTrianglesSet.insert(plusTriangles.begin(), plusTriangles.end());
         }
 
-        vertexRegionMinusTriangles[halfEdge] = std::vector<int>(minusTrianglesSet.begin(), minusTrianglesSet.end());
-        vertexRegionPlusTriangles[halfEdge] = std::vector<int>(plusTrianglesSet.begin(), plusTrianglesSet.end());
+        // Cancel out the plus/minus triangles and write to a vector
+        std::set_difference(
+                minusTrianglesSet.begin(), minusTrianglesSet.end(),
+                plusTrianglesSet.begin(), plusTrianglesSet.end(),
+                std::back_inserter(vertexRegionMinusTriangles[halfEdge]));
+
+        std::set_difference(
+                plusTrianglesSet.begin(), plusTrianglesSet.end(),
+                minusTrianglesSet.begin(), minusTrianglesSet.end(),
+                std::back_inserter(vertexRegionPlusTriangles[halfEdge]));
     }
 }
 

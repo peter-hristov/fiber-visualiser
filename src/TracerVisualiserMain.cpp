@@ -18,6 +18,23 @@
 
 using namespace std;
 
+void printTriangle(const TetMesh &tetMesh, const int &triangleId)
+{
+    const set<int> triangle = tetMesh.triangles[triangleId];
+
+    for (const int &vertexId : triangle)
+    {
+        printf("%d ", vertexId);
+
+    }
+    printf("\n");
+    for (const int &vertexId : triangle)
+    {
+        printf("[%.1f, %.1f]\n", tetMesh.vertexCoordinatesF[vertexId], tetMesh.vertexCoordinatesG[vertexId]);
+    }
+    printf("--------\n");
+}
+
 int main(int argc, char* argv[])
 {
     CLI::App cliApp("Reeb Space Fiber Visualiser");
@@ -125,9 +142,15 @@ int main(int argc, char* argv[])
     reebSpace2.computeVertexRegionSegments(tetMesh, singularArrangement);
     Timer::stop("Computed vertex regions                :");
 
+
+
     Timer::start();
     reebSpace2.computeEdgeRegionMinusPlusTriangles(tetMesh, singularArrangement);
     Timer::stop("Edge regions plus/minus triangles      :");
+
+    Timer::start();
+    reebSpace2.computeEdgeCrossingMinusPlusTriangles(tetMesh, singularArrangement);
+    Timer::stop("Edge crossing plus/minus triangles     :");
 
     Timer::start();
     reebSpace2.computeVertexRegionMinusPlusTriangles(tetMesh, singularArrangement);
@@ -136,14 +159,81 @@ int main(int argc, char* argv[])
     Timer::start();
     reebSpace2.unitTest(tetMesh, singularArrangement, arrangement);
     Timer::stop("Geometric computation unit tests       :");
-    
 
+
+    std::map<std::array<int, 2>, std::vector<int>> upperStarTriangles;
+    std::map<std::array<int, 2>, std::vector<int>> lowerStarTriangles;
+    
+    for (const auto& [edge, triangles] : tetMesh.upperStarTriangles)
+    {
+        printf("\n----------------------------------------------\n");
+        //std::cout << "Edge edge [" << he->source()->point() << " -> " << he->target()->point() << "]";
+        printf("Edge [%f, %f] -> [%f, %f]\n", tetMesh.vertexCoordinatesF[edge[0]], tetMesh.vertexCoordinatesG[edge[0]], tetMesh.vertexCoordinatesF[edge[1]], tetMesh.vertexCoordinatesG[edge[1]]);
+        printf("Edge %d -> %d\n", edge[0], edge[1]);
+        printf("\n----------------------------------------------\n\n");
+
+        std::cout << "Upper star triangles:\n";
+        for (const int &triangleId : tetMesh.upperStarTriangles[edge])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+        std::cout << "Lower star triangles:\n";
+        for (const int &triangleId : tetMesh.lowerStarTriangles[edge])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+
+    }
+
+    for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangement.arr.halfedges_end(); ++he)
+    {
+        printf("\n----------------------------------------------\n");
+        std::cout << "Half edge [" << he->source()->point() << " -> " << he->target()->point() << "]";
+        printf("\n----------------------------------------------\n\n");
+
+        std::cout << "Edge region minus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeRegionMinusTriangles[he])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+
+        std::cout << "\n\nEdge region plus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeRegionPlusTriangles[he])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+
+        std::cout << "\n\nEdge crossing minus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeCrossingMinusTriangles[he])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+
+        std::cout << "\n\nEdge crossing plus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeCrossingPlusTriangles[he])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+
+        std::cout << "\n\nVertex region minus triangles:\n";
+        for (const int &triangleId : reebSpace2.vertexRegionMinusTriangles[he])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+
+        std::cout << "\n\nVertex region plus triangles:\n";
+        for (const int &triangleId : reebSpace2.vertexRegionPlusTriangles[he])
+        {
+            printTriangle(tetMesh, triangleId);
+        }
+
+    }
 
 
     //std::cout << "Press Enter to continue...";
     //std::cin.get();
 
-    return 0;
+    //return 0;
 
 
     Timer::start();
