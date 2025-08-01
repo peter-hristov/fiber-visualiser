@@ -46,15 +46,15 @@ DisjointSet<int> computePreimageGraph(const TetMesh &tetMesh, const std::vector<
 }
 
 // The halfEdge is in the twin face, it's second is our initial preimage graph
-void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &previousHalfEdge)
+void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &seedHalfEdge)
 {
-    Halfedge_const_handle currentHalfEdge = previousHalfEdge->twin();
+    Halfedge_const_handle currentHalfEdge = seedHalfEdge->twin();
 
     this->preimageGraphs[currentHalfEdge].first = computePreimageGraph(
             tetMesh, 
-            this->edgeCrossingMinusTriangles[previousHalfEdge], 
-            this->edgeCrossingPlusTriangles[previousHalfEdge], 
-            this->preimageGraphs[previousHalfEdge].second
+            this->edgeCrossingMinusTriangles[seedHalfEdge], 
+            this->edgeCrossingPlusTriangles[seedHalfEdge], 
+            this->preimageGraphs[seedHalfEdge].second
             );
 
     this->preimageGraphs[currentHalfEdge].second = computePreimageGraph(
@@ -115,10 +115,15 @@ void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &p
                 io::printTriangle(tetMesh, triangleId);
                 });
 
+
+
         currentHalfEdge = currentHalfEdge->next();
 
-    } while (currentHalfEdge != previousHalfEdge->twin());
 
+
+    } while (currentHalfEdge != seedHalfEdge->twin());
+
+     
 }
 
 
@@ -155,6 +160,9 @@ void ReebSpace2::traverse(const TetMesh &tetMesh, Arrangement &singularArrangeme
     // Make the first preimage graph
 
     loopFace(tetMesh, startingHalfedge);
+
+    loopFace(tetMesh, startingHalfedge->twin()->prev());
+
 
 
 
