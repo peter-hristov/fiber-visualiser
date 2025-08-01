@@ -4,7 +4,6 @@
 
 #include "./TetMesh.h"
 #include "./Arrangement.h"
-#include "./CGALTypedefs.h"
 
 class ReebSpace
 {

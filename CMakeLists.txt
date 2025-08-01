@@ -54,6 +54,8 @@ set(SOURCES
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE ./src/CGALTypedefs.h)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
     ${Qt5Core_LIBRARIES}

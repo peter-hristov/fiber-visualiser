@@ -1,3 +1,5 @@
+#include "./CGALTypedefs.h"
+
 #include <cstddef>
 #include <filesystem>
 
@@ -9,7 +11,6 @@
 #include "./ReebSpace.h"
 #include "./ReebSpace2.h"
 #include "./Data.h"
-#include "./CGALTypedefs.h"
 #include "./Arrangement.h"
 #include "./utility/CLI11.hpp"
 #include "./TracerVisualiserWindow.h"
@@ -142,7 +143,7 @@ int main(int argc, char* argv[])
     //std::cout << "Press Enter to continue...";
     //std::cin.get();
 
-    return 0;
+    //return 0;
 
 
     Timer::start();

@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "./FiberPoint.h"
-#include "./CGALTypedefs.h"
 #include "./TetMesh.h"
 #include "./Arrangement.h"
 #include "./ReebSpace.h"

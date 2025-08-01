@@ -1,4 +1,4 @@
-#include "./ReebSpace.h"
+#include "./CGALTypedefs.h"
 
 #include <cassert>
 #include <cstddef>
@@ -10,6 +10,7 @@
 
 #include "./Timer.h"
 #include "./DisjointSet.h"
+#include "./ReebSpace.h"
 
 std::pair<std::vector<int>, std::vector<int>> ReebSpace::getMinusPlusTrianglesIndex(const TetMesh &tetMesh, const Arrangement &arrangement, const Arrangement_2::Halfedge_const_handle currentHalfEdge)
 {

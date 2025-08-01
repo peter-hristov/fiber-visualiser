@@ -1,4 +1,5 @@
-#include <CGAL/number_utils.h>
+#include "./CGALTypedefs.h"
+
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QGraphicsScene>
@@ -26,7 +27,6 @@
 #include "./PlotWidget.h"
 #include "./Timer.h"
 #include "./Fiber.h"
-#include "./CGALTypedefs.h"
 #include "./utility/Geometry.h"
 #include "./TracerVisualiserWindow.h"
 

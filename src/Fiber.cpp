@@ -1,7 +1,8 @@
+#include "./CGALTypedefs.h"
+
 #include "./Fiber.h"
 #include "./DisjointSet.h"
 
-#include "./CGALTypedefs.h"
 #include <queue>
 
 
