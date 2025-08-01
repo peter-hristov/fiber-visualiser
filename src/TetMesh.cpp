@@ -254,6 +254,10 @@ void TetMesh::computeSingularEdgeTypes()
 }
 void TetMesh::computeUpperLowerLinkAndStar()
 {
+
+    std::map<std::array<int, 2>, std::set<int>> upperStarTrianglesSet;
+    std::map<std::array<int, 2>, std::set<int>> lowerStarTrianglesSet;
+
     // Initialize all maps with the empty set, so that all edges are covered
     for (auto &edge : this->edges)
     {
@@ -292,10 +296,13 @@ void TetMesh::computeUpperLowerLinkAndStar()
                         const std::array<int, 2> edge = {aIndex, bIndex};
                         const bool isUpperLink = this->isUpperLinkEdgeVertex(aIndex, bIndex, vIndex);
 
-                        if (true == isUpperLink) {
+                        if (true == isUpperLink && false == this->upperLink[edge].contains(vIndex)) 
+                        {
                             this->upperLink[edge].insert(vIndex);
                             this->upperStarTriangles[edge].push_back(triangleIndices.at({aIndex, bIndex, vIndex}));
-                        } else {
+                        } 
+                        else if (false == isUpperLink && false == this->lowerLink[edge].contains(vIndex)) 
+                        {
                             this->lowerLink[edge].insert(vIndex);
                             this->lowerStarTriangles[edge].push_back(triangleIndices.at({aIndex, bIndex, vIndex}));
                         }
