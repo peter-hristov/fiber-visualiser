@@ -409,3 +409,20 @@ void io::generatefFaceFibersForSheets(const TetMesh &tetMesh, Arrangement &arran
         io::saveFibers(outputFile, sheetFibers);
     }
 }
+
+void io::printTriangle(const TetMesh &tetMesh, const int &triangleId)
+{
+    const std::set<int> triangle = tetMesh.triangles[triangleId];
+
+    for (const int &vertexId : triangle)
+    {
+        printf("%d ", vertexId);
+
+    }
+    printf("\n");
+    for (const int &vertexId : triangle)
+    {
+        printf("[%.1f, %.1f]\n", tetMesh.vertexCoordinatesF[vertexId], tetMesh.vertexCoordinatesG[vertexId]);
+    }
+    printf("--------\n");
+}

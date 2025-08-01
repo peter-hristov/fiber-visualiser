@@ -21,10 +21,14 @@ class ReebSpace2
         bool ifSegmentInHalfEdgeRegion(Arrangement_2::Halfedge_around_vertex_const_circulator &halfEdgeCirculator, const Segment_2 &segment);
         Halfedge_const_handle getSegmentRegion(Vertex_const_handle &vertexHandle, const Segment_2 &segment);
 
+
+        void loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &halfEdgeSeed);
+        void traverse(const TetMesh &tetMesh, Arrangement &singularArrangement);
+
+
+        std::map<Halfedge_const_handle, std::pair<DisjointSet<int>, DisjointSet<int>>> preimageGraphs;
+
         void unitTest(const TetMesh &tetMesh, Arrangement &singularArrangement, Arrangement &regularArrangement);
-
-
-
 
         std::map<Halfedge_const_handle, std::vector<int>> edgeRegionMinusTriangles;
         std::map<Halfedge_const_handle, std::vector<int>> edgeRegionPlusTriangles;

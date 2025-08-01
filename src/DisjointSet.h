@@ -216,4 +216,31 @@ class DisjointSet {
         bool connectedIndex(const int &x, const int &y) {
             return findIndex(x) == findIndex(y);
         }
+
+        void print(const std::function<void(const ElementType&)> &printElement)
+        {
+            const int connectedComponents = this->countConnectedComponents();
+
+            std::cout << "This preimage graph has " << connectedComponents << " connected components." << std::endl;
+
+
+            std::map<int, std::vector<ElementType>> components;
+
+            for (const auto &[element, index] : this->data)
+            {
+                const int componentId = this->findIndex(index);
+                components[componentId].push_back(element);
+            }
+
+
+            for (const auto &[componentId, elements] : components)
+            {
+                std::cout << "Component " << componentId << " has elements:\n";
+                for (const auto &element : elements)
+                {
+                    printElement(element);
+                }
+                std::cout << "\n\n";
+            }
+        }
 };

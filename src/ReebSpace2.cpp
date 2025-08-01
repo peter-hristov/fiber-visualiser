@@ -2,7 +2,197 @@
 
 #include "./Timer.h"
 #include "./ReebSpace2.h"
+#include "./io.h"
 #include <utility>
+
+
+
+
+
+
+DisjointSet<int> computePreimageGraph(const TetMesh &tetMesh, const std::vector<int> &minusTriangles, const std::vector<int> &plusTriangles, const DisjointSet<int> &preimageGraphPrevious)
+{
+    std::set<int> preimageGraph;
+    for (const auto &[triangleId, internalIndex] : preimageGraphPrevious.data)
+    {
+        preimageGraph.insert(triangleId);
+    }
+
+    for (const auto &triangle: minusTriangles)
+    {
+        preimageGraph.erase(triangle);
+    }
+
+    for (const auto &triangle: plusTriangles)
+    {
+        preimageGraph.insert(triangle);
+    }
+
+    DisjointSet<int> preimageGraphFirstComponents(preimageGraph);
+
+    for (const auto &[t1, id1] : preimageGraphFirstComponents.data)
+    {
+        for (const auto &t2 : tetMesh.tetIncidentTriangles[t1])
+        {
+            if (preimageGraphFirstComponents.data.contains(t2))
+            {
+                preimageGraphFirstComponents.unionElements(t1, t2);
+            }
+        }
+    }
+
+    // @TODO Is this returned RVO?
+    return preimageGraphFirstComponents;
+}
+
+// The halfEdge is in the twin face, it's second is our initial preimage graph
+void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &previousHalfEdge)
+{
+    Halfedge_const_handle currentHalfEdge = previousHalfEdge->twin();
+
+    this->preimageGraphs[currentHalfEdge].first = computePreimageGraph(
+            tetMesh, 
+            this->edgeCrossingMinusTriangles[previousHalfEdge], 
+            this->edgeCrossingPlusTriangles[previousHalfEdge], 
+            this->preimageGraphs[previousHalfEdge].second
+            );
+
+    this->preimageGraphs[currentHalfEdge].second = computePreimageGraph(
+            tetMesh, 
+            this->edgeRegionMinusTriangles[currentHalfEdge], 
+            this->edgeRegionPlusTriangles[currentHalfEdge], 
+            this->preimageGraphs[currentHalfEdge].first
+            );
+
+
+    printf("\n------------------------------------------------------------------------------------\n");
+    std::cout << "Half-edge is [" << currentHalfEdge->source()->point() << "] -> [" << currentHalfEdge->target()->point() << "]";
+    printf("\n------------------------------------------------------------------------------------\n");
+    std::cout << "Firt preimage graph is: \n";
+    this->preimageGraphs[currentHalfEdge].first.print([&](const int &triangleId) {
+            io::printTriangle(tetMesh, triangleId);
+            });
+
+    std::cout << "Second preimage graph is: \n";
+    this->preimageGraphs[currentHalfEdge].second.print([&](const int &triangleId) {
+            io::printTriangle(tetMesh, triangleId);
+            });
+
+
+
+    // Go the the next one
+    currentHalfEdge = currentHalfEdge->next();
+
+    do
+    {
+        Halfedge_const_handle previousHalfEdge = currentHalfEdge->prev();
+
+        this->preimageGraphs[currentHalfEdge].first = computePreimageGraph(
+                tetMesh, 
+                this->vertexRegionMinusTriangles[previousHalfEdge], 
+                this->vertexRegionPlusTriangles[previousHalfEdge], 
+                this->preimageGraphs[previousHalfEdge].second
+                );
+
+        this->preimageGraphs[currentHalfEdge].second = computePreimageGraph(
+                tetMesh, 
+                this->edgeRegionMinusTriangles[currentHalfEdge], 
+                this->edgeRegionPlusTriangles[currentHalfEdge], 
+                this->preimageGraphs[currentHalfEdge].first
+                );
+
+        printf("\n------------------------------------------------------------------------------------\n");
+        std::cout << "Half-edge is [" << currentHalfEdge->source()->point() << "] -> [" << currentHalfEdge->target()->point() << "]";
+        printf("\n------------------------------------------------------------------------------------\n");
+
+        std::cout << "Firt preimage graph is: \n";
+        this->preimageGraphs[currentHalfEdge].first.print([&](const int &triangleId) {
+                io::printTriangle(tetMesh, triangleId);
+                });
+
+        std::cout << "Second preimage graph is: \n";
+        this->preimageGraphs[currentHalfEdge].second.print([&](const int &triangleId) {
+                io::printTriangle(tetMesh, triangleId);
+                });
+
+        currentHalfEdge = currentHalfEdge->next();
+
+    } while (currentHalfEdge != previousHalfEdge->twin());
+
+}
+
+
+void ReebSpace2::traverse(const TetMesh &tetMesh, Arrangement &singularArrangement)
+{
+    // Find the outside face
+    Face_const_handle outerFace;
+    for (Face_const_iterator fit = singularArrangement.arr.faces_begin(); fit != singularArrangement.arr.faces_end(); ++fit) 
+    {
+        if (fit->is_unbounded()) 
+        {
+            outerFace = fit;
+            break;
+        }
+    }
+
+    // Sanity check, make sure the outer face is simple
+    assert(outerFace != Face_const_handle());
+    assert(outerFace->number_of_inner_ccbs() == 1);
+    assert(outerFace->number_of_outer_ccbs() == 0);
+    assert(outerFace->number_of_holes() == 1);
+    assert(outerFace->number_of_isolated_vertices() == 0);
+
+    // Choose a "nice" starting location.
+    Halfedge_const_handle startingHalfedge = *outerFace->holes_begin();
+    startingHalfedge++;
+    startingHalfedge++;
+    startingHalfedge++;
+    printf("\n\n-----------------------------------------------------------------------------------\n\n");
+    std::cout << "Starting half-edge is [" << startingHalfedge->source()->point() << "] -> [" << startingHalfedge->target()->point() << "]" << std::endl;
+
+    //Halfedge_const_handle currentHalfEdge = startingHalfedge->twin();
+
+    // Make the first preimage graph
+
+    loopFace(tetMesh, startingHalfedge);
+
+
+
+
+    //preimageGraphFirst.print([&](const int &triangleId) {
+            //io::printTriangle(tetMesh, triangleId);
+            //});
+
+    //preimageGraphSecond.print([&](const int &triangleId) {
+            //io::printTriangle(tetMesh, triangleId);
+            //});
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 bool ReebSpace2::areHalfEdgeRegionMapsEqual(const std::map<Halfedge_const_handle, std::set<int>>& a, const std::map<Halfedge_const_handle, std::set<int>>& b)
 {
