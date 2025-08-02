@@ -244,3 +244,35 @@ class DisjointSet {
             }
         }
 };
+
+
+template<typename ElementType>
+bool operator==(const DisjointSet<ElementType>& lhs, const DisjointSet<ElementType>& rhs)
+{
+    // Compare parent vectors
+    if (lhs.parent != rhs.parent)
+        return false;
+
+    // Compare rank vectors
+    if (lhs.rank != rhs.rank)
+        return false;
+
+    // Compare data maps
+    if (lhs.data.size() != rhs.data.size())
+        return false;
+
+    for (const auto& [key, value] : lhs.data)
+    {
+        auto it = rhs.data.find(key);
+        if (it == rhs.data.end() || it->second != value)
+            return false;
+    }
+
+    return true;
+}
+
+template<typename ElementType>
+bool operator!=(const DisjointSet<ElementType>& lhs, const DisjointSet<ElementType>& rhs)
+{
+    return !(lhs == rhs);
+}

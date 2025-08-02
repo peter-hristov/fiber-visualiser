@@ -2,6 +2,7 @@
 
 #include "./TetMesh.h"
 #include "./Arrangement.h"
+#include "./ReebSpace.h"
 #include <queue>
 
 class ReebSpace2
@@ -24,13 +25,14 @@ class ReebSpace2
 
 
         //void loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &halfEdgeSeed);
-        void loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &seedHalfEdge, std::queue<Halfedge_const_handle> &traversalQueue, std::set<Halfedge_const_handle> &visited);
+        void loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &seedHalfEdge, std::queue<Halfedge_const_handle> &traversalQueue, std::set<Face_const_handle> &visited);
         void traverse(const TetMesh &tetMesh, Arrangement &singularArrangement);
 
 
         std::map<Halfedge_const_handle, std::pair<DisjointSet<int>, DisjointSet<int>>> preimageGraphs;
 
         void unitTest(const TetMesh &tetMesh, Arrangement &singularArrangement, Arrangement &regularArrangement);
+        void unitTestComparePreimageGraphs(const TetMesh &tetMesh, Arrangement &singularArrangement, Arrangement &regularArrangement, ReebSpace &rs);
 
         std::map<Halfedge_const_handle, std::vector<int>> edgeRegionMinusTriangles;
         std::map<Halfedge_const_handle, std::vector<int>> edgeRegionPlusTriangles;

@@ -139,9 +139,9 @@ int main(int argc, char* argv[])
     reebSpace2.computeVertexRegionMinusPlusTriangles(tetMesh, singularArrangement);
     Timer::stop("Vertex regions plus/minus triangles    :");
 
-    Timer::start();
-    reebSpace2.unitTest(tetMesh, singularArrangement, arrangement);
-    Timer::stop("Geometric computation unit tests       :");
+    //Timer::start();
+    //reebSpace2.unitTest(tetMesh, singularArrangement, arrangement);
+    //Timer::stop("Geometric computation unit tests       :");
 
 
     //std::map<std::array<int, 2>, std::vector<int>> upperStarTriangles;
@@ -168,49 +168,49 @@ int main(int argc, char* argv[])
 
     //}
 
-    //for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangement.arr.halfedges_end(); ++he)
-    //{
-        //printf("\n----------------------------------------------\n");
-        //std::cout << "Half edge [" << he->source()->point() << " -> " << he->target()->point() << "]";
-        //printf("\n----------------------------------------------\n\n");
+    for (auto he = singularArrangement.arr.halfedges_begin(); he != singularArrangement.arr.halfedges_end(); ++he)
+    {
+        printf("\n----------------------------------------------\n");
+        std::cout << "Half edge [" << he->source()->point() << " -> " << he->target()->point() << "]";
+        printf("\n----------------------------------------------\n\n");
 
-        //std::cout << "Edge region minus triangles:\n";
-        //for (const int &triangleId : reebSpace2.edgeRegionMinusTriangles[he])
-        //{
-            //io::printTriangle(tetMesh, triangleId);
-        //}
+        std::cout << "Edge region minus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeRegionMinusTriangles[he])
+        {
+            io::printTriangle(tetMesh, triangleId);
+        }
 
-        //std::cout << "\n\nEdge region plus triangles:\n";
-        //for (const int &triangleId : reebSpace2.edgeRegionPlusTriangles[he])
-        //{
-            //io::printTriangle(tetMesh, triangleId);
-        //}
+        std::cout << "\n\nEdge region plus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeRegionPlusTriangles[he])
+        {
+            io::printTriangle(tetMesh, triangleId);
+        }
 
-        //std::cout << "\n\nEdge crossing minus triangles:\n";
-        //for (const int &triangleId : reebSpace2.edgeCrossingMinusTriangles[he])
-        //{
-            //io::printTriangle(tetMesh, triangleId);
-        //}
+        std::cout << "\n\nEdge crossing minus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeCrossingMinusTriangles[he])
+        {
+            io::printTriangle(tetMesh, triangleId);
+        }
 
-        //std::cout << "\n\nEdge crossing plus triangles:\n";
-        //for (const int &triangleId : reebSpace2.edgeCrossingPlusTriangles[he])
-        //{
-            //io::printTriangle(tetMesh, triangleId);
-        //}
+        std::cout << "\n\nEdge crossing plus triangles:\n";
+        for (const int &triangleId : reebSpace2.edgeCrossingPlusTriangles[he])
+        {
+            io::printTriangle(tetMesh, triangleId);
+        }
 
-        //std::cout << "\n\nVertex region minus triangles:\n";
-        //for (const int &triangleId : reebSpace2.vertexRegionMinusTriangles[he])
-        //{
-            //io::printTriangle(tetMesh, triangleId);
-        //}
+        std::cout << "\n\nVertex region minus triangles:\n";
+        for (const int &triangleId : reebSpace2.vertexRegionMinusTriangles[he])
+        {
+            io::printTriangle(tetMesh, triangleId);
+        }
 
-        //std::cout << "\n\nVertex region plus triangles:\n";
-        //for (const int &triangleId : reebSpace2.vertexRegionPlusTriangles[he])
-        //{
-            //io::printTriangle(tetMesh, triangleId);
-        //}
+        std::cout << "\n\nVertex region plus triangles:\n";
+        for (const int &triangleId : reebSpace2.vertexRegionPlusTriangles[he])
+        {
+            io::printTriangle(tetMesh, triangleId);
+        }
 
-    //}
+    }
 
 
     //std::cout << "Press Enter to continue...";
@@ -219,14 +219,21 @@ int main(int argc, char* argv[])
     Timer::start();
     reebSpace2.traverse(tetMesh, singularArrangement);
     Timer::stop("Computed singular traversal            :");
-    return 0;
 
 
     Timer::start();
     ReebSpace reebSpace;
     reebSpace.computeTraversal(tetMesh, arrangement, discardFiberSeeds);
     Timer::stop("Computed {G_F} and H                   :");
+
+    //Timer::start();
+    //reebSpace2.unitTestComparePreimageGraphs(tetMesh, singularArrangement, arrangement, reebSpace);
+    //Timer::stop("Comparing preimage graphs              :");
+
+
+    //return 0;
     
+
     std::cout << "Postprocessing..." << std::endl;
     Timer::start();
     reebSpace.computeSheetGeometry(tetMesh, arrangement);
