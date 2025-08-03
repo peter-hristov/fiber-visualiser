@@ -320,7 +320,7 @@ void ReebSpace::computeTraversal(const TetMesh &tetMesh, const Arrangement &arra
 
             if (order[currentFaceID] < order[twinFaceID])
             {
-                ReebSpace::determineCorrespondence(tetMesh, arrangement, currentHalfedge);
+                //ReebSpace::determineCorrespondence(tetMesh, arrangement, currentHalfedge);
             }
 
             ++currentHalfedge;

@@ -21,6 +21,7 @@ class DisjointSet {
         //std::map<std::set<int>, int> data;
         
         // Map from the data value to it's index in the data structure
+        //std::unordered_map<ElementType, int, MyHash<ElementType>> data;
         std::unordered_map<ElementType, int, MyHash<ElementType>> data;
         //std::map<ElementType, int> data;
 
@@ -249,23 +250,24 @@ class DisjointSet {
 template<typename ElementType>
 bool operator==(const DisjointSet<ElementType>& lhs, const DisjointSet<ElementType>& rhs)
 {
-    // Compare parent vectors
-    if (lhs.parent != rhs.parent)
+    if (lhs.parent.size() != rhs.parent.size())
         return false;
 
-    // Compare rank vectors
-    if (lhs.rank != rhs.rank)
+    if (lhs.rank.size() != rhs.rank.size())
         return false;
 
     // Compare data maps
     if (lhs.data.size() != rhs.data.size())
         return false;
 
-    for (const auto& [key, value] : lhs.data)
+    for (const auto& [element, parentId] : lhs.data)
     {
-        auto it = rhs.data.find(key);
-        if (it == rhs.data.end() || it->second != value)
+        auto it = rhs.data.find(element);
+
+        if (it == rhs.data.end() || it->second != parentId)
+        {
             return false;
+        }
     }
 
     return true;

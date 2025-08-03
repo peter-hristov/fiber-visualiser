@@ -26,38 +26,41 @@ bool segmentsOverlap(const Segment_2& s1, const Segment_2& s2)
 
 std::pair<Halfedge_const_handle, Halfedge_const_handle>  findHalfEdges(const Halfedge_const_handle &singularHalfEdge,  Arrangement &singularArrangement, Arrangement &regularArrangement)
 {
-    std::pair<Halfedge_const_handle, Halfedge_const_handle> foundFaces;
+    std::pair<Halfedge_const_handle, Halfedge_const_handle> foundHalfEdges;
 
     const Segment_2 singularHalfEdgeSegment = singularHalfEdge->curve();
 
-    for (auto he = regularArrangement.arr.halfedges_begin(); he != regularArrangement.arr.halfedges_end(); ++he)
+    Vertex_const_handle sourceVertex = regularArrangement.arrangementPointHandles.at(singularHalfEdge->source()->point());
+    Arrangement_2::Halfedge_around_vertex_const_circulator first, curr;
+    first = curr = sourceVertex->incident_halfedges();
+    do 
     {
-        const Segment_2 regularHalfEdgeSegment = he->curve();
+        const Segment_2 regularHalfEdgeSegment = curr->curve();
 
-        if (he->source()->point() == singularHalfEdge->source()->point())
+        if (segmentsOverlap(singularHalfEdgeSegment, regularHalfEdgeSegment))
         {
-            if (segmentsOverlap(singularHalfEdgeSegment, regularHalfEdgeSegment))
-            {
-                //foundFaces.first = he->face();
-                foundFaces.first = he;
-            }
+            foundHalfEdges.first = curr->twin();
         }
+    } while (++curr != first);
 
-        if (he->target()->point() == singularHalfEdge->target()->point())
+
+    Vertex_const_handle targetVertex = regularArrangement.arrangementPointHandles.at(singularHalfEdge->target()->point());
+    first = curr = targetVertex->incident_halfedges();
+    do 
+    {
+        const Segment_2 regularHalfEdgeSegment = curr->curve();
+
+        if (segmentsOverlap(singularHalfEdgeSegment, regularHalfEdgeSegment))
         {
-            if (segmentsOverlap(singularHalfEdgeSegment, regularHalfEdgeSegment))
-            {
-                //foundFaces.second = he->face();
-                foundFaces.second = he;
-            }
+            foundHalfEdges.second = curr;
         }
-    }
+    } while (++curr != first);
 
-    // Make sure we've actually found them
+
     //assert (foundFaces.first == Face_const_handle() || foundFaces.second != Face_const_handle());
-    assert (foundFaces.first == Halfedge_const_handle() || foundFaces.second != Halfedge_const_handle());
+    assert (foundHalfEdges.first == Halfedge_const_handle() || foundHalfEdges.second != Halfedge_const_handle());
 
-    return foundFaces;
+    return foundHalfEdges;
 }
 
 
@@ -73,10 +76,13 @@ void ReebSpace2::unitTestComparePreimageGraphs(const TetMesh &tetMesh, Arrangeme
         std::pair<DisjointSet<int>, DisjointSet<int>> &singularPreimageGraphs = this->preimageGraphs[halfEdge];
         std::pair<DisjointSet<int>, DisjointSet<int>> regularPreimageGraphs = {rs.preimageGraphs[foundFaceIds.first], rs.preimageGraphs[foundFaceIds.second]};
 
-        //assert(singularPreimageGraphs.first == regularPreimageGraphs.first);
+        assert(singularPreimageGraphs.first == regularPreimageGraphs.first);
+        assert(singularPreimageGraphs.second == regularPreimageGraphs.second);
+
         //
-        if(singularPreimageGraphs.first != regularPreimageGraphs.first)
+        if(singularPreimageGraphs.first != regularPreimageGraphs.first || singularPreimageGraphs.second != regularPreimageGraphs.second)
         {
+
             printf("\n------------------------------------------------------------------------------------\n");
             std::cout << "SingularHalf-edge is [" << halfEdge->source()->point() << "] -> [" << halfEdge->target()->point() << "]";
             printf("The IDs are %d -> %d\n", singularArrangement.arrangementPointIndices[halfEdge->source()->point()], singularArrangement.arrangementPointIndices[halfEdge->target()->point()]);
@@ -108,11 +114,9 @@ void ReebSpace2::unitTestComparePreimageGraphs(const TetMesh &tetMesh, Arrangeme
                     });
 
             printf("\n\n\n");
+
+            throw std::runtime_error("Preimage graphs do not match!");
         }
-
-
-
-
     }
 }
 
@@ -170,18 +174,18 @@ void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &i
             this->preimageGraphs[initialHalfEdge].first
             );
 
-    printf("\n------------------------------------------------------------------------------------\n");
-    std::cout << "Half-edge is [" << initialHalfEdge->source()->point() << "] -> [" << initialHalfEdge->target()->point() << "]";
-    printf("\n------------------------------------------------------------------------------------\n");
-    std::cout << "First preimage graph is: \n";
-    this->preimageGraphs[initialHalfEdge].first.print([&](const int &triangleId) {
-            io::printTriangle(tetMesh, triangleId);
-            });
+    //printf("\n------------------------------------------------------------------------------------\n");
+    //std::cout << "Half-edge is [" << initialHalfEdge->source()->point() << "] -> [" << initialHalfEdge->target()->point() << "]";
+    //printf("\n------------------------------------------------------------------------------------\n");
+    //std::cout << "First preimage graph is: \n";
+    //this->preimageGraphs[initialHalfEdge].first.print([&](const int &triangleId) {
+            //io::printTriangle(tetMesh, triangleId);
+            //});
 
-    std::cout << "Second preimage graph is: \n";
-    this->preimageGraphs[initialHalfEdge].second.print([&](const int &triangleId) {
-            io::printTriangle(tetMesh, triangleId);
-            });
+    //std::cout << "Second preimage graph is: \n";
+    //this->preimageGraphs[initialHalfEdge].second.print([&](const int &triangleId) {
+            //io::printTriangle(tetMesh, triangleId);
+            //});
 
     // Go the the next one
     Halfedge_const_handle currentHalfEdge = initialHalfEdge->next();
@@ -219,19 +223,19 @@ void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &i
 
 
 
-        printf("\n------------------------------------------------------------------------------------\n");
-        std::cout << "Half-edge is [" << currentHalfEdge->source()->point() << "] -> [" << currentHalfEdge->target()->point() << "]";
-        printf("\n------------------------------------------------------------------------------------\n");
+        //printf("\n------------------------------------------------------------------------------------\n");
+        //std::cout << "Half-edge is [" << currentHalfEdge->source()->point() << "] -> [" << currentHalfEdge->target()->point() << "]";
+        //printf("\n------------------------------------------------------------------------------------\n");
 
-        std::cout << "First preimage graph is: \n";
-        this->preimageGraphs[currentHalfEdge].first.print([&](const int &triangleId) {
-                io::printTriangle(tetMesh, triangleId);
-                });
+        //std::cout << "First preimage graph is: \n";
+        //this->preimageGraphs[currentHalfEdge].first.print([&](const int &triangleId) {
+                //io::printTriangle(tetMesh, triangleId);
+                //});
 
-        std::cout << "Second preimage graph is: \n";
-        this->preimageGraphs[currentHalfEdge].second.print([&](const int &triangleId) {
-                io::printTriangle(tetMesh, triangleId);
-                });
+        //std::cout << "Second preimage graph is: \n";
+        //this->preimageGraphs[currentHalfEdge].second.print([&](const int &triangleId) {
+                //io::printTriangle(tetMesh, triangleId);
+                //});
 
 
 
