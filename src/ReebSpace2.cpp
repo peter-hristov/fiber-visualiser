@@ -153,43 +153,18 @@ void ReebSpace2::loopFace(const TetMesh &tetMesh, const Halfedge_const_handle &i
 void ReebSpace2::traverse(const TetMesh &tetMesh, Arrangement &singularArrangement)
 {
     // Find the outside face
-    Face_const_handle outerFace;
+    Halfedge_const_handle startingHalfedge;
     for (Face_const_iterator fit = singularArrangement.arr.faces_begin(); fit != singularArrangement.arr.faces_end(); ++fit) 
     {
         if (fit->is_unbounded()) 
         {
-            outerFace = fit;
+            startingHalfedge = *fit->holes_begin();
             break;
         }
     }
 
-    // Sanity check, make sure the outer face is simple
-    assert(outerFace != Face_const_handle());
-    assert(outerFace->number_of_inner_ccbs() == 1);
-    assert(outerFace->number_of_outer_ccbs() == 0);
-    assert(outerFace->number_of_holes() == 1);
-    assert(outerFace->number_of_isolated_vertices() == 0);
-
-    // Choose a "nice" starting location.
-    Halfedge_const_handle startingHalfedge = *outerFace->holes_begin();
-    //startingHalfedge++;
-    //startingHalfedge++;
-    //startingHalfedge++;
-
-    //printf("\n\n-----------------------------------------------------------------------------------\n\n");
-    //std::cout << "Starting half-edge is [" << startingHalfedge->source()->point() << "] -> [" << startingHalfedge->target()->point() << "]" << std::endl;
-
-    //Halfedge_const_handle currentHalfEdge = startingHalfedge->twin();
-
-    // Make the first preimage graph
-
-    //loopFace(tetMesh, startingHalfedge);
-    //loopFace(tetMesh, startingHalfedge->twin()->prev());
-
-
     std::queue<Halfedge_const_handle> traversalQueue;
     std::set<Face_const_handle> visited;
-
 
     // Seed the first face
     this->preimageGraphs[startingHalfedge->twin()].first = computePreimageGraph(
@@ -202,24 +177,39 @@ void ReebSpace2::traverse(const TetMesh &tetMesh, Arrangement &singularArrangeme
 
     traversalQueue.push(startingHalfedge->twin());
     visited.insert(startingHalfedge->face());
-    visited.insert(startingHalfedge->twin()->face());
 
-    int visitedFaces = 0;
+    // Make sure the outer face is visited as well, no need to go back
+    visited.insert(startingHalfedge->twin()->face());
 
 
     while (false == traversalQueue.empty())
     {
-        Arrangement_2::Halfedge_const_handle currentHalfEdge = traversalQueue.front();
+        Halfedge_const_handle currentHalfEdge = traversalQueue.front();
         traversalQueue.pop();
-
-
-        visitedFaces++;
 
         // Process neighbours and queue them
         loopFace(tetMesh, currentHalfEdge, traversalQueue, visited);
+
+        // Add to the correspondence graph
+        //const std::vector<std::pair<int, int>> componentRepresentatives = this->preimageGraphs[currentHalfEdge].first.getComponentRepresentatives();
+
+        //for (const auto &[componentId, triangleId] : componentRepresentatives)
+        //{
+            //this->correspondenceGraph.addElement({singularArrangement.arrangementFacesIdices[currentHalfEdge->face()], componentId});
+        //}
+
+        //// Clear the preimage graphs in the currect face.
+        //Halfedge_const_handle iterator = currentHalfEdge;
+        //do
+        //{
+            //this->preimageGraphs[iterator].first.clear();
+            //this->preimageGraphs[iterator].second.clear();
+            //iterator = iterator->next();
+
+        //} while (iterator != currentHalfEdge);
     }
 
-    printf("Visited %d faces out of %ld.\n", visitedFaces, singularArrangement.arr.number_of_faces());
+    printf("The correspondence graphs has %ld vertices.\n", this->correspondenceGraph.data.size());
 
     //preimageGraphFirst.print([&](const int &triangleId) {
             //io::printTriangle(tetMesh, triangleId);

@@ -30,6 +30,7 @@ class ReebSpace2
 
 
         std::map<Halfedge_const_handle, std::pair<DisjointSet<int>, DisjointSet<int>>> preimageGraphs;
+        DisjointSet<std::pair<int, int>> correspondenceGraph;
 
         // Make sure the image of the Jacobi set is simple (connected, no weird things going on).
         void checkInitialAssumptions(const TetMesh &tetMesh, Arrangement &singularArrangement);
